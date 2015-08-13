@@ -24,23 +24,28 @@ function printTerm(term) {
     return result.join("");
 }
 
-$(function() {
-    var ws = new WebSocket("ws://localhost:2707/websocket");
-    ws.onopen = function() {
-       ws.send('{"action": "hello"}');
-    };
-    ws.onmessage = function (evt) {
-       var main = JSON.parse(evt.data);
-        $('#main').html(printTerm(main));
-    };
-    $('#main').on('submit', ".auth-form", function(e) {
-        e.preventDefault();
-        var unindexed = $('#main .auth-form').serializeArray();
-        var data = {};
-        $.map(unindexed, function(n, i){
-            data[n['name']] = n['value'];
-        });
-        ws.send(JSON.stringify({'action': 'auth', 'params': data}));
-    });
 
+webix.ready(function(){
+    webix.ui({container: 'header', rows: [{type:"header", template:"BB"},]});
+    webix.ui({container: 'main', id: "main", rows: []});
 });
+
+
+var ws = new WebSocket("ws://localhost:2707/websocket");
+ws.onopen = function() {
+   ws.send('{"action": "hello"}');
+};
+ws.onmessage = function (evt) {
+   var main = JSON.parse(evt.data);
+   $$('main').addView(main, 0);
+};
+function submit() {
+    var params = $$('auth').getValues()
+    $$('main').removeView('auth');
+    ws.send(JSON.stringify({'action': 'auth', 'params': params}));
+    $$('output').show();
+};
+
+
+
+
