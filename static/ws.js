@@ -1,51 +1,49 @@
-function printTerm(term) {
-    var result = [];
-    result.push("<" + term.term);
-    if (term.id) {result.push(" id='" + term.id + "'");}
-    if (term.name) {result.push(" name='" + term.name + "'");}
-    if (term.method) {result.push(" method='" + term.method + "'");}
-    if (term.classes) {result.push(" class='" + term.classes + "'");}
-    if (term.style) {result.push(" style='" + term.style + "'");}
-    if (term.typ) {result.push(" type='" + term.typ + "'");}
-    if (term.value) {result.push(" value='" + term.value + "'");}
-    result.push(">");
-    if (term.errors) {
-        for (var i = 0; i< term.errors.length; i++) {
-            result.push(printTerm(term.errors[i]));
-        }
-    }
-    if (term.content) { result.push(term.content); }
-    if (term.children) {
-        for (var i = 0; i< term.children.length; i++) {
-            result.push(printTerm(term.children[i]));
-        }
-    }
-    result.push("</" + term.term + ">");
-    return result.join("");
-}
-
-
 webix.ready(function(){
-    webix.ui({container: 'header', rows: [{type:"header", template:"BB"},]});
-    webix.ui({container: 'main', id: "main", rows: []});
+    webix.ui.fullScreen();
+    webix.ui({type:"header", template:"Ministry of Truth"})
+    grid = webix.ui({rows: [
+        {type: "line", id:'page', height:"100%", cols:[
+                {
+                    view: "menu", layout: 'y', id: "menu", maxWidth:200, minWidth:100,
+                    height:'auto',on: {onItemClick: menuChoice},
+                    data: [
+                        {id:"showAll",value: "All truth",icon: "eye"},
+                        {id:"showSecond",value:"second truth",icon:"hourglass-2"},
+                        {$template: "Spacer"},
+                        {id:"createReport",value:"Report a crime",icon:"balance-scale"},
+                    ]
+                },
+                {id: "main", type:"clean", rows:[{id:"stub",template:"<h2>WebSockets must be enabled</h2>"},]}
+            ]
+        },
+   ]});
 });
 
 
-var ws = new WebSocket("ws://localhost:2707/websocket");
+var ws = new WebSocket("ws://localhost:1984/websocket");
 ws.onopen = function() {
    ws.send('{"action": "hello"}');
 };
 ws.onmessage = function (evt) {
    var main = JSON.parse(evt.data);
-   $$('main').addView(main, 0);
+   webix.ui(main, $$("main"), $$("stub"));
+   grid.resize();
 };
+
 function submit() {
     var params = $$('auth').getValues()
-    $$('main').removeView('auth');
     ws.send(JSON.stringify({'action': 'auth', 'params': params}));
-    $$('output').show();
+}
+
+function menuChoice(id) {
+    window[id]();
+};
+
+function createReport (){
+    alert("Crime!!!");
 };
 
 
-
-
+function showAll(){
+    alert("That's all");
+};
