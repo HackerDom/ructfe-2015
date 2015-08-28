@@ -1,13 +1,17 @@
 #!/usr/local/bin/python3
+from tornado.httpserver import HTTPServer
+
 __author__ = 'm_messiah'
 import logging
 from signal import signal, SIGTERM
 from tornado.ioloop import IOLoop
 from tornado.web import Application, StaticFileHandler
 from tornado.websocket import WebSocketHandler
-#from tornado import gen
+from tornado import gen
 from json import loads, dumps
 from copy import deepcopy
+import momoko
+from hashlib import sha256
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("requests.packages.urllib3").setLevel(logging.WARNING)
@@ -19,7 +23,7 @@ class Handler(WebSocketHandler):
     def open(self):
         print("WebSocket opened")
 
-    #@gen.coroutine
+    @gen.coroutine
     def on_message(self, message):
         message = loads(message)
         if message['action'] == 'auth':
@@ -42,15 +46,24 @@ class Handler(WebSocketHandler):
                              label="Password is not present")
                     )
                     return self.write_message(dumps(err_form))
-                username, password = params['user'], params['password']
-
-                if username != 'admin':
+                username, password = (
+                    params['user'],
+                    sha256(params['password'].encode("utf8")).hexdigest()
+                )
+                sql = yield self.application.db.mogrify(
+                    "select uid, password from users "
+                    "where username=%s",
+                    (username,)
+                )
+                cursor = yield self.application.db.execute(sql)
+                db_result = cursor.fetchone()
+                if not db_result:
                     err_form['elements'].append(
                         dict(tpl.FORM_ERROR, label="Invalid user")
                     )
                     return self.write_message(dumps(err_form))
                 else:
-                    if password != 'qwerty':
+                    if password != db_result[1]:
                         err_form['elements'].append(
                             dict(tpl.FORM_ERROR, label="Invalid password")
                         )
@@ -58,7 +71,6 @@ class Handler(WebSocketHandler):
                     return self.write_message(dumps(tpl.INDEX))
 
         self.write_message(dumps(tpl.AUTH_FORM))
-        #yield gen.sleep(2)
 
     def on_close(self):
         print("WebSocket closed")
@@ -68,16 +80,25 @@ def signal_term_handler(sig, _):
     logging.error("Got %s. Quit.", sig)
     exit(0)
 
-app = Application([
-    (r"/websocket", Handler),
-    (r"/()", StaticFileHandler, {'path': 'static/index.html'}),
-    (r"/(.+)", StaticFileHandler, {'path': 'static/'}),
-])
 
 if __name__ == '__main__':
     signal(SIGTERM, signal_term_handler)
+    app = Application([
+        (r"/websocket", Handler),
+        (r"/()", StaticFileHandler, {'path': 'static/index.html'}),
+        (r"/(.+)", StaticFileHandler, {'path': 'static/'}),
+    ])
     try:
-        app.listen("1984")
-        IOLoop.current().start()
+        ioloop = IOLoop.instance()
+        app.db = momoko.Pool(dsn="dbname=mot user=mot password=motpassword "
+                                 "host=localhost port=5432",
+                             size=1, ioloop=ioloop)
+        future = app.db.connect()
+        ioloop.add_future(future, lambda _: ioloop.stop())
+        ioloop.start()
+        future.result()
+        http_server = HTTPServer(app)
+        http_server.listen("1984")
+        ioloop.start()
     except KeyboardInterrupt:
         signal_term_handler(SIGTERM, None)
