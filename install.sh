@@ -4,7 +4,7 @@
 echo -e "============\n1. Install PostgreSQL, Python3, python3-pip"
 
 echo -e "============\n2. Initialize PostgreSQL"
-
+postgres -D /usr/local/var/postgres
 createdb mot
 
 cat << ESQL | psql

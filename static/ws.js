@@ -1,6 +1,7 @@
+var grid;
 webix.ready(function(){
     webix.ui.fullScreen();
-    webix.ui({type:"header", template:"Ministry of Truth"})
+    webix.ui({type:"header", template:"Ministry of Truth", css:"header"})
     grid = webix.ui({rows: [
         {type: "line", id:'page', height:"100%", cols:[
                 {
@@ -25,14 +26,25 @@ ws.onopen = function() {
    ws.send('{"action": "hello"}');
 };
 ws.onmessage = function (evt) {
-   var main = JSON.parse(evt.data);
-   webix.ui(main, $$("main"), $$("stub"));
-   grid.resize();
+    var main = JSON.parse(evt.data);
+    if (main['type'] === 'error' || main['type'] === 'default')
+        webix.message(main)
+    else
+        webix.ui(main, $$("main"), $$("stub"));
+    grid.resize();
 };
 
 function submit() {
-    var params = $$('auth').getValues()
-    ws.send(JSON.stringify({'action': 'auth', 'params': params}));
+    if($$('auth').validate())
+        ws.send(
+            JSON.stringify({'action': 'auth', 'params': $$('auth').getValues()})
+        );
+};
+
+function register(){
+    ws.send(
+        JSON.stringify({'action': 'register', 'params': $$('auth').getValues()})
+    );
 }
 
 function menuChoice(id) {
@@ -45,5 +57,7 @@ function createReport (){
 
 
 function showAll(){
-    alert("That's all");
+    ws.send(
+        JSON.stringify({'action': 'show_all'})
+    );
 };

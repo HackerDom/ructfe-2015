@@ -1,4 +1,6 @@
 #!/usr/local/bin/python3
+from uuid import uuid4
+from psycopg2 import ProgrammingError
 from tornado.httpserver import HTTPServer
 
 __author__ = 'm_messiah'
@@ -9,7 +11,6 @@ from tornado.web import Application, StaticFileHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
 from json import loads, dumps
-from copy import deepcopy
 import momoko
 from hashlib import sha256
 
@@ -19,58 +20,119 @@ logging.getLogger("requests.packages.urllib3").setLevel(logging.WARNING)
 import templates as tpl
 
 
+def authorized(f):
+    def wrapper(*args):
+        if args[0].uid:
+            return f(*args)
+        else:
+            args[0].write_message(
+                dumps(dict(tpl.ERROR_MESSAGE, text="Not authorized"))
+            )
+    return wrapper
+
+
 class Handler(WebSocketHandler):
+    def __init__(self, application, request, **kwargs):
+        super().__init__(application, request, **kwargs)
+        self.uid = None
+
     def open(self):
         print("WebSocket opened")
 
     @gen.coroutine
     def on_message(self, message):
         message = loads(message)
-        if message['action'] == 'auth':
-            err_form = deepcopy(tpl.AUTH_FORM)
-            if 'params' not in message:
-                err_form['elements'].append(
-                    dict(tpl.FORM_ERROR, label="Invalid request")
-                )
-                return self.write_message(dumps(err_form))
-            params = message['params']
-            if 'user' not in params or params['user'] == "":
-                err_form['elements'].append(
-                    dict(tpl.FORM_ERROR, label="Username is not present")
-                )
-                return self.write_message(dumps(err_form))
-            else:
-                if 'password' not in params or params['password'] == "":
-                    err_form['elements'].append(
-                        dict(tpl.FORM_ERROR,
-                             label="Password is not present")
-                    )
-                    return self.write_message(dumps(err_form))
-                username, password = (
-                    params['user'],
-                    sha256(params['password'].encode("utf8")).hexdigest()
-                )
-                sql = yield self.application.db.mogrify(
-                    "select uid, password from users "
-                    "where username=%s",
-                    (username,)
-                )
-                cursor = yield self.application.db.execute(sql)
-                db_result = cursor.fetchone()
-                if not db_result:
-                    err_form['elements'].append(
-                        dict(tpl.FORM_ERROR, label="Invalid user")
-                    )
-                    return self.write_message(dumps(err_form))
-                else:
-                    if password != db_result[1]:
-                        err_form['elements'].append(
-                            dict(tpl.FORM_ERROR, label="Invalid password")
-                        )
-                        return self.write_message(dumps(err_form))
-                    return self.write_message(dumps(tpl.INDEX))
+        if hasattr(self, message['action']):
+            return getattr(self, message['action'])(message)
+        else:
+            return self.write_message(dumps(tpl.AUTH_FORM))
 
-        self.write_message(dumps(tpl.AUTH_FORM))
+    def auth(self, message):
+        if 'params' not in message:
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
+            )
+        params = message['params']
+        if 'user' not in params or params['user'] == "":
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE,
+                           text="Username must not be empty"))
+            )
+        if 'password' not in params or params['password'] == "":
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE,
+                           text="Password must not be empty"))
+            )
+
+        username, password = (
+            params['user'],
+            sha256(params['password'].encode("utf8")).hexdigest()
+        )
+        cursor = yield self.application.db.execute(
+            "select uid, password from users where username=%s", (username,)
+        )
+        db_result = cursor.fetchone()
+        if not db_result:
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE, text="Username does not exists"))
+            )
+        if password != db_result[1]:
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE, text="Invalid password"))
+            )
+
+        self.uid = db_result[0]
+        #return self.write_message(dumps(dict(tpl.MESSAGE, text="%s" % self.uid)))
+        return self.write_message(dumps(tpl.INDEX))
+
+    def register(self, message):
+        if 'params' not in message:
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
+            )
+        params = message['params']
+        if 'user' not in params or params['user'] == "":
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE,
+                           text="Username must not be empty"))
+            )
+        if 'password' not in params or params['password'] == "":
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE,
+                           text="Password must not be empty"))
+            )
+
+        username, password = (
+            params['user'],
+            sha256(params['password'].encode("utf8")).hexdigest()
+        )
+        cursor = yield self.application.db.execute(
+            "select uid, password from users where username=%s", (username,)
+        )
+        db_result = cursor.fetchone()
+        if db_result:
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE, text="User already exists"))
+            )
+        try:
+            cursor = yield self.application.db.execute(
+                "INSERT INTO users(uid, username, password, role)"
+                "VALUES (%(uid)s, %(username)s, %(password)s, false)",
+                {'username': username, 'password': password,
+                 'uid': str(uuid4().hex)}
+            )
+        except ProgrammingError:
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE, text="Error while registration"))
+            )
+        else:
+            return self.write_message(
+                dumps(dict(tpl.MESSAGE, text="Registration successful"))
+            )
+
+    @authorized
+    def show_all(self, message):
+        return self.write_message(dumps(tpl.INDEX))
 
     def on_close(self):
         print("WebSocket closed")
