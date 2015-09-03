@@ -2,8 +2,6 @@
 from uuid import uuid4
 from psycopg2 import ProgrammingError
 from tornado.httpserver import HTTPServer
-
-__author__ = 'm_messiah'
 import logging
 from signal import signal, SIGTERM
 from tornado.ioloop import IOLoop
@@ -13,11 +11,10 @@ from tornado import gen
 from json import loads, dumps
 import momoko
 from hashlib import sha256
+import templates as tpl
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("requests.packages.urllib3").setLevel(logging.WARNING)
-
-import templates as tpl
 
 
 def authorized(f):
@@ -28,6 +25,8 @@ def authorized(f):
             args[0].write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Not authorized"))
             )
+            args[0].write_message(dumps(tpl.AUTH_FORM))
+
     return wrapper
 
 
@@ -45,8 +44,9 @@ class Handler(WebSocketHandler):
         if hasattr(self, message['action']):
             return getattr(self, message['action'])(message)
         else:
-            return self.write_message(dumps(tpl.AUTH_FORM))
+            return self.show_profiles({'params': {'offset': 0}})
 
+    @gen.coroutine
     def auth(self, message):
         if 'params' not in message:
             return self.write_message(
@@ -77,13 +77,19 @@ class Handler(WebSocketHandler):
                 dumps(dict(tpl.ERROR_MESSAGE, text="Username does not exists"))
             )
         if password != db_result[1]:
+            if db_result[0] in self.application.wsPool:
+                self.application.wsPool[db_result[0]].write_message(
+                    dumps(dict(tpl.ERROR_MESSAGE,
+                               text="Someone wants to hack you")))
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Invalid password"))
             )
 
         self.uid = db_result[0]
-        #return self.write_message(dumps(dict(tpl.MESSAGE, text="%s" % self.uid)))
-        return self.write_message(dumps(tpl.INDEX))
+        self.write_message(dumps(dict(tpl.MESSAGE,
+                                      text="Welcome, %s" % username)))
+        self.application.wsPool[self.uid] = self
+        yield self.show_profiles({'params': {'offset': 0}})
 
     def register(self, message):
         if 'params' not in message:
@@ -131,8 +137,27 @@ class Handler(WebSocketHandler):
             )
 
     @authorized
-    def show_all(self, message):
-        return self.write_message(dumps(tpl.INDEX))
+    @gen.coroutine
+    def show_profiles(self, message):
+        offset = message['params']['offset'] * 10
+        if offset < 0:
+            offset = 0
+
+        cursor = yield self.application.db.execute(
+            "select name, lastname, userpic from profiles "
+            "limit 10 offset %d" % offset
+        )
+        db_result = cursor.fetchall()
+        users = [
+            {'name': row[0],
+             'lastname': row[1],
+             'userpic': "/userpics/%s.jpg" % row[2]
+             }
+            for row in db_result
+            ]
+        result = tpl.PROFILES.copy()
+        result['rows'][0]['data'] = users
+        return self.write_message(dumps(result))
 
     def on_close(self):
         print("WebSocket closed")
@@ -157,6 +182,7 @@ if __name__ == '__main__':
                              size=1, ioloop=ioloop)
         future = app.db.connect()
         ioloop.add_future(future, lambda _: ioloop.stop())
+        app.wsPool = {}
         ioloop.start()
         future.result()
         http_server = HTTPServer(app)

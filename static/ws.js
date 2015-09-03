@@ -1,4 +1,5 @@
 var grid;
+var offset = 0;
 webix.ready(function(){
     webix.ui.fullScreen();
     webix.ui({type:"header", template:"Ministry of Truth", css:"header"})
@@ -8,13 +9,13 @@ webix.ready(function(){
                     view: "menu", layout: 'y', id: "menu", maxWidth:200, minWidth:100,
                     height:'auto',on: {onItemClick: menuChoice},
                     data: [
-                        {id:"showAll",value: "All truth",icon: "eye"},
-                        {id:"showSecond",value:"second truth",icon:"hourglass-2"},
+                        {id:"showLast",value: "Last persons",icon: "eye"},
+                        {id:"showLastCrimes",value:"Last crimes",icon:"hourglass-2"},
                         {$template: "Spacer"},
                         {id:"createReport",value:"Report a crime",icon:"balance-scale"},
                     ]
                 },
-                {id: "main", type:"clean", rows:[{id:"stub",template:"<h2>WebSockets must be enabled</h2>"},]}
+                {id: "main", type:"clean", rows:[{id:"canvas",template:"<h2>WebSockets must be enabled</h2>"},]}
             ]
         },
    ]});
@@ -30,7 +31,7 @@ ws.onmessage = function (evt) {
     if (main['type'] === 'error' || main['type'] === 'default')
         webix.message(main)
     else
-        webix.ui(main, $$("main"), $$("stub"));
+        webix.ui(main, $$("main"), $$("canvas"));
     grid.resize();
 };
 
@@ -56,8 +57,24 @@ function createReport (){
 };
 
 
-function showAll(){
+function showLast(){
+    offset = 0;
     ws.send(
-        JSON.stringify({'action': 'show_all'})
+        JSON.stringify({'action': 'show_profiles', 'params': {'offset': 0}})
     );
 };
+
+function nextProfiles() {
+    offset += 1;
+    ws.send(
+        JSON.stringify({'action': 'show_profiles', 'params': {'offset': offset}})
+    );
+}
+
+function prevProfiles() {
+    if (offset > 0)
+        offset -= 1;
+    ws.send(
+        JSON.stringify({'action': 'show_profiles', 'params': {'offset': offset}})
+    );
+}
