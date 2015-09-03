@@ -34,11 +34,11 @@ CREATE TABLE profiles
   name text COLLATE pg_catalog."ru_RU.UTF-8" NOT NULL,
   lastname text COLLATE pg_catalog."ru_RU.UTF-8" NOT NULL,
   city text COLLATE pg_catalog."ru_RU.UTF-8" NOT NULL,
-  country text COLLATE pg_catalog."ru_RU.UTF-8" NOT NULL,
   birthdate date NOT NULL,
   mobile text COLLATE pg_catalog."ru_RU.UTF-8",
   marital boolean DEFAULT false,
   crimes uuid[],
+  userpic integer,
   CONSTRAINT profileid PRIMARY KEY (profileid)
 )
 WITH (
@@ -70,6 +70,8 @@ ALTER TABLE crimes
   OWNER TO mot;
 
 ESQL
+
+cat users.sql | psql mot
 
 
 echo -e "============\n3. Install requirements"
