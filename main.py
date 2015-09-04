@@ -44,7 +44,7 @@ class Handler(WebSocketHandler):
         if hasattr(self, message['action']):
             return getattr(self, message['action'])(message)
         else:
-            return self.show_profiles({'params': {'offset': 0}})
+            return self.write_message(dumps(tpl.AUTH_FORM))
 
     @gen.coroutine
     def auth(self, message):
