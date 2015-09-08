@@ -1,4 +1,5 @@
 #!/usr/local/bin/python3
+from random import choice
 from uuid import uuid4
 from psycopg2 import ProgrammingError
 from tornado.httpserver import HTTPServer
@@ -42,7 +43,11 @@ class Handler(WebSocketHandler):
     def on_message(self, message):
         message = loads(message)
         if hasattr(self, message['action']):
-            return getattr(self, message['action'])(message)
+            try:
+                return getattr(self, message['action'])(message)
+            except:
+                self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
+                                              text="Bad request")))
         else:
             return self.write_message(dumps(tpl.AUTH_FORM))
 
@@ -136,7 +141,7 @@ class Handler(WebSocketHandler):
                 dumps(dict(tpl.MESSAGE, text="Registration successful"))
             )
 
-    @authorized
+    #@authorized
     @gen.coroutine
     def show_profiles(self, message):
         offset = message['params']['offset'] * 10
@@ -144,20 +149,49 @@ class Handler(WebSocketHandler):
             offset = 0
 
         cursor = yield self.application.db.execute(
-            "select name, lastname, userpic from profiles "
+            "select profileid, name, lastname, userpic from profiles "
             "limit 10 offset %d" % offset
         )
         db_result = cursor.fetchall()
         users = [
-            {'name': row[0],
-             'lastname': row[1],
-             'userpic': "/userpics/%s.jpg" % row[2]
-             }
+            dict(zip('uid name lastname userpic'.split(), row))
             for row in db_result
-            ]
+        ]
         result = tpl.PROFILES.copy()
         result['rows'][0]['data'] = users
         return self.write_message(dumps(result))
+
+    #@authorized
+    @gen.coroutine
+    def show_profile(self, message):
+        try:
+            cursor = yield self.application.db.execute(
+                "select name, lastname, userpic, birthdate, "
+                "city, mobile, marital, crimes from profiles "
+                "where profileid=%s", (message['params']['uid'], )
+            )
+            db_result = cursor.fetchone()
+            if not db_result:
+                raise Exception
+            user = dict(zip("name lastname userpic birthdate "
+                            "city mobile marital crimes".split(),
+                            db_result))
+            user['birthdate'] = user['birthdate'].strftime("%Y-%m-%d")
+            user['marital_icon'] = (
+                choice(['fa-venus-mars', 'fa-venus-double', 'fa-mars-double'])
+                if user['marital'] else 'fa-genderless'
+            )
+            result = tpl.PROFILE.copy()
+            result['rows'][0]['cols'][0]['rows'][0]['data'] = user
+            result['rows'][0]['cols'][0]['rows'][1]['data'] = {
+                'icon': 'fa-balance-scale' if not user['crimes']
+                else ''
+            }
+            result['rows'][0]['cols'][1]['data'] = user
+            return self.write_message(dumps(result))
+        except Exception as e:
+            self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
+                                          text="Bad request: %s" % e)))
 
     def on_close(self):
         print("WebSocket closed")

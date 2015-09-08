@@ -62,13 +62,16 @@ PROFILES = {
             'view': "dataview",
             'height': 800,
             'type': {
-                'templateStart': "<div class='bg_panel card'>",
-                'template': "<img class='cardImage' src='#userpic#' />"
+                'templateStart': "<div class='bg_panel card' data-uid='#uid#'>",
+                'template': "<img class='cardImage' src='/userpics/#userpic#.jpg' />"
                             "<div class='cardTitle'>#name# #lastname#</div>",
                 'templateEnd': "</div>",
-                'height': 150,
+                'height': 170,
                 'width': 450,
             },
+            'onClick': {
+                'card': 'showProfile',
+            }
         },
         {
             'cols': [
@@ -86,5 +89,44 @@ PROFILES = {
                         },
                     ],
         },
+    ],
+}
+
+PROFILE = {
+    'id': 'canvas',
+    'rows': [
+        {
+            'view': "layout",
+            'cols': [
+                {
+                    'maxWidth': 170,
+                    'rows': [
+                        {
+                            'height': 170,
+                            'template': "<img src='/userpics/#userpic#.jpg' />"
+                        },
+                        {
+                            "template": "<span class='webix_icon #icon# "
+                                        "text_danger danger_icon'></span>"
+                        }
+                    ]
+                },
+                {
+                    'template': """
+                    <div class='profile'>
+                        <h2>#name# #lastname#</h2>
+                        <ul>
+                            <li>Birth: #birthdate#</li>
+                            <li>Mobile: #mobile#</li>
+                            <li>City: #city#</li>
+                            <li>
+                                Marital status: <span class="webix_icon #marital_icon#"></span>
+                            </li>
+                        </ul>
+                    </div>
+                    """
+                }
+            ]
+        }
     ],
 }

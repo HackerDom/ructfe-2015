@@ -7,7 +7,7 @@ webix.ready(function(){
         {type: "line", id:'page', height:"100%", cols:[
                 {
                     view: "menu", layout: 'y', id: "menu", maxWidth:200, minWidth:100,
-                    height:'auto',on: {onItemClick: menuChoice},
+                    height:"auto",on: {onItemClick: menuChoice}, css: "menu",
                     data: [
                         {id:"showLast",value: "Last persons",icon: "eye"},
                         {id:"showLastCrimes",value:"Last crimes",icon:"hourglass-2"},
@@ -78,3 +78,9 @@ function prevProfiles() {
         JSON.stringify({'action': 'show_profiles', 'params': {'offset': offset}})
     );
 }
+
+function showProfile(e, id, trg){
+    ws.send(
+        JSON.stringify({'action': 'show_profile', 'params': {'uid': trg.getAttribute('data-uid')}})
+    );
+};
