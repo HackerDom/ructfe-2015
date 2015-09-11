@@ -115,14 +115,16 @@ PROFILE = {
                     'template': """
                     <div class='profile'>
                         <h2>#name# #lastname#</h2>
-                        <ul>
-                            <li>Birth: #birthdate#</li>
-                            <li>Mobile: #mobile#</li>
-                            <li>City: #city#</li>
-                            <li>
-                                Marital status: <span class="webix_icon #marital_icon#"></span>
-                            </li>
-                        </ul>
+                        <dl class="profile_info">
+                            <dt>Birth</dt><dd>#birthdate#</dd>
+                            <dt>Mobile</dt><dd>#mobile#</dd>
+                            <dt>City</dt><dd>#city#</dd>
+                            <dt>Marital status</dt><dd><span class="webix_icon #marital_icon#"></span></dd>
+                        </dl>
+                        <h3>Crimes</h3>
+                        <dl class="crimes_list">
+                            #crimes#
+                        </dl>
                     </div>
                     """
                 }

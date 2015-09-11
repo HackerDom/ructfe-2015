@@ -1,4 +1,5 @@
 var grid;
+var ws;
 var offset = 0;
 webix.ready(function(){
     webix.ui.fullScreen();
@@ -19,21 +20,19 @@ webix.ready(function(){
             ]
         },
    ]});
+    ws = new WebSocket("ws://localhost:1984/websocket");
+    ws.onopen = function() {
+       ws.send('{"action": "hello"}');
+    };
+    ws.onmessage = function (evt) {
+        var main = JSON.parse(evt.data);
+        if (main['type'] === 'error' || main['type'] === 'default')
+            webix.message(main)
+        else
+            webix.ui(main, $$("main"), $$("canvas"));
+        grid.resize();
+    };
 });
-
-
-var ws = new WebSocket("ws://localhost:1984/websocket");
-ws.onopen = function() {
-   ws.send('{"action": "hello"}');
-};
-ws.onmessage = function (evt) {
-    var main = JSON.parse(evt.data);
-    if (main['type'] === 'error' || main['type'] === 'default')
-        webix.message(main)
-    else
-        webix.ui(main, $$("main"), $$("canvas"));
-    grid.resize();
-};
 
 function submit() {
     if($$('auth').validate())
@@ -72,8 +71,7 @@ function nextProfiles() {
 }
 
 function prevProfiles() {
-    if (offset > 0)
-        offset -= 1;
+    if (offset > 0) offset -= 1;
     ws.send(
         JSON.stringify({'action': 'show_profiles', 'params': {'offset': offset}})
     );

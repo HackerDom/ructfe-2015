@@ -181,6 +181,8 @@ class Handler(WebSocketHandler):
                 choice(['fa-venus-mars', 'fa-venus-double', 'fa-mars-double'])
                 if user['marital'] else 'fa-genderless'
             )
+            if user['crimes']:
+                user['crimes'] =  self.get_crimes(user['crimes'])
             result = tpl.PROFILE.copy()
             result['rows'][0]['cols'][0]['rows'][0]['data'] = user
             result['rows'][0]['cols'][0]['rows'][1]['data'] = {
@@ -192,6 +194,14 @@ class Handler(WebSocketHandler):
         except Exception as e:
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Bad request: %s" % e)))
+
+    @gen.coroutine
+    def get_crimes(self, crimes):
+        try:
+            pass
+        except Exception as e:
+            self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
+                                          text="Can't get crimes: %s" % e)))
 
     def on_close(self):
         print("WebSocket closed")
