@@ -63,6 +63,14 @@ function showLast(){
     );
 };
 
+function showLastCrimes(){
+    offset = 0;
+    ws.send(
+        JSON.stringify({'action': 'show_crimes', 'params': {'offset': 0}})
+    );
+};
+
+
 function nextProfiles() {
     offset += 1;
     ws.send(

@@ -37,7 +37,7 @@ CREATE TABLE profiles
   birthdate date NOT NULL,
   mobile text COLLATE pg_catalog."ru_RU.UTF-8",
   marital boolean DEFAULT false,
-  crimes uuid[],
+  crimes bigint[],
   userpic integer,
   CONSTRAINT profileid PRIMARY KEY (profileid)
 )
@@ -50,7 +50,7 @@ ALTER TABLE profiles
 
 CREATE TABLE crimes
 (
-  crimeid uuid NOT NULL,
+  crimeid bigint NOT NULL,
   name text COLLATE pg_catalog."ru_RU.UTF-8" NOT NULL,
   article text COLLATE pg_catalog."ru_RU.UTF-8" NOT NULL,
   city text COLLATE pg_catalog."ru_RU.UTF-8" NOT NULL,

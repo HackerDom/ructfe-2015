@@ -107,28 +107,96 @@ PROFILE = {
                         },
                         {
                             "template": "<span class='webix_icon #icon# "
-                                        "text_danger danger_icon'></span>"
+                                        "text_success success_icon'></span>"
                         }
                     ]
                 },
                 {
-                    'template': """
-                    <div class='profile'>
-                        <h2>#name# #lastname#</h2>
-                        <dl class="profile_info">
-                            <dt>Birth</dt><dd>#birthdate#</dd>
-                            <dt>Mobile</dt><dd>#mobile#</dd>
-                            <dt>City</dt><dd>#city#</dd>
-                            <dt>Marital status</dt><dd><span class="webix_icon #marital_icon#"></span></dd>
-                        </dl>
-                        <h3>Crimes</h3>
-                        <dl class="crimes_list">
-                            #crimes#
-                        </dl>
-                    </div>
-                    """
-                }
+                    'rows': [
+                                {
+                                    'template': """
+                        <div class='profile'>
+                            <h2>#name# #lastname#</h2>
+                            <dl class="profile_info">
+                                <dt>Birth</dt><dd>#birthdate#</dd>
+                                <dt>Mobile</dt><dd>#mobile#</dd>
+                                <dt>City</dt><dd>#city#</dd>
+                                <dt>Marital status</dt><dd><span class="webix_icon #marital_icon#"></span></dd>
+                            </dl>
+                        </div>"""
+                                },
+                                {
+                                    'view': "datatable",
+                                    'fixedRowHeight': False,
+                                    'columns': [
+                                        {'id': "name", 'header': "ID",
+                                         'fillspace': 1},
+                                        {'id': "article", 'header': "Article",
+                                         'fillspace': 2},
+                                        {'id': "description",
+                                         "header": "Description",
+                                         'fillspace': 3},
+                                        {'id': "crimedate", 'header': "Date",
+                                         'fillspace': 2},
+                                        {'id': "city", "header": "City",
+                                         'fillspace': 1},
+                                        {'id': "country", "header": "Country",
+                                         'fillspace': 1},
+                                        {'id': "verdict", "header": "Verdict",
+                                         'fillspace': 1},
+                                        {'id': "participants",
+                                         "header": "Participants",
+                                         'fillspace': 2}
+                                    ],
+                                    'on': {
+                                        "onresize": "webix.once(function(){"
+                                                    "this.adjustRowHeight("
+                                                    "'participants', true);})"
+                                    },
+                                },
+                    ]
+                },
             ]
         }
+    ],
+}
+
+CRIMES = {
+    'id': 'canvas',
+    'rows': [
+        {
+            'view': "dataview",
+            'height': 800,
+            'type': {
+                'templateStart': "<div class='bg_panel card'"
+                                 "data-uid='#crimeid#'>",
+                'template': "<div class='cardMain'>#name#: #article#</div>"
+                            "<div class='cardInfo'>"
+                            "#country#/#city# #crimedate#"
+                            "</div>",
+                'templateEnd': "</div>",
+                'height': 170,
+                'width': 450,
+            },
+            'onClick': {
+                'card': 'showCrime',
+            }
+        },
+        {
+            'cols': [
+                        {
+                            'view': 'button',
+                            'label': "<-",
+                            'click': 'prevCrimes',
+                            'height': 50,
+                        },
+                        {
+                            'view': 'button',
+                            'label': "->",
+                            'click': 'nextCrimes',
+                            'height': 50,
+                        },
+                    ],
+        },
     ],
 }
