@@ -12,6 +12,9 @@ webix.ready(function(){
                     data: [
                         {id:"showLast",value: "Last persons",icon: "eye"},
                         {id:"showLastCrimes",value:"Last crimes",icon:"hourglass-2"},
+                        {$template: "Separator"},
+                        {id:"showMyProfile",value:"My Profile",icon:"user"},
+                        {$template: "Separator"},
                         {$template: "Spacer"},
                         {id:"createReport",value:"Report a crime",icon:"balance-scale"},
                     ]
@@ -70,6 +73,12 @@ function showLastCrimes(){
     );
 };
 
+function showCrime(e, id, trg){
+    ws.send(
+        JSON.stringify({'action': 'show_crime', 'params': {'crimeid': trg.getAttribute('data-crimeid')}})
+    );
+};
+
 
 function nextProfiles() {
     offset += 1;
@@ -90,3 +99,15 @@ function showProfile(e, id, trg){
         JSON.stringify({'action': 'show_profile', 'params': {'uid': trg.getAttribute('data-uid')}})
     );
 };
+
+function showMyProfile(){
+    ws.send(
+        JSON.stringify({'action': 'show_my_profile'})
+    );
+};
+
+function itsMe(){
+    ws.send(
+        JSON.stringify({'action': 'its_me'})
+    );
+}

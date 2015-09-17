@@ -102,13 +102,19 @@ PROFILE = {
                     'maxWidth': 170,
                     'rows': [
                         {
+                            "view": "button",
+                            "id": "itsme",
+                            "value": "It's me",
+                            "click": "itsMe",
+                        },
+                        {
                             'height': 170,
                             'template': "<img src='/userpics/#userpic#.jpg' />"
                         },
                         {
                             "template": "<span class='webix_icon #icon# "
                                         "text_success success_icon'></span>"
-                        }
+                        },
                     ]
                 },
                 {
@@ -161,6 +167,7 @@ PROFILE = {
     ],
 }
 
+
 CRIMES = {
     'id': 'canvas',
     'rows': [
@@ -169,10 +176,11 @@ CRIMES = {
             'height': 800,
             'type': {
                 'templateStart': "<div class='bg_panel card'"
-                                 "data-uid='#crimeid#'>",
+                                 "data-crimeid='#crimeid#'>",
                 'template': "<div class='cardMain'>#name#: #article#</div>"
                             "<div class='cardInfo'>"
                             "#country#/#city# #crimedate#"
+                            "<span class=\"webix_input_icon #public#\"></span>"
                             "</div>",
                 'templateEnd': "</div>",
                 'height': 170,
@@ -197,6 +205,26 @@ CRIMES = {
                             'height': 50,
                         },
                     ],
+        },
+    ],
+}
+
+CRIME = {
+    'id': 'canvas',
+    'rows': [
+        {
+            'template': """
+                <div class='profile'>
+                    <h2>#name# #article#</h2>
+                    <dl class="profile_info">
+                        <dt>City</dt><dd>#country#/#city#</dd>
+                        <dt>Date</dt><dd>#crimedate#</dd>
+                        <dt>Description</dt><dd>#description#</dd>
+                        <dt>Judgement</dt><dd>#judgement#</dd>
+                        <dt>Closed</dt><dd>#closed#</dd>
+                        <dt>Participants</dt><dd>#participants#</dd>
+                    </dl>
+                </div>"""
         },
     ],
 }

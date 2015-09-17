@@ -9,7 +9,7 @@ from tornado.ioloop import IOLoop
 from tornado.web import Application, StaticFileHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
-from json import loads, dumps, JSONEncoder
+from json import loads, dumps
 import momoko
 from hashlib import sha256
 import templates as tpl
@@ -36,6 +36,8 @@ class Handler(WebSocketHandler):
     def __init__(self, application, request, **kwargs):
         super().__init__(application, request, **kwargs)
         self.uid = None
+        self.role = False
+        self.profile = None
 
     def open(self):
         print("WebSocket opened")
@@ -75,7 +77,8 @@ class Handler(WebSocketHandler):
             sha256(params['password'].encode("utf8")).hexdigest()
         )
         cursor = yield self.application.db.execute(
-            "select uid, password from users where username=%s", (username,)
+            "select uid, password, role, profile from users where username=%s",
+            (username,)
         )
         db_result = cursor.fetchone()
         if not db_result:
@@ -92,6 +95,8 @@ class Handler(WebSocketHandler):
             )
 
         self.uid = db_result[0]
+        self.role = db_result[2]
+        self.profile = db_result[3]
         self.write_message(dumps(dict(tpl.MESSAGE,
                                       text="Welcome, %s" % username)))
         self.application.wsPool[self.uid] = self
@@ -164,12 +169,22 @@ class Handler(WebSocketHandler):
 
     #@authorized
     @gen.coroutine
+    def show_my_profile(self, message):
+        try:
+            pass
+        except Exception as e:
+            self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
+                                          text="Bad request: %s" % e)))
+
+    #@authorized
+    @gen.coroutine
     def show_profile(self, message):
         try:
+            profileid = message['params']['uid']
             cursor = yield self.application.db.execute(
                 "select name, lastname, userpic, birthdate, "
                 "city, mobile, marital, crimes from profiles "
-                "where profileid=%s", (message['params']['uid'], )
+                "where profileid=%s", (profileid, )
             )
             db_result = cursor.fetchone()
             if not db_result:
@@ -178,22 +193,30 @@ class Handler(WebSocketHandler):
                             "city mobile marital crimes".split(),
                             db_result))
             user['birthdate'] = user['birthdate'].isoformat()
+            if not (self.role or self.profile == profileid):
+                user['birthdate'] = user['mobile'] = "&lt;hidden&gt;"
             user['marital_icon'] = (
                 choice(['fa-venus-mars', 'fa-venus-double', 'fa-mars-double'])
                 if user['marital'] else 'fa-genderless'
             )
             if user['crimes']:
-                crimes = yield self.get_crimes(user['crimes'])
+                crimes = yield self.get_crimes(user['crimes'],
+                                               self.role or
+                                               self.profile == profileid)
             else:
                 crimes = None
             result = tpl.PROFILE.copy()
-            result['rows'][0]['cols'][0]['rows'][0]['data'] = {
+            result['rows'][0]['cols'][0]['rows'][0]['hidden'] = (
+                self.profile is not None
+            )
+            result['rows'][0]['cols'][0]['rows'][1]['data'] = {
                 'userpic': user['userpic']
             }
-            result['rows'][0]['cols'][0]['rows'][1]['data'] = {
+            result['rows'][0]['cols'][0]['rows'][2]['data'] = {
                 'icon': 'fa-balance-scale' if not crimes
                 else ''
             }
+
             result['rows'][0]['cols'][1]['rows'][0]['data'] = user
             if crimes:
                 result['rows'][0]['cols'][1]['rows'][1]['hidden'] = False
@@ -206,15 +229,23 @@ class Handler(WebSocketHandler):
                                           text="Bad request: %s" % e)))
 
     @gen.coroutine
-    def get_crimes(self, crimes):
+    def get_crimes(self, crimes, private=False):
         result = []
         try:
-            cursor = yield self.application.db.execute(
-                "SELECT crimeid, name, article, city, country,"
-                "crimedate, description, participants, judgement, closed "
-                "FROM crimes WHERE public=true AND crimeid = ANY(%s)",
-                (crimes,)
-            )
+            if private:
+                cursor = yield self.application.db.execute(
+                    "SELECT crimeid, name, article, city, country,"
+                    "crimedate, description, participants, judgement, closed "
+                    "FROM crimes WHERE crimeid = ANY(%s)",
+                    (crimes,)
+                )
+            else:
+                cursor = yield self.application.db.execute(
+                    "SELECT crimeid, name, article, city, country,"
+                    "crimedate, description, participants, judgement, closed "
+                    "FROM crimes WHERE public=true AND crimeid = ANY(%s)",
+                    (crimes,)
+                )
             db_result = cursor.fetchall()
             if not db_result:
                 raise Exception("db error")
@@ -252,20 +283,67 @@ class Handler(WebSocketHandler):
             offset = 0
 
         cursor = yield self.application.db.execute(
-            "select crimeid, name, article, city, country, crimedate "
+            "select crimeid, name, article, city, country, crimedate, public "
             "FROM crimes limit 10 offset %s", (offset,)
         )
         db_result = cursor.fetchall()
         crimes = [
-            dict(zip('crimeid name article city country crimedate'.split(),
-                     row))
+            dict(zip(
+                'crimeid name article city country crimedate public'.split(),
+                row))
             for row in db_result
         ]
         for crime in crimes:
             crime['crimedate'] = crime['crimedate'].isoformat()
+            crime['public'] = "" if crime['public'] else "fa-lock"
         result = tpl.CRIMES.copy()
         result['rows'][0]['data'] = crimes
         return self.write_message(dumps(result))
+
+    #@authorized
+    @gen.coroutine
+    def show_crime(self, message):
+        try:
+            cursor = yield self.application.db.execute(
+                "SELECT name, article, city, country, "
+                "crimedate, description, participants, judgement, "
+                "closed, public, author "
+                "FROM crimes WHERE crimeid=%s", (message['params']['crimeid'],)
+            )
+            db_result = cursor.fetchone()
+            crime = dict(zip("name article city country "
+                             "crimedate description participants "
+                             "judgement closed public author".split(),
+                             db_result))
+            if (crime['public'] or self.role or
+                    (self.profile and (
+                        self.profile == crime['author'] or
+                        self.profile in crime["participants"]))):
+                crime['crimedate'] = crime['crimedate'].isoformat()
+                cursor_participants = yield self.application.db.execute(
+                    "select profileid, name, lastname "
+                    "from profiles where profileid=ANY(%s)",
+                    (crime["participants"],)
+                )
+                db_result_participants = cursor_participants.fetchall()
+                if not db_result_participants:
+                    crime['participants'] = ""
+                else:
+                    crime['participants'] = "<br>".join(
+                        '<a onclick="showProfile(0,0, this);" '
+                        'data-uid="%s">%s %s</a>' % (r[0], r[1], r[2])
+                        for r in db_result_participants
+                    )
+                result = tpl.CRIME.copy()
+                result['rows'][0]['data'] = crime
+                return self.write_message(dumps(result))
+            else:
+                self.write_message(
+                    dumps(dict(tpl.ERROR_MESSAGE,
+                               text="You can't view this crime")))
+        except Exception as e:
+            self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
+                                          text="Can't get crime: %s" % e)))
 
     def on_close(self):
         print("WebSocket %s closed" % self.uid)
