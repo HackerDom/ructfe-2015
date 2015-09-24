@@ -31,7 +31,7 @@ AUTH_FORM = {
                         {
                             'view': 'button',
                             'label': "Login",
-                            'click': 'submit',
+                            'click': 'auth',
                             'type': 'iconButton',
                             'icon': 'sign-in',
                             'align': 'center',
@@ -63,7 +63,8 @@ PROFILES = {
             'height': 800,
             'type': {
                 'templateStart': "<div class='bg_panel card' data-uid='#uid#'>",
-                'template': "<img class='cardImage' src='/userpics/#userpic#.jpg' />"
+                'template': "<img class='cardImage' "
+                            "src='/userpics/#userpic#.jpg' />"
                             "<div class='cardTitle'>#name# #lastname#</div>",
                 'templateEnd': "</div>",
                 'height': 170,
@@ -105,7 +106,6 @@ PROFILE = {
                             "view": "button",
                             "id": "itsme",
                             "value": "It's me",
-                            "click": "itsMe",
                         },
                         {
                             'height': 170,
@@ -127,7 +127,11 @@ PROFILE = {
                                 <dt>Birth</dt><dd>#birthdate#</dd>
                                 <dt>Mobile</dt><dd>#mobile#</dd>
                                 <dt>City</dt><dd>#city#</dd>
-                                <dt>Marital status</dt><dd><span class="webix_icon #marital_icon#"></span></dd>
+                                <dt>Marital status</dt>
+                                <dd>
+                                    <span class="webix_icon #marital_icon#">
+                                    </span>
+                                </dd>
                             </dl>
                         </div>"""
                                 },
@@ -135,13 +139,13 @@ PROFILE = {
                                     'view': "datatable",
                                     'fixedRowHeight': False,
                                     'columns': [
-                                        {'id': "name", 'header': "ID",
+                                        {'id': "name", 'header': "Name",
                                          'fillspace': 1},
                                         {'id': "article", 'header': "Article",
-                                         'fillspace': 2},
+                                         'fillspace': 1},
                                         {'id': "description",
                                          "header": "Description",
-                                         'fillspace': 3},
+                                         'fillspace': 2},
                                         {'id': "crimedate", 'header': "Date",
                                          'fillspace': 2},
                                         {'id': "city", "header": "City",
@@ -227,4 +231,25 @@ CRIME = {
                 </div>"""
         },
     ],
+}
+
+SEARCH = {
+    'id': "searchresult",
+    'rows': [
+        {
+            'autoheight': True,
+            'view': "list",
+            'datatype': "json",
+            'template': "<span data-uid='#profileid#'>#name# #lastname#</span>",
+            "on": {'onItemClick': "showProfile"},
+        },
+        {
+            'autoheight': True,
+            'view': "list",
+            'datatype': "json",
+            'template': "<span data-crimeid='#crimeid#'>"
+                        "#name# #crimedate#</span>",
+            "on": {'onItemClick': "showCrime"},
+        },
+    ]
 }

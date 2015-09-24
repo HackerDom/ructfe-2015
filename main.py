@@ -1,15 +1,15 @@
 #!/usr/local/bin/python3
-from random import choice
-from uuid import uuid4
-from psycopg2 import ProgrammingError
+from random import choice, randint
+from uuid import uuid4, UUID
+from psycopg2 import ProgrammingError, extras
 from tornado.httpserver import HTTPServer
 import logging
 from signal import signal, SIGTERM
 from tornado.ioloop import IOLoop
-from tornado.web import Application, StaticFileHandler
+from tornado.web import Application, StaticFileHandler, RequestHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
-from json import loads, dumps
+from json import loads, dumps, JSONEncoder
 import momoko
 from hashlib import sha256
 import templates as tpl
@@ -17,6 +17,17 @@ import datetime
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("requests.packages.urllib3").setLevel(logging.WARNING)
+extras.register_uuid()
+JSONEncoder_olddefault = JSONEncoder.default
+
+
+def JSONEncoder_newdefault(self, o):
+    if isinstance(o, UUID):
+        return str(o)
+    if isinstance(o, (datetime.datetime, datetime.date, datetime.time)):
+        return o.isoformat()
+    return JSONEncoder_olddefault(self, o)
+JSONEncoder.default = JSONEncoder_newdefault
 
 
 def authorized(f):
@@ -32,6 +43,25 @@ def authorized(f):
     return wrapper
 
 
+class Profiles(RequestHandler):
+    def __init__(self, application, request, **kwargs):
+        super().__init__(application, request, **kwargs)
+
+    @gen.coroutine
+    def get(self):
+        cursor = yield self.application.db.execute(
+            "select profileid, name, lastname, userpic from profiles"
+        )
+        db_result = cursor.fetchall()
+        users = [
+            dict(zip('id name lastname userpic'.split(), row))
+            for row in db_result
+        ]
+        for u in users:
+            u["value"] = u["name"] + " " + u["lastname"]
+        self.write({'data': users})
+
+
 class Handler(WebSocketHandler):
     def __init__(self, application, request, **kwargs):
         super().__init__(application, request, **kwargs)
@@ -40,11 +70,12 @@ class Handler(WebSocketHandler):
         self.profile = None
 
     def open(self):
-        print("WebSocket opened")
+        logging.info("WebSocket opened")
 
     @gen.coroutine
     def on_message(self, message):
         message = loads(message)
+        logging.debug("Message received")
         if hasattr(self, message['action']):
             try:
                 return getattr(self, message['action'])(message)
@@ -97,8 +128,18 @@ class Handler(WebSocketHandler):
         self.uid = db_result[0]
         self.role = db_result[2]
         self.profile = db_result[3]
+        if self.profile:
+            cursor = yield self.application.db.execute(
+                "select name, lastname from profiles where profileid=%s",
+                (self.profile,)
+            )
+            db_result = cursor.fetchone()
+            if db_result:
+                username = " ".join(db_result)
+
         self.write_message(dumps(dict(tpl.MESSAGE,
                                       text="Welcome, %s" % username)))
+
         self.application.wsPool[self.uid] = self
         yield self.show_profiles({'params': {'offset': 0}})
 
@@ -149,6 +190,53 @@ class Handler(WebSocketHandler):
 
     #@authorized
     @gen.coroutine
+    def search(self, message):
+        #try:
+            text = message['params']['text']
+            if not text:
+                return
+            text = text.split()
+            if len(text) > 1:
+                cursor = yield self.application.db.execute(
+                    "select profileid, name, lastname from profiles "
+                    "where name LIKE '%%'||%s||'%%' and "
+                    "lastname LIKE '%%'||%s||'%%' limit 5 ",
+                    (text[0], text[1])
+                )
+            else:
+                cursor = yield self.application.db.execute(
+                    "select profileid, name, lastname from profiles "
+                    "where name LIKE '%%'||%s||'%%' or "
+                    "lastname LIKE '%%'||%s||'%%' limit 5 ",
+                    (text[0], text[0])
+                )
+
+            cursor_crimes = yield self.application.db.execute(
+                "select crimeid, name, crimedate from crimes "
+                "where name LIKE '%%'||%s||'%%' limit 5 ",
+                (text[0], )
+            )
+
+            db_result = cursor.fetchall()
+            users = [
+                dict(zip('profileid name lastname'.split(), row))
+                for row in db_result
+            ]
+            db_result = cursor_crimes.fetchall()
+            crimes = [
+                dict(zip('crimeid name crimedate'.split(), row))
+                for row in db_result
+            ]
+
+            result = tpl.SEARCH.copy()
+            result['rows'][0]['data'] = users
+            result['rows'][1]['data'] = crimes
+            return self.write_message(dumps(result))
+        #except:
+        #    pass
+
+    #@authorized
+    @gen.coroutine
     def show_profiles(self, message):
         offset = message['params']['offset'] * 10
         if offset < 0:
@@ -171,7 +259,12 @@ class Handler(WebSocketHandler):
     @gen.coroutine
     def show_my_profile(self, message):
         try:
-            pass
+            if self.profile:
+                return self.show_profile({'params': {'uid': str(self.profile)}})
+            else:
+                self.write_message(
+                    dumps(dict(tpl.ERROR_MESSAGE,
+                               text="You does not have a profile")))
         except Exception as e:
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Bad request: %s" % e)))
@@ -180,7 +273,7 @@ class Handler(WebSocketHandler):
     @gen.coroutine
     def show_profile(self, message):
         try:
-            profileid = message['params']['uid']
+            profileid = UUID(message['params']['uid'])
             cursor = yield self.application.db.execute(
                 "select name, lastname, userpic, birthdate, "
                 "city, mobile, marital, crimes from profiles "
@@ -188,11 +281,12 @@ class Handler(WebSocketHandler):
             )
             db_result = cursor.fetchone()
             if not db_result:
-                raise Exception
+                return self.write_message(
+                    dumps(dict(tpl.ERROR_MESSAGE,
+                               text="Profile not found")))
             user = dict(zip("name lastname userpic birthdate "
                             "city mobile marital crimes".split(),
                             db_result))
-            user['birthdate'] = user['birthdate'].isoformat()
             if not (self.role or self.profile == profileid):
                 user['birthdate'] = user['mobile'] = "&lt;hidden&gt;"
             user['marital_icon'] = (
@@ -200,15 +294,15 @@ class Handler(WebSocketHandler):
                 if user['marital'] else 'fa-genderless'
             )
             if user['crimes']:
-                crimes = yield self.get_crimes(user['crimes'],
-                                               self.role or
-                                               self.profile == profileid)
+                crimes = yield self.get_crimes(user['crimes'], profileid)
             else:
                 crimes = None
             result = tpl.PROFILE.copy()
             result['rows'][0]['cols'][0]['rows'][0]['hidden'] = (
                 self.profile is not None
             )
+            result['rows'][0]['cols'][0]['rows'][0]['click'] = ("itsMe('%s')"
+                                                                % profileid)
             result['rows'][0]['cols'][0]['rows'][1]['data'] = {
                 'userpic': user['userpic']
             }
@@ -228,33 +322,91 @@ class Handler(WebSocketHandler):
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Bad request: %s" % e)))
 
+    #@authorized
     @gen.coroutine
-    def get_crimes(self, crimes, private=False):
-        result = []
+    def its_me(self, message):
         try:
-            if private:
+            profileid = message['params']['profileid']
+            info = message['params']['info']
+            if self.profile:
+                return self.write_message(
+                    dumps(dict(tpl.ERROR_MESSAGE,
+                               text="You already have a profile"))
+                )
+            if not self.uid:
+                return self.write_message(
+                    dumps(dict(tpl.ERROR_MESSAGE,
+                               text="You does not have user account"))
+                )
+            try:
                 cursor = yield self.application.db.execute(
-                    "SELECT crimeid, name, article, city, country,"
-                    "crimedate, description, participants, judgement, closed "
-                    "FROM crimes WHERE crimeid = ANY(%s)",
-                    (crimes,)
+                    "select birthdate, mobile from profiles "
+                    "where profileid=%s",
+                    (profileid, )
+                )
+                db_result = cursor.fetchone()
+                if not db_result:
+                    return self.write_message(
+                        dumps(dict(tpl.ERROR_MESSAGE,
+                                   text="Profile not found"))
+                    )
+                if (info == db_result[0].isoformat() or
+                        "".join(filter(str.isdigit, info)) ==
+                        "".join(filter(str.isdigit, db_result[1]))):
+                    cursor = yield self.application.db.execute(
+                        "UPDATE users SET profile=%s WHERE uid=%s",
+                        (profileid, self.uid)
+                    )
+                else:
+                    return self.write_message(
+                        dumps(dict(tpl.ERROR_MESSAGE,
+                                   text="Wrong information"))
+                    )
+            except ProgrammingError:
+                return self.write_message(
+                    dumps(dict(tpl.ERROR_MESSAGE,
+                               text="Error while assignment"))
                 )
             else:
-                cursor = yield self.application.db.execute(
-                    "SELECT crimeid, name, article, city, country,"
-                    "crimedate, description, participants, judgement, closed "
-                    "FROM crimes WHERE public=true AND crimeid = ANY(%s)",
-                    (crimes,)
+                self.profile = profileid
+                return self.write_message(
+                    dumps(dict(tpl.MESSAGE, text="Assignment successful"))
                 )
+
+        except Exception as e:
+            self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
+                                          text="Bad request: %s" % e)))
+
+
+    @gen.coroutine
+    def get_crimes(self, crimes, current_profile):
+        result = []
+        try:
+            cursor = yield self.application.db.execute(
+                "SELECT crimeid, name, article, city, country,"
+                "crimedate, description, participants, "
+                "judgement, closed, public "
+                "FROM crimes WHERE crimeid = ANY(%s)",
+                (crimes,)
+            )
+
             db_result = cursor.fetchall()
             if not db_result:
-                raise Exception("db error")
+                return result
             for row in db_result:
                 crime = dict(zip("crimeid name article city country "
                                  "crimedate description participants "
-                                 "judgement closed".split(),
+                                 "judgement closed public".split(),
                                  row))
-                crime['crimedate'] = crime['crimedate'].isoformat()
+                if crime['closed']:
+                    crime['verdict'] = crime['judgement']
+                else:
+                    crime['verdict'] = "In processing"
+                if not crime['public']:
+                    if not (self.role or
+                            self.profile == current_profile or
+                            self.profile in crime['participants']):
+                        continue
                 cursor_participants = yield self.application.db.execute(
                     "select profileid, name, lastname "
                     "from profiles where profileid=ANY(%s)",
@@ -294,7 +446,6 @@ class Handler(WebSocketHandler):
             for row in db_result
         ]
         for crime in crimes:
-            crime['crimedate'] = crime['crimedate'].isoformat()
             crime['public'] = "" if crime['public'] else "fa-lock"
         result = tpl.CRIMES.copy()
         result['rows'][0]['data'] = crimes
@@ -315,11 +466,10 @@ class Handler(WebSocketHandler):
                              "crimedate description participants "
                              "judgement closed public author".split(),
                              db_result))
-            if (crime['public'] or self.role or
-                    (self.profile and (
-                        self.profile == crime['author'] or
-                        self.profile in crime["participants"]))):
-                crime['crimedate'] = crime['crimedate'].isoformat()
+
+            if (crime['public'] or self.role or self.uid == crime['author'] or
+                    (self.profile and crime["participants"] and
+                     self.profile in crime["participants"])):
                 cursor_participants = yield self.application.db.execute(
                     "select profileid, name, lastname "
                     "from profiles where profileid=ANY(%s)",
@@ -345,8 +495,78 @@ class Handler(WebSocketHandler):
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Can't get crime: %s" % e)))
 
+    #@authorized
+    def report(self, message):
+        try:
+            if 'params' not in message:
+                return self.write_message(
+                    dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
+                )
+            params = dict(filter(lambda i: i[1], message['params'].items()))
+            if len(params) < 6:
+                return self.write_message(
+                    dumps(dict(tpl.ERROR_MESSAGE, text="Invalid input"))
+                )
+            params['crimedate'] = datetime.datetime.strptime(
+                params['crimedate'], '%Y-%m-%dT%H:%M:%S.%fZ').date()
+            if 'closed' not in params:
+                params['judgement'] = None
+                params['closed'] = False
+            else:
+                params['closed'] = params['closed'] > 0
+            params['public'] = 'private' not in params
+            params['crimeid'] = randint(10000000, 99999999)
+            params['author'] = self.uid
+
+            if 'participants' in params:
+                params['participants'] = list(
+                    map(UUID, params['participants'].split(','))
+                )
+            else:
+                params['participants'] = None
+            sql = [(
+                "INSERT INTO crimes(crimeid, name, article, city, "
+                "country, crimedate, description, participants, "
+                "judgement, closed, public, author) "
+                "VALUES (%(crimeid)s, %(name)s, %(article)s, %(city)s, "
+                "%(country)s, %(crimedate)s, %(description)s, "
+                "%(participants)s, %(judgement)s, %(closed)s, "
+                "%(public)s, %(author)s)", params
+            ),]
+            if params['participants']:
+                sql.append((
+                    "UPDATE profiles SET crimes=crimes|| %(crimeid)s::bigint "
+                    "WHERE profileid = ANY(%(participants)s)", params
+                ))
+            cursors = self.application.db.transaction(sql)
+        except ProgrammingError:
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE, text="Error while reporting"))
+            )
+        except:
+            return self.write_message(
+                dumps(dict(tpl.MESSAGE, text="Invalid input"))
+            )
+        else:
+            try:
+                for ws in self.application.wsPool:
+                    self.application.wsPool[ws].write_message(
+                        dumps(dict(tpl.MESSAGE,
+                                   text="New crime (%s)" % params['name']))
+                    )
+            except Exception as e:
+                logging.warning("%s. Clients: %s"
+                                % (e, self.application.wsPool.keys()))
+            else:
+                return self.write_message(
+                    dumps(dict(tpl.MESSAGE,
+                               text="Crime %s submited" % params['name']))
+                )
+
     def on_close(self):
-        print("WebSocket %s closed" % self.uid)
+        logging.info("WebSocket %s closed" % self.uid)
+        if self.uid in self.application.wsPool:
+            del self.application.wsPool[self.uid]
 
 
 def signal_term_handler(sig, _):
@@ -358,6 +578,7 @@ if __name__ == '__main__':
     signal(SIGTERM, signal_term_handler)
     app = Application([
         (r"/websocket", Handler),
+        (r"/profiles", Profiles),
         (r"/()", StaticFileHandler, {'path': 'static/index.html'}),
         (r"/(.+)", StaticFileHandler, {'path': 'static/'}),
     ])
