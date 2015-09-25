@@ -14,7 +14,6 @@ import momoko
 from hashlib import sha256
 import templates as tpl
 import datetime
-from re import search
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("requests.packages.urllib3").setLevel(logging.WARNING)
