@@ -1,19 +1,21 @@
 #!/usr/local/bin/python3
 from random import choice, randint
 from uuid import uuid4, UUID
-from psycopg2 import ProgrammingError, extras
-from tornado.httpserver import HTTPServer
 import logging
 from signal import signal, SIGTERM
+from json import loads, dumps, JSONEncoder
+from hashlib import sha256
+import datetime
+
+from psycopg2 import ProgrammingError, extras
+from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, StaticFileHandler, RequestHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
-from json import loads, dumps, JSONEncoder
-import momoko
-from hashlib import sha256
+from momoko import Pool
+
 import templates as tpl
-import datetime
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("requests.packages.urllib3").setLevel(logging.WARNING)
@@ -589,9 +591,9 @@ if __name__ == '__main__':
     ])
     try:
         ioloop = IOLoop.instance()
-        app.db = momoko.Pool(dsn="dbname=mol user=mol password=molpassword "
-                                 "host=localhost port=5432",
-                             size=1, ioloop=ioloop)
+        app.db = Pool(dsn="dbname=mol user=mol password=molpassword "
+                          "host=localhost port=5432",
+                      size=1, ioloop=ioloop)
         future = app.db.connect()
         ioloop.add_future(future, lambda _: ioloop.stop())
         app.wsPool = {}
