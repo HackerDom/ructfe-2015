@@ -5,11 +5,11 @@ echo -e "============\n1. Install PostgreSQL, Python3, python3-pip"
 
 echo -e "============\n2. Initialize PostgreSQL"
 postgres -D /usr/local/var/postgres
-createdb mot
+createdb mol
 
 cat << ESQL | psql
-create user mot with password 'motpassword';
-grant all privileges on database mot to mot;
+create user mol with password 'molpassword';
+grant all privileges on database mol to mol;
 CREATE TABLE users
 (
   uid uuid NOT NULL,
@@ -24,9 +24,9 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE users
-  OWNER TO mot;
+  OWNER TO mol;
 
-INSERT INTO users(uid, username, password, role) VALUES ('ddcb16a4-c813-4a8d-9724-d0df4e905f0c', 'admin', 'qwerty', true);
+INSERT INTO users(uid, username, password, role) VALUES ('ddcb16a4-c813-4a8d-9724-d0df4e905f0c', 'bigbrother', 'qwerty', true);
 
 CREATE TABLE profiles
 (
@@ -45,7 +45,7 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE profiles
-  OWNER TO mot;
+  OWNER TO mol;
 
 
 CREATE TABLE crimes
@@ -67,11 +67,11 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE crimes
-  OWNER TO mot;
+  OWNER TO mol;
 
 ESQL
 
-cat users.sql | psql mot
+cat users.sql | psql mol
 
 
 echo -e "============\n3. Install requirements"

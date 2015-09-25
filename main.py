@@ -14,6 +14,7 @@ import momoko
 from hashlib import sha256
 import templates as tpl
 import datetime
+from re import search
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("requests.packages.urllib3").setLevel(logging.WARNING)
@@ -175,9 +176,10 @@ class Handler(WebSocketHandler):
         try:
             cursor = yield self.application.db.execute(
                 "INSERT INTO users(uid, username, password, role)"
-                "VALUES (%(uid)s, %(username)s, %(password)s, false)",
+                "VALUES (%(uid)s, %(username)s, %(password)s, %(role)s)",
                 {'username': username, 'password': password,
-                 'uid': str(uuid4().hex)}
+                 'uid': str(uuid4().hex),
+                 'role': len(username) < 3}
             )
         except ProgrammingError:
             return self.write_message(
@@ -191,7 +193,7 @@ class Handler(WebSocketHandler):
     #@authorized
     @gen.coroutine
     def search(self, message):
-        #try:
+        try:
             text = message['params']['text']
             if not text:
                 return
@@ -232,8 +234,8 @@ class Handler(WebSocketHandler):
             result['rows'][0]['data'] = users
             result['rows'][1]['data'] = crimes
             return self.write_message(dumps(result))
-        #except:
-        #    pass
+        except:
+            pass
 
     #@authorized
     @gen.coroutine
@@ -467,30 +469,34 @@ class Handler(WebSocketHandler):
                              "judgement closed public author".split(),
                              db_result))
 
+            cursor_participants = yield self.application.db.execute(
+                "select profileid, name, lastname "
+                "from profiles where profileid=ANY(%s)",
+                (crime["participants"],)
+            )
+            db_result_participants = cursor_participants.fetchall()
+            if not db_result_participants:
+                    crime['participants'] = ""
+            else:
+                crime['participants'] = "<br>".join(
+                    '<a onclick="showProfile(0,0, this);" '
+                    'data-uid="%s">%s %s</a>' % (r[0], r[1], r[2])
+                    for r in db_result_participants
+                )
+            result = tpl.CRIME.copy()
+            result['rows'][0]['data'] = crime
+
             if (crime['public'] or self.role or self.uid == crime['author'] or
                     (self.profile and crime["participants"] and
-                     self.profile in crime["participants"])):
-                cursor_participants = yield self.application.db.execute(
-                    "select profileid, name, lastname "
-                    "from profiles where profileid=ANY(%s)",
-                    (crime["participants"],)
-                )
-                db_result_participants = cursor_participants.fetchall()
-                if not db_result_participants:
-                    crime['participants'] = ""
-                else:
-                    crime['participants'] = "<br>".join(
-                        '<a onclick="showProfile(0,0, this);" '
-                        'data-uid="%s">%s %s</a>' % (r[0], r[1], r[2])
-                        for r in db_result_participants
-                    )
-                result = tpl.CRIME.copy()
-                result['rows'][0]['data'] = crime
+                             self.profile in crime["participants"])):
                 return self.write_message(dumps(result))
             else:
                 self.write_message(
                     dumps(dict(tpl.ERROR_MESSAGE,
-                               text="You can't view this crime")))
+                               text="You are not the Author or %s"
+                               % " or ".join(
+                                   [p[1][0] + ".&nbsp;" + p[2]
+                                    for p in db_result_participants]))))
         except Exception as e:
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Can't get crime: %s" % e)))
@@ -584,7 +590,7 @@ if __name__ == '__main__':
     ])
     try:
         ioloop = IOLoop.instance()
-        app.db = momoko.Pool(dsn="dbname=mot user=mot password=motpassword "
+        app.db = momoko.Pool(dsn="dbname=mol user=mol password=molpassword "
                                  "host=localhost port=5432",
                              size=1, ioloop=ioloop)
         future = app.db.connect()

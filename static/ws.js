@@ -5,7 +5,7 @@ var offset = 0;
 webix.ready(function(){
     webix.ui.fullScreen();
     webix.ui({cols: [
-        {template:"Ministry of Truth", css:"header"},
+        {template:"Ministry of Love <span class='webix_icon fa-heartbeat'></span>", css:"header"},
         {view: 'search', placeholder: "Search...", id: "searchField", width:300, css:"header", on:{"onTimedKeyPress": search}},
     ]});
     grid = webix.ui({rows: [
