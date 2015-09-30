@@ -83,7 +83,6 @@ function itsMe(uid){
         text: "<input type='text' />",
         width: "40%",
         callback: function(result) {
-            console.log(box.getElementsByTagName("input")[0].value);
             if (result === "0")
                 ws.send(JSON.stringify({'action': 'its_me', 'params': {'profileid': uid, 'info': box.getElementsByTagName("input")[0].value}}));
         }

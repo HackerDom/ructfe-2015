@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 # coding=utf-8
-from random import randrange
+from random import randrange, choice
 from sys import argv, stderr
 from websocket import create_connection
 from socket import gaierror
@@ -20,20 +20,75 @@ def check(*args):
     try:
         ws = create_connection("ws://%s:1984/websocket" % addr)
         ws.send(dumps({"action": "hello"}))
-        answer = ws.recv()
-        if loads(answer)['rows'][0]['view'] != "form":
+        answer = loads(ws.recv())
+        if answer['rows'][0]['view'] != "form":
             raise KeyError
         username, password = ('%x' % randrange(16**15),
                               '%x' % randrange(16**15))
+
+        # 1. Registration
         ws.send(dumps({'action': 'register',
                        'params': {'user': username, 'password': password}}))
-        answer = ws.recv()
-        if "successfull" not in loads(answer)["text"]:
+        answer = loads(ws.recv())
+        if "successful" not in answer["text"]:
             print("registration failed: %s" % answer, file=stderr)
             print("Registration")
             return CORRUPT
 
+        # 2. Authentication
+        ws.send(dumps({'action': 'auth',
+                       'params': {'user': username, 'password': password}}))
+        answer = loads(ws.recv())
+        if "Welcome" not in answer["text"]:
+            print("authentication failed: %s" % answer, file=stderr)
+            print("Authentication")
+            return CORRUPT
+
+        if "text" not in answer and "Welcome" not in answer["text"]:
+            if "id" not in answer:
+                print("authentication failed: %s" % answer, file=stderr)
+                print("Authentication")
+                return CORRUPT
+            else:
+                _ = ws.recv()
+        if "rows" not in answer:
+            answer = loads(ws.recv())
+        # 3. Show Profiles
+        if ("data" not in answer["rows"][0] or
+                len(answer["rows"][0]["data"]) < 5):
+            print("showProfile failed: %s" % answer, file=stderr)
+            print("Profiles")
+            return CORRUPT
+
+        # 4. Last crimes
+        ws.send(dumps({'action': 'show_crimes',
+                       'params': {'offset': 0}}))
+        answer = loads(ws.recv())
+        if ("rows" not in answer or
+                "data" not in answer["rows"][0] or
+                len(answer["rows"][0]["data"]) < 2 or
+                "crimeid" not in answer["rows"][0]["data"][0]):
+            print("List crimes failed: %s" % answer, file=stderr)
+            print("Crimes")
+            return CORRUPT
+
+        # 5. Assign Profile
+        ws.send(dumps(
+            {'action': 'its_me',
+             'params': {'profileid': "3ad31a62-aaf8-431e-aa5b-03c0423f6433",
+                        'info': "0483847872"}}))
+        answer = loads(ws.recv())
+        if "successful" not in answer["text"]:
+            print("assignment failed: %s" % answer, file=stderr)
+            print("Assignment")
+            return CORRUPT
+
+        # 6. My profile
+
+        # 7. Report form
+
         print(answer)
+        return OK
     except gaierror:
         print("No connection to %s" % addr, file=stderr)
         return FAIL

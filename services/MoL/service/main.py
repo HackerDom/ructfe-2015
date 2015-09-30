@@ -439,7 +439,7 @@ class Handler(WebSocketHandler):
 
         cursor = yield self.application.db.execute(
             "select crimeid, name, article, city, country, crimedate, public "
-            "FROM crimes limit 10 offset %s", (offset,)
+            "FROM crimes ORDER BY crimeid DESC limit 10 offset %s", (offset,)
         )
         db_result = cursor.fetchall()
         crimes = [
