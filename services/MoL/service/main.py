@@ -512,7 +512,7 @@ class Handler(WebSocketHandler):
             params = dict(filter(lambda i: i[1], message['params'].items()))
             if len(params) < 6:
                 return self.write_message(
-                    dumps(dict(tpl.ERROR_MESSAGE, text="Invalid input"))
+                    dumps(dict(tpl.ERROR_MESSAGE, text="Small input"))
                 )
             params['crimedate'] = datetime.datetime.strptime(
                 params['crimedate'], '%Y-%m-%dT%H:%M:%S.%fZ').date()
@@ -550,13 +550,15 @@ class Handler(WebSocketHandler):
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Error while reporting"))
             )
-        except:
+        except Exception as e:
             return self.write_message(
-                dumps(dict(tpl.MESSAGE, text="Invalid input"))
+                dumps(dict(tpl.ERROR_MESSAGE, text="Invalid input %s " % e))
             )
         else:
             try:
                 for ws in self.application.wsPool:
+                    if self.application.wsPool[ws] == self:
+                        continue
                     self.application.wsPool[ws].write_message(
                         dumps(dict(tpl.MESSAGE,
                                    text="New crime (%s)" % params['name']))

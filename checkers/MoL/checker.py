@@ -2,100 +2,144 @@
 # coding=utf-8
 from random import randrange, choice
 from sys import argv, stderr
+from os import path
 from websocket import create_connection
 from socket import gaierror
 from json import loads, dumps
+from csv import reader
 
 __author__ = 'm_messiah'
 
 OK, GET_ERROR, CORRUPT, FAIL, INTERNAL_ERROR = 101, 102, 103, 104, 110
 
 
+def close(code, public="", private=""):
+    if public:
+        print(public)
+    if private:
+        print(private, file=stderr)
+    exit(code)
+
+
+class Client(object):
+    def __init__(self, sock, username, password):
+        self.username = username
+        self.password = password
+        self.ws = sock
+
+    def register(self):
+        """Registration"""
+        self.ws.send(dumps(
+            {'action': 'register',
+             'params': {'user': self.username, 'password': self.password}}))
+        answer = loads(self.ws.recv())
+        if "successful" not in answer["text"]:
+            close(CORRUPT, "Registration", "registration failed: %s" % answer)
+        return answer
+
+    def auth(self):
+        """Authentication"""
+        self.ws.send(dumps(
+            {'action': 'auth',
+             'params': {'user': self.username, 'password': self.password}}))
+        answer = loads(self.ws.recv())
+        if "Welcome" not in answer["text"]:
+            close(CORRUPT,
+                  "Authentication", "authentication failed: %s" % answer)
+
+        if "text" not in answer and "Welcome" not in answer["text"]:
+            if "id" not in answer:
+                close(CORRUPT,
+                      "Authentication", "authentication failed: %s" % answer)
+            else:
+                _ = self.ws.recv()
+        if "rows" not in answer:
+            answer = loads(self.ws.recv())
+        # Show Profiles"""
+        if ("data" not in answer["rows"][0] or
+                len(answer["rows"][0]["data"]) < 5):
+            close(CORRUPT, "Profiles", "showProfile failed: %s" % answer)
+        return answer
+
+    def crimes(self):
+        """Last crimes"""
+        self.ws.send(dumps({'action': 'show_crimes',
+                            'params': {'offset': 0}}))
+        answer = loads(self.ws.recv())
+        if ("rows" not in answer or
+                "data" not in answer["rows"][0] or
+                len(answer["rows"][0]["data"]) < 2 or
+                "crimeid" not in answer["rows"][0]["data"][0]):
+            close(CORRUPT, "Crimes", "List crimes failed: %s" % answer)
+        return answer
+
+    def assign_profile(self):
+        """Assign Profile"""
+        self.ws.send(dumps(
+            {'action': 'its_me',
+             'params': {'profileid': "3ad31a62-aaf8-431e-aa5b-03c0423f6433",
+                        'info': "0483847872"}}))
+        answer = loads(self.ws.recv())
+        if "successful" not in answer["text"]:
+            close(CORRUPT, "Assignment", "assignment failed: %s" % answer)
+        return answer
+
+    def my_profile(self):
+        """My profile"""
+        self.assign_profile()
+        self.ws.send(dumps({'action': 'show_my_profile'}))
+        answer = loads(self.ws.recv())
+        if ("rows" not in answer or
+                "cols" not in answer["rows"][0] or
+                'rows' not in answer['rows'][0]['cols'][0] or
+                'hidden' not in answer['rows'][0]['cols'][0]['rows'][0] or
+                not answer['rows'][0]['cols'][0]['rows'][0]['hidden']):
+            close(CORRUPT, "My profile", "My profile failed: %s" % answer)
+        return answer
+
+    def report(self, flag_id=None, flag=None):
+        crimes = list(reader(open(
+            path.join(path.dirname(path.realpath(__file__)), "crimes.csv"))))
+        tags, crimes = crimes[0], crimes[1:]
+        crime = dict(zip(tags, choice(crimes)))
+        if flag_id:
+            crime['name'] = flag_id
+        if flag:
+            crime['description'] += " " + flag
+        crime['closed'] = crime['closed'] == "true"
+
+        self.ws.send(dumps({'action': 'report', 'params': crime}))
+        answer = loads(self.ws.recv())
+        if "submited" not in answer["text"]:
+            close(CORRUPT, "Report", "flag put failed: %s" % answer)
+        return answer
+
+    def show_report(self, flag_id, flag):
+        pass
+
+
 def check(*args):
     addr = args[0]
     answer = ""
     if not addr:
-        print("Check without ADDR")
-        return INTERNAL_ERROR
+        close(INTERNAL_ERROR, None, "Check without ADDR")
     try:
         ws = create_connection("ws://%s:1984/websocket" % addr)
         ws.send(dumps({"action": "hello"}))
         answer = loads(ws.recv())
         if answer['rows'][0]['view'] != "form":
             raise KeyError
-        username, password = ('%x' % randrange(16**15),
-                              '%x' % randrange(16**15))
-
-        # 1. Registration
-        ws.send(dumps({'action': 'register',
-                       'params': {'user': username, 'password': password}}))
-        answer = loads(ws.recv())
-        if "successful" not in answer["text"]:
-            print("registration failed: %s" % answer, file=stderr)
-            print("Registration")
-            return CORRUPT
-
-        # 2. Authentication
-        ws.send(dumps({'action': 'auth',
-                       'params': {'user': username, 'password': password}}))
-        answer = loads(ws.recv())
-        if "Welcome" not in answer["text"]:
-            print("authentication failed: %s" % answer, file=stderr)
-            print("Authentication")
-            return CORRUPT
-
-        if "text" not in answer and "Welcome" not in answer["text"]:
-            if "id" not in answer:
-                print("authentication failed: %s" % answer, file=stderr)
-                print("Authentication")
-                return CORRUPT
-            else:
-                _ = ws.recv()
-        if "rows" not in answer:
-            answer = loads(ws.recv())
-        # 3. Show Profiles
-        if ("data" not in answer["rows"][0] or
-                len(answer["rows"][0]["data"]) < 5):
-            print("showProfile failed: %s" % answer, file=stderr)
-            print("Profiles")
-            return CORRUPT
-
-        # 4. Last crimes
-        ws.send(dumps({'action': 'show_crimes',
-                       'params': {'offset': 0}}))
-        answer = loads(ws.recv())
-        if ("rows" not in answer or
-                "data" not in answer["rows"][0] or
-                len(answer["rows"][0]["data"]) < 2 or
-                "crimeid" not in answer["rows"][0]["data"][0]):
-            print("List crimes failed: %s" % answer, file=stderr)
-            print("Crimes")
-            return CORRUPT
-
-        # 5. Assign Profile
-        ws.send(dumps(
-            {'action': 'its_me',
-             'params': {'profileid': "3ad31a62-aaf8-431e-aa5b-03c0423f6433",
-                        'info': "0483847872"}}))
-        answer = loads(ws.recv())
-        if "successful" not in answer["text"]:
-            print("assignment failed: %s" % answer, file=stderr)
-            print("Assignment")
-            return CORRUPT
-
-        # 6. My profile
-
-        # 7. Report form
-
-        print(answer)
-        return OK
+        c = Client(ws, '%x' % randrange(16**15), '%x' % randrange(16**15))
+        c.register()
+        c.auth()
+        choice([c.crimes, c.my_profile])()
+        choice([c.crimes, c.my_profile])()
+        c.report()
+        close(OK)
     except gaierror:
-        print("No connection to %s" % addr, file=stderr)
-        return FAIL
+        close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
-        print("Bad answer in %s" % answer, file=stderr)
-        print("JSON structure")
-        return CORRUPT
+        close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
     finally:
         try:
             ws.close()
@@ -103,12 +147,61 @@ def check(*args):
             pass
 
 
-def put():
-    pass
+def put(*args):
+    addr = args[0]
+    flag_id = args[1]
+    flag = args[2]
+    answer = ""
+    if not addr or not flag_id or not flag:
+        close(INTERNAL_ERROR, None, "Incorrect parameters")
+    try:
+        ws = create_connection("ws://%s:1984/websocket" % addr)
+        ws.send(dumps({"action": "hello"}))
+        answer = loads(ws.recv())
+        if answer['rows'][0]['view'] != "form":
+            raise KeyError
+        c = Client(ws, '%x' % randrange(16**15), '%x' % randrange(16**15))
+        c.register()
+        c.auth()
+        c.report(flag_id, flag)
+        close(OK, "%s:%s:%s" % (c.username, c.password, flag_id))
+    except gaierror:
+        close(FAIL, "No connection to %s" % addr)
+    except (KeyError, IndexError):
+        close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
+    finally:
+        try:
+            ws.close()
+        except:
+            pass
 
 
-def get():
-    pass
+def get(*args):
+    addr = args[0]
+    username, password, flag_id = args[1].split(":")
+    flag = args[2]
+    answer = ""
+    if not addr or not username or not password or not flag_id or not flag:
+        close(INTERNAL_ERROR, None, "Incorrect parameters")
+    try:
+        ws = create_connection("ws://%s:1984/websocket" % addr)
+        ws.send(dumps({"action": "hello"}))
+        answer = loads(ws.recv())
+        if answer['rows'][0]['view'] != "form":
+            raise KeyError
+        c = Client(ws, username, password)
+        c.auth()
+        c.show_report(flag_id, flag)
+        close(OK)
+    except gaierror:
+        close(FAIL, "No connection to %s" % addr)
+    except (KeyError, IndexError):
+        close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
+    finally:
+        try:
+            ws.close()
+        except:
+            pass
 
 
 COMMANDS = {'check': check, 'put': put, 'get': get}
