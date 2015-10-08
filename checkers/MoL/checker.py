@@ -98,6 +98,7 @@ class Client(object):
         return answer
 
     def report(self, flag_id=None, flag=None):
+        """Report a crime"""
         crimes = list(reader(open(
             path.join(path.dirname(path.realpath(__file__)), "crimes.csv"))))
         tags, crimes = crimes[0], crimes[1:]
@@ -115,7 +116,32 @@ class Client(object):
         return answer
 
     def show_report(self, flag_id, flag):
-        pass
+        """Show crime and check"""
+        self.ws.send(dumps({'action': 'search', 'params': {'text': flag_id}}))
+        answer = loads(self.ws.recv())
+        if ("rows" not in answer or
+                len(answer['rows']) < 2 or
+                'data' not in answer['rows'][1]):
+            close(CORRUPT, "Search", "search failed: %s" % answer)
+
+        if len(answer['rows'][1]['data']) < 1:
+            close(GET_ERROR, "Search", "crime not searchable: %s" % answer)
+
+        for crime in answer['rows'][1]['data']:
+            self.ws.send(dumps({'action': 'show_crime',
+                                'params': {'crimeid': crime['crimeid']}}))
+
+            answer = loads(self.ws.recv())
+            if ("rows" in answer and len(answer['rows']) and
+                    'data' in answer['rows'][0] and
+                    'description' in answer['rows'][0]['data'] and
+                    'name' in answer['rows'][0]['data'] and
+                    answer['rows'][0]['data']['name'] == flag_id and
+                    flag ==
+                    answer['rows'][0]['data']['description'].split()[-1]):
+                close(OK)
+
+        close(GET_ERROR)
 
 
 def check(*args):
@@ -213,7 +239,7 @@ def not_found(*args):
 
 
 if __name__ == '__main__':
-    # try:
-    exit(COMMANDS.get(argv[1], not_found)(*argv[2:]))
-    # except:
-    #    exit(INTERNAL_ERROR)
+    try:
+        COMMANDS.get(argv[1], not_found)(*argv[2:])
+    except Exception as e:
+        close(INTERNAL_ERROR, "Bad-ass checker", "INTERNAL ERROR: %s" % e)

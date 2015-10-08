@@ -59,6 +59,8 @@ function register(){ws.send(JSON.stringify({'action': 'register', 'params': $$('
 function menuChoice(id) {window[id]();};
 function showLast(){offset = 0; ws.send(JSON.stringify({'action': 'show_profiles', 'params': {'offset': 0}}));}
 function showLastCrimes(){offset = 0; ws.send(JSON.stringify({'action': 'show_crimes', 'params': {'offset': 0}}));}
+function nextCrimes() {offset += 1;ws.send( JSON.stringify({'action': 'show_crimes', 'params': {'offset': offset}}));}
+function prevCrimes() {if (offset > 0) offset -= 1; ws.send(JSON.stringify({'action': 'show_crimes', 'params': {'offset': offset}}));}
 function nextProfiles() {offset += 1;ws.send( JSON.stringify({'action': 'show_profiles', 'params': {'offset': offset}}));}
 function prevProfiles() {if (offset > 0) offset -= 1; ws.send(JSON.stringify({'action': 'show_profiles', 'params': {'offset': offset}}));}
 function showMyProfile(){ ws.send(JSON.stringify({'action': 'show_my_profile'}));};

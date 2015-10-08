@@ -514,6 +514,12 @@ class Handler(WebSocketHandler):
                 return self.write_message(
                     dumps(dict(tpl.ERROR_MESSAGE, text="Small input"))
                 )
+            params['city'] = params['city'].title()
+            if len(params['country']) < 4:
+                params['country'] = params['country'].upper()
+            else:
+                params['country'] = params['country'].title()
+
             params['crimedate'] = datetime.datetime.strptime(
                 params['crimedate'], '%Y-%m-%dT%H:%M:%S.%fZ').date()
             if 'closed' not in params:
