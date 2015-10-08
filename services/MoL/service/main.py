@@ -7,7 +7,7 @@ from json import loads, dumps, JSONEncoder
 from hashlib import sha256
 import datetime
 
-from psycopg2 import ProgrammingError, extras
+from psycopg2 import ProgrammingError, extras, DataError
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, StaticFileHandler, RequestHandler
@@ -242,13 +242,16 @@ class Handler(WebSocketHandler):
     @gen.coroutine
     def show_profiles(self, message):
         offset = message['params']['offset'] * 10
-        if offset < 0:
-            offset = 0
+        try:
+            cursor = yield self.application.db.execute(
+                "select profileid, name, lastname, userpic from profiles "
+                "limit 10 offset %s", (offset,)
+            )
+        except (DataError, ProgrammingError):
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE, text="Error while fetching"))
+            )
 
-        cursor = yield self.application.db.execute(
-            "select profileid, name, lastname, userpic from profiles "
-            "limit 10 offset %s" % (offset,)
-        )
         db_result = cursor.fetchall()
         users = [
             dict(zip('uid name lastname userpic'.split(), row))
@@ -434,13 +437,17 @@ class Handler(WebSocketHandler):
     @gen.coroutine
     def show_crimes(self, message):
         offset = message['params']['offset'] * 10
-        if offset < 0:
-            offset = 0
-
-        cursor = yield self.application.db.execute(
-            "select crimeid, name, article, city, country, crimedate, public "
-            "FROM crimes ORDER BY crimeid DESC limit 10 offset %s", (offset,)
-        )
+        try:
+            cursor = yield self.application.db.execute(
+                "select crimeid, name, article, city, "
+                "country, crimedate, public "
+                "FROM crimes ORDER BY crimeid "
+                "DESC limit 10 offset %s" % (offset,)
+            )
+        except (DataError, ProgrammingError):
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE,
+                           text="Error while fetching")))
         db_result = cursor.fetchall()
         crimes = [
             dict(zip(
@@ -489,7 +496,7 @@ class Handler(WebSocketHandler):
 
             if (crime['public'] or self.role or self.uid == crime['author'] or
                     (self.profile and crime["participants"] and
-                             self.profile in crime["participants"])):
+                     str(self.profile) in crime["participants"])):
                 return self.write_message(dumps(result))
             else:
                 self.write_message(
