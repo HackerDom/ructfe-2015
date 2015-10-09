@@ -1,5 +1,7 @@
 #!/usr/local/bin/python3
+from collections import defaultdict
 from random import choice, randint
+from time import monotonic
 from uuid import uuid4, UUID
 import logging
 from signal import signal, SIGTERM
@@ -14,11 +16,8 @@ from tornado.web import Application, StaticFileHandler, RequestHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
 from momoko import Pool
-
 import templates as tpl
 
-logging.basicConfig(level=logging.INFO)
-logging.getLogger("requests.packages.urllib3").setLevel(logging.WARNING)
 extras.register_uuid()
 JSONEncoder_olddefault = JSONEncoder.default
 
@@ -93,32 +92,29 @@ class Handler(WebSocketHandler):
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
             )
-        params = message['params']
-        if 'user' not in params or params['user'] == "":
+        user = defaultdict(lambda: None, message['params'])
+        if 'username' not in user or user['username'] == "":
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
                            text="Username must not be empty"))
             )
-        if 'password' not in params or params['password'] == "":
+        if 'password' not in user or user['password'] == "":
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
                            text="Password must not be empty"))
             )
 
-        username, password = (
-            params['user'],
-            sha256(params['password'].encode("utf8")).hexdigest()
-        )
+        user['password'] = sha256(user['password'].encode("utf8")).hexdigest()
         cursor = yield self.application.db.execute(
-            "select uid, password, role, profile from users where username=%s",
-            (username,)
+            "select uid, password, role, profile "
+            "from users where username=%(username)s", user
         )
         db_result = cursor.fetchone()
         if not db_result:
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Username does not exists"))
             )
-        if password != db_result[1]:
+        if user['password'] != db_result[1]:
             if db_result[0] in self.application.wsPool:
                 self.application.wsPool[db_result[0]].write_message(
                     dumps(dict(tpl.ERROR_MESSAGE,
@@ -130,6 +126,7 @@ class Handler(WebSocketHandler):
         self.uid = db_result[0]
         self.role = db_result[2]
         self.profile = db_result[3]
+        name = user['username']
         if self.profile:
             cursor = yield self.application.db.execute(
                 "select name, lastname from profiles where profileid=%s",
@@ -137,10 +134,10 @@ class Handler(WebSocketHandler):
             )
             db_result = cursor.fetchone()
             if db_result:
-                username = " ".join(db_result)
+                name = " ".join(db_result)
 
         self.write_message(dumps(dict(tpl.MESSAGE,
-                                      text="Welcome, %s" % username)))
+                                      text="Welcome, %s" % name)))
 
         self.application.wsPool[self.uid] = self
         yield self.show_profiles({'params': {'offset': 0}})
@@ -150,24 +147,23 @@ class Handler(WebSocketHandler):
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
             )
-        params = message['params']
-        if 'user' not in params or params['user'] == "":
+        user = defaultdict(lambda: None, message['params'])
+
+        if 'username' not in user or user['username'] == "":
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
                            text="Username must not be empty"))
             )
-        if 'password' not in params or params['password'] == "":
+        if 'password' not in user or user['password'] == "":
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
                            text="Password must not be empty"))
             )
 
-        username, password = (
-            params['user'],
-            sha256(params['password'].encode("utf8")).hexdigest()
-        )
+        user['password'] = sha256(user['password'].encode("utf8")).hexdigest()
+
         cursor = yield self.application.db.execute(
-            "select uid, password from users where username=%s", (username,)
+            "select uid from users where username=%(username)s", user
         )
         db_result = cursor.fetchone()
         if db_result:
@@ -175,12 +171,13 @@ class Handler(WebSocketHandler):
                 dumps(dict(tpl.ERROR_MESSAGE, text="User already exists"))
             )
         try:
+            user['uid'] = str(uuid4().hex)
+            user['role'] = len(user['username']) < 3
             cursor = yield self.application.db.execute(
-                "INSERT INTO users(uid, username, password, role)"
-                "VALUES (%(uid)s, %(username)s, %(password)s, %(role)s)",
-                {'username': username, 'password': password,
-                 'uid': str(uuid4().hex),
-                 'role': len(username) < 3}
+                "INSERT INTO users(uid, username, password, role, profile)"
+                "VALUES (%(uid)s, %(username)s, "
+                "%(password)s, %(role)s, %(profile)s)",
+                user
             )
         except ProgrammingError:
             return self.write_message(
@@ -509,6 +506,7 @@ class Handler(WebSocketHandler):
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Can't get crime: %s" % e)))
 
+
     #@authorized
     def report(self, message):
         try:
@@ -535,7 +533,7 @@ class Handler(WebSocketHandler):
             else:
                 params['closed'] = params['closed'] > 0
             params['public'] = 'private' not in params
-            params['crimeid'] = randint(10000000, 99999999)
+            params['crimeid'] = int(monotonic() * 1000000000)
             params['author'] = self.uid
 
             if 'participants' in params:

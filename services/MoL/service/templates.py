@@ -13,7 +13,7 @@ AUTH_FORM = {
                 {
                     'view': 'text',
                     'label': "Username",
-                    'name': "user",
+                    'name': "username",
                     'invalidMessage': 'Username is not present',
                     'required': True,
                 },

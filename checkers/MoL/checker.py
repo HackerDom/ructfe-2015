@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 # coding=utf-8
-from random import randrange, choice
+from random import randrange, choice, shuffle, randint, sample
 from sys import argv, stderr
 from os import path
 from websocket import create_connection
@@ -31,7 +31,7 @@ class Client(object):
         """Registration"""
         self.ws.send(dumps(
             {'action': 'register',
-             'params': {'user': self.username, 'password': self.password}}))
+             'params': {'username': self.username, 'password': self.password}}))
         answer = loads(self.ws.recv())
         if "successful" not in answer["text"]:
             close(CORRUPT, "Registration", "registration failed: %s" % answer)
@@ -41,7 +41,7 @@ class Client(object):
         """Authentication"""
         self.ws.send(dumps(
             {'action': 'auth',
-             'params': {'user': self.username, 'password': self.password}}))
+             'params': {'username': self.username, 'password': self.password}}))
         answer = loads(self.ws.recv())
         if "Welcome" not in answer["text"]:
             close(CORRUPT,
@@ -71,14 +71,30 @@ class Client(object):
                 len(answer["rows"][0]["data"]) < 2 or
                 "crimeid" not in answer["rows"][0]["data"][0]):
             close(CORRUPT, "Crimes", "List crimes failed: %s" % answer)
+
+        crimes = list(filter(lambda cr: cr['public'] == "fa-lock",
+                              answer["rows"][0]["data"]))
+        if crimes:
+            self.ws.send(dumps({'action': 'show_crime',
+                                'params': {
+                                    'crimeid': choice(crimes)["crimeid"]
+                                }}))
+            answer = loads(self.ws.recv())
+            if ("type" in answer and answer['type'] == "error" and
+                    "text" in answer):
+                if len(answer["text"]) > 26:
+                    if "&nbsp;" not in answer["text"]:
+                        close(CORRUPT, "Crimes",
+                              "List crimes failed: %s" % answer)
+
         return answer
 
     def assign_profile(self):
         """Assign Profile"""
         self.ws.send(dumps(
             {'action': 'its_me',
-             'params': {'profileid': "3ad31a62-aaf8-431e-aa5b-03c0423f6433",
-                        'info': "0483847872"}}))
+             'params': {'profileid': "c452b3012f534f51a7c12981b82821ac",
+                        'info': "1991-07-27"}}))
         answer = loads(self.ws.recv())
         if "successful" not in answer["text"]:
             close(CORRUPT, "Assignment", "assignment failed: %s" % answer)
@@ -101,17 +117,23 @@ class Client(object):
         """Report a crime"""
         crimes = list(reader(open(
             path.join(path.dirname(path.realpath(__file__)), "crimes.csv"))))
+        uids = list(open(path.join(path.dirname(path.realpath(__file__)),
+                                   "uids.list")).readlines())
         tags, crimes = crimes[0], crimes[1:]
         crime = dict(zip(tags, choice(crimes)))
         if flag_id:
             crime['name'] = flag_id
+
+        crime['private'] = True if flag_id else choice([True, False])
+
         if flag:
             crime['description'] += " " + flag
         crime['closed'] = crime['closed'] == "true"
-
+        crime['participants'] = ",".join(map(lambda u: u.strip(),
+                                             sample(uids, randint(1, 5))))
         self.ws.send(dumps({'action': 'report', 'params': crime}))
         answer = loads(self.ws.recv())
-        if "submited" not in answer["text"]:
+        if "text" not in answer or "submited" not in answer["text"]:
             close(CORRUPT, "Report", "flag put failed: %s" % answer)
         return answer
 
@@ -158,9 +180,10 @@ def check(*args):
         c = Client(ws, '%x' % randrange(16**15), '%x' % randrange(16**15))
         c.register()
         c.auth()
-        choice([c.crimes, c.my_profile])()
-        choice([c.crimes, c.my_profile])()
-        c.report()
+        checkers = [c.crimes, c.my_profile, c.report]
+        shuffle(checkers)
+        for checker in checkers:
+            checker()
         close(OK)
     except gaierror:
         close(FAIL, "No connection to %s" % addr)
@@ -169,7 +192,7 @@ def check(*args):
     finally:
         try:
             ws.close()
-        except:
+        except UnboundLocalError:
             pass
 
 
@@ -198,7 +221,7 @@ def put(*args):
     finally:
         try:
             ws.close()
-        except:
+        except UnboundLocalError:
             pass
 
 
@@ -226,7 +249,7 @@ def get(*args):
     finally:
         try:
             ws.close()
-        except:
+        except UnboundLocalError:
             pass
 
 
@@ -239,7 +262,7 @@ def not_found(*args):
 
 
 if __name__ == '__main__':
-    try:
+    #try:
         COMMANDS.get(argv[1], not_found)(*argv[2:])
-    except Exception as e:
-        close(INTERNAL_ERROR, "Bad-ass checker", "INTERNAL ERROR: %s" % e)
+    #except Exception as e:
+    #    close(INTERNAL_ERROR, "Bad-ass checker", "INTERNAL ERROR: %s" % e)

@@ -9360,7 +9360,7 @@ INSERT INTO profiles(profileid, name, lastname, city, birthdate, mobile, marital
 ('9c8ac414044940039737efef77ebd157', 'Levi', 'Rhodes', 'Bundaberg', '1991-03-22', '0475-608-595', true, NULL, 21),
 ('ca331795c6314044b12e613873429a12', 'Anita', 'Little', 'Kalgoorlie', '1992-11-29', '0471-068-420', true, NULL, 56),
 ('af28f5482c474d23b11a90cf928e4b25', 'Misty', 'Morales', 'Bendigo', '2004-01-20', '0435-798-673', false, NULL, 194),
-('c452b3012f534f51a7c12981b82821ac', 'Ray', 'Simmmons', 'Mackay', '1997-09-13', '0434-551-029', false, NULL, 2),
+('c452b3012f534f51a7c12981b82821ac', 'Maxim', 'Muzafarov', 'Yekaterinburg', '1991-07-27', '1234-567-890', false, NULL, 200),
 ('5f29ad3690164421b51c22a13b05cfb8', 'Luis', 'Chapman', 'Maitland', '1990-05-04', '0485-576-884', true, NULL, 19),
 ('2ce4fa6d4b6146339685e9aa4070f166', 'Gina', 'Jordan', 'Gladstone', '1978-03-20', '0435-860-795', false, NULL, 39),
 ('c85a4ea740c54add837f02208a6b24f7', 'Same', 'Austin', 'Queanbeyan', '1994-08-17', '0441-237-490', false, NULL, 198),
