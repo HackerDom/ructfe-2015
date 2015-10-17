@@ -1,0 +1,76 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 1 (0x1)
+    Signature Algorithm: sha1WithRSAEncryption
+        Issuer: C=RU, ST=EKB, L=Yekaterinburg, O=ructf.org, OU=ructf.org, CN=ructf.org/name=server/emailAddress=dimmoborgir@hackerdom.ru
+        Validity
+            Not Before: Oct 10 08:04:01 2015 GMT
+            Not After : Oct  7 08:04:01 2025 GMT
+        Subject: C=RU, ST=EKB, L=Yekaterinburg, O=ructf.org, OU=ructf.org, CN=dev/name=dev/emailAddress=dimmoborgir@hackerdom.ru
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+                Modulus:
+                    00:d4:aa:83:23:97:f4:ef:b1:77:e0:bf:4a:32:20:
+                    17:ca:b4:ab:d6:31:ba:97:cd:a5:60:b1:27:4b:62:
+                    14:e2:b1:1f:79:10:06:b3:76:0b:f0:a4:3a:03:31:
+                    05:a1:69:cc:2f:32:7c:5d:65:89:ce:69:6b:dd:0d:
+                    23:05:e5:f3:92:4c:ad:a7:04:57:54:67:5b:3b:4e:
+                    fb:67:64:0b:e6:ee:ac:aa:09:05:4e:0a:26:47:28:
+                    1f:d8:87:07:61:b6:1a:dd:44:72:b9:00:16:91:2c:
+                    72:e3:75:bd:b2:be:a9:4a:80:57:3e:63:a8:2d:2a:
+                    0b:d3:cd:db:51:8f:db:80:0d
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Cert Type: 
+                SSL Server
+            Netscape Comment: 
+                Easy-RSA Generated Server Certificate
+            X509v3 Subject Key Identifier: 
+                E0:60:8E:AA:0C:B2:F2:04:15:CF:2B:8C:EE:FB:57:ED:47:F6:84:94
+            X509v3 Authority Key Identifier: 
+                keyid:25:97:39:2E:79:5B:3A:99:BD:75:68:78:14:B5:55:4D:F3:A5:E6:D5
+                DirName:/C=RU/ST=EKB/L=Yekaterinburg/O=ructf.org/OU=ructf.org/CN=ructf.org/name=server/emailAddress=dimmoborgir@hackerdom.ru
+                serial:DC:5C:4E:9B:B6:0E:AF:D5
+
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication
+            X509v3 Key Usage: 
+                Digital Signature, Key Encipherment
+    Signature Algorithm: sha1WithRSAEncryption
+         19:ac:2e:81:47:08:c4:20:e2:52:b3:ca:a8:17:c5:94:ac:59:
+         1a:4f:f8:04:be:f9:98:95:42:52:8a:df:eb:18:0d:f3:a6:fc:
+         db:fc:24:95:28:81:57:d4:eb:d6:b4:5b:ca:10:1a:a8:f8:46:
+         fb:dc:96:d2:98:67:c7:95:4a:ce:49:2a:d1:e5:7c:c6:1e:84:
+         45:b6:bc:84:2c:d1:cb:03:a4:7d:f7:6c:19:36:c9:4a:eb:86:
+         b8:f2:ef:fb:83:7f:c4:86:ed:88:ae:1f:d6:29:47:ef:01:16:
+         48:0b:9c:42:3c:01:88:25:b2:e7:82:97:ce:22:50:c2:ac:06:
+         0d:33
+-----BEGIN CERTIFICATE-----
+MIIEPTCCA6agAwIBAgIBATANBgkqhkiG9w0BAQUFADCBqTELMAkGA1UEBhMCUlUx
+DDAKBgNVBAgTA0VLQjEWMBQGA1UEBxMNWWVrYXRlcmluYnVyZzESMBAGA1UEChMJ
+cnVjdGYub3JnMRIwEAYDVQQLEwlydWN0Zi5vcmcxEjAQBgNVBAMTCXJ1Y3RmLm9y
+ZzEPMA0GA1UEKRMGc2VydmVyMScwJQYJKoZIhvcNAQkBFhhkaW1tb2JvcmdpckBo
+YWNrZXJkb20ucnUwHhcNMTUxMDEwMDgwNDAxWhcNMjUxMDA3MDgwNDAxWjCBoDEL
+MAkGA1UEBhMCUlUxDDAKBgNVBAgTA0VLQjEWMBQGA1UEBxMNWWVrYXRlcmluYnVy
+ZzESMBAGA1UEChMJcnVjdGYub3JnMRIwEAYDVQQLEwlydWN0Zi5vcmcxDDAKBgNV
+BAMTA2RldjEMMAoGA1UEKRMDZGV2MScwJQYJKoZIhvcNAQkBFhhkaW1tb2Jvcmdp
+ckBoYWNrZXJkb20ucnUwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBANSqgyOX
+9O+xd+C/SjIgF8q0q9YxupfNpWCxJ0tiFOKxH3kQBrN2C/CkOgMxBaFpzC8yfF1l
+ic5pa90NIwXl85JMracEV1RnWztO+2dkC+burKoJBU4KJkcoH9iHB2G2Gt1EcrkA
+FpEscuN1vbK+qUqAVz5jqC0qC9PN21GP24ANAgMBAAGjggF6MIIBdjAJBgNVHRME
+AjAAMBEGCWCGSAGG+EIBAQQEAwIGQDA0BglghkgBhvhCAQ0EJxYlRWFzeS1SU0Eg
+R2VuZXJhdGVkIFNlcnZlciBDZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQU4GCOqgyy8gQV
+zyuM7vtX7Uf2hJQwgd4GA1UdIwSB1jCB04AUJZc5LnlbOpm9dWh4FLVVTfOl5tWh
+ga+kgawwgakxCzAJBgNVBAYTAlJVMQwwCgYDVQQIEwNFS0IxFjAUBgNVBAcTDVll
+a2F0ZXJpbmJ1cmcxEjAQBgNVBAoTCXJ1Y3RmLm9yZzESMBAGA1UECxMJcnVjdGYu
+b3JnMRIwEAYDVQQDEwlydWN0Zi5vcmcxDzANBgNVBCkTBnNlcnZlcjEnMCUGCSqG
+SIb3DQEJARYYZGltbW9ib3JnaXJAaGFja2VyZG9tLnJ1ggkA3FxOm7YOr9UwEwYD
+VR0lBAwwCgYIKwYBBQUHAwEwCwYDVR0PBAQDAgWgMA0GCSqGSIb3DQEBBQUAA4GB
+ABmsLoFHCMQg4lKzyqgXxZSsWRpP+AS++ZiVQlKK3+sYDfOm/Nv8JJUogVfU69a0
+W8oQGqj4RvvcltKYZ8eVSs5JKtHlfMYehEW2vIQs0csDpH33bBk2yUrrhrjy7/uD
+f8SG7YiuH9YpR+8BFkgLnEI8AYglsueCl84iUMKsBg0z
+-----END CERTIFICATE-----
