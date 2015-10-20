@@ -1,13 +1,13 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 from collections import defaultdict
-from random import choice, randint
+from datetime import datetime, date, time
+from random import choice
 from time import monotonic
 from uuid import uuid4, UUID
 import logging
 from signal import signal, SIGTERM
 from json import loads, dumps, JSONEncoder
 from hashlib import sha256
-import datetime
 
 from psycopg2 import ProgrammingError, extras, DataError
 from tornado.httpserver import HTTPServer
@@ -16,6 +16,7 @@ from tornado.web import Application, StaticFileHandler, RequestHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
 from momoko import Pool
+
 import templates as tpl
 
 extras.register_uuid()
@@ -25,7 +26,7 @@ JSONEncoder_olddefault = JSONEncoder.default
 def JSONEncoder_newdefault(self, o):
     if isinstance(o, UUID):
         return str(o)
-    if isinstance(o, (datetime.datetime, datetime.date, datetime.time)):
+    if isinstance(o, (datetime, date, time)):
         return o.isoformat()
     return JSONEncoder_olddefault(self, o)
 JSONEncoder.default = JSONEncoder_newdefault
@@ -173,7 +174,7 @@ class Handler(WebSocketHandler):
         try:
             user['uid'] = str(uuid4().hex)
             user['role'] = len(user['username']) < 3
-            cursor = yield self.application.db.execute(
+            yield self.application.db.execute(
                 "INSERT INTO users(uid, username, password, role, profile)"
                 "VALUES (%(uid)s, %(username)s, "
                 "%(password)s, %(role)s, %(profile)s)",
@@ -188,7 +189,7 @@ class Handler(WebSocketHandler):
                 dumps(dict(tpl.MESSAGE, text="Registration successful"))
             )
 
-    #@authorized
+    @authorized
     @gen.coroutine
     def search(self, message):
         try:
@@ -235,7 +236,7 @@ class Handler(WebSocketHandler):
         except:
             pass
 
-    #@authorized
+    @authorized
     @gen.coroutine
     def show_profiles(self, message):
         offset = message['params']['offset'] * 10
@@ -258,7 +259,7 @@ class Handler(WebSocketHandler):
         result['rows'][0]['data'] = users
         return self.write_message(dumps(result))
 
-    #@authorized
+    @authorized
     @gen.coroutine
     def show_my_profile(self, message):
         try:
@@ -272,7 +273,7 @@ class Handler(WebSocketHandler):
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Bad request: %s" % e)))
 
-    #@authorized
+    @authorized
     @gen.coroutine
     def show_profile(self, message):
         try:
@@ -325,11 +326,11 @@ class Handler(WebSocketHandler):
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Bad request: %s" % e)))
 
-    #@authorized
+    @authorized
     @gen.coroutine
     def its_me(self, message):
         try:
-            profileid = message['params']['profileid']
+            profileid = UUID(message['params']['profileid'])
             info = message['params']['info']
             if self.profile:
                 return self.write_message(
@@ -356,7 +357,7 @@ class Handler(WebSocketHandler):
                 if (info == db_result[0].isoformat() or
                         "".join(filter(str.isdigit, info)) ==
                         "".join(filter(str.isdigit, db_result[1]))):
-                    cursor = yield self.application.db.execute(
+                    yield self.application.db.execute(
                         "UPDATE users SET profile=%s WHERE uid=%s",
                         (profileid, self.uid)
                     )
@@ -379,7 +380,6 @@ class Handler(WebSocketHandler):
         except Exception as e:
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Bad request: %s" % e)))
-
 
     @gen.coroutine
     def get_crimes(self, crimes, current_profile):
@@ -430,7 +430,7 @@ class Handler(WebSocketHandler):
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Can't get crimes: %s" % e)))
 
-    #@authorized
+    @authorized
     @gen.coroutine
     def show_crimes(self, message):
         offset = message['params']['offset'] * 10
@@ -458,7 +458,7 @@ class Handler(WebSocketHandler):
         result['rows'][0]['data'] = crimes
         return self.write_message(dumps(result))
 
-    #@authorized
+    @authorized
     @gen.coroutine
     def show_crime(self, message):
         try:
@@ -506,8 +506,7 @@ class Handler(WebSocketHandler):
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
                                           text="Can't get crime: %s" % e)))
 
-
-    #@authorized
+    @authorized
     def report(self, message):
         try:
             if 'params' not in message:
@@ -525,7 +524,7 @@ class Handler(WebSocketHandler):
             else:
                 params['country'] = params['country'].title()
 
-            params['crimedate'] = datetime.datetime.strptime(
+            params['crimedate'] = datetime.strptime(
                 params['crimedate'], '%Y-%m-%dT%H:%M:%S.%fZ').date()
             if 'closed' not in params:
                 params['judgement'] = None
@@ -550,13 +549,13 @@ class Handler(WebSocketHandler):
                 "%(country)s, %(crimedate)s, %(description)s, "
                 "%(participants)s, %(judgement)s, %(closed)s, "
                 "%(public)s, %(author)s)", params
-            ),]
+            ), ]
             if params['participants']:
                 sql.append((
                     "UPDATE profiles SET crimes=crimes|| %(crimeid)s::bigint "
                     "WHERE profileid = ANY(%(participants)s)", params
                 ))
-            cursors = self.application.db.transaction(sql)
+            self.application.db.transaction(sql)
         except ProgrammingError:
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Error while reporting"))
