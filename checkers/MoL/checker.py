@@ -85,7 +85,7 @@ class Client(object):
                 if len(answer["text"]) > 26:
                     if "&nbsp;" not in answer["text"]:
                         close(CORRUPT, "Crimes",
-                              "List crimes failed: %s" % answer)
+                              "List auth crimes failed: %s" % answer)
 
         return answer
 
@@ -262,7 +262,7 @@ def not_found(*args):
 
 
 if __name__ == '__main__':
-    #try:
+    try:
         COMMANDS.get(argv[1], not_found)(*argv[2:])
-    #except Exception as e:
-    #    close(INTERNAL_ERROR, "Bad-ass checker", "INTERNAL ERROR: %s" % e)
+    except Exception as e:
+        close(INTERNAL_ERROR, "Bad-ass checker", "INTERNAL ERROR: %s" % e)

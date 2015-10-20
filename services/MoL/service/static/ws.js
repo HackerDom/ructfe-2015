@@ -35,7 +35,7 @@ webix.ready(function(){
             data:[{"row": "hello"}, {"row": "world"}]
         }
     });
-    ws = new WebSocket("ws://localhost:1984/websocket");
+    ws = new WebSocket("ws://" + window.location.host + "/websocket");
     ws.onopen = function() {ws.send('{"action": "hello"}');};
     ws.onmessage = function (evt) {
         var main = JSON.parse(evt.data);

