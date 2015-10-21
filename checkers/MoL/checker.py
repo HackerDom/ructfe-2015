@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 # coding=utf-8
 from random import randrange, choice, shuffle, randint, sample
 from sys import argv, stderr
@@ -185,7 +185,7 @@ def check(*args):
         for checker in checkers:
             checker()
         close(OK)
-    except gaierror:
+    except (gaierror, ConnectionRefusedError):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
@@ -214,7 +214,7 @@ def put(*args):
         c.auth()
         c.report(flag_id, flag)
         close(OK, "%s:%s:%s" % (c.username, c.password, flag_id))
-    except gaierror:
+    except (gaierror, ConnectionRefusedError):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
@@ -242,7 +242,7 @@ def get(*args):
         c.auth()
         c.show_report(flag_id, flag)
         close(OK)
-    except gaierror:
+    except (gaierror, ConnectionRefusedError):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
