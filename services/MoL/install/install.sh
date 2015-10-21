@@ -8,4 +8,6 @@ cp -r ../../service/* ructfe/mol/
 md5deep -l -r lib ructfe > DEBIAN/md5sums
 
 cd ..
-fakeroot dpkg-deb --build ructfe-mol
+echo "RUN: \`fakeroot dpkg-deb --build ructfe-mol\` at the debian system"
+exit 0
+#fakeroot dpkg-deb --build ructfe-mol
