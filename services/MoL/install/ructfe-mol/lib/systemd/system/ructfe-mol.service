@@ -1,0 +1,13 @@
+[Unit]
+    Description=Ministry of Love
+    After=network.target postgresql.service
+
+[Service]
+    ExecStart=/usr/bin/env python3 main.py
+    WorkingDirectory=/ructfe/mol
+    User=mol
+    Group=mol
+    PIDFile=/var/run/ructfe-mol.pid
+
+[Install]
+    WantedBy=multi-user.target

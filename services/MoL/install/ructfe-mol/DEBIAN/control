@@ -1,0 +1,12 @@
+Package: ructfe-mol
+Version: 1
+Provides: ructfe-mol
+Maintainer: m_messiah
+Architecture: all
+Section: web
+Description: RuCTFE service - Ministry of Love
+Depends: systemd, postgresql, libpq-dev, python3
+Pre-Depends: python3-pip, dh-systemd
+Installed-Size: 5000
+Priority: optional
+Origin: ructfe.org

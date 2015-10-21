@@ -1,3 +1,78 @@
+#!/bin/bash
+set -e
+useradd mol
+pip3 install momoko
+
+sudo="su - postgres -c "
+
+$sudo "createdb mol" || echo "Db already exists"
+
+$sudo "cat << ESQL | psql mol
+create user mol with password 'molpassword';
+grant all privileges on database mol to mol;
+CREATE TABLE users
+(
+  uid uuid NOT NULL,
+  username text  NOT NULL,
+  password text  NOT NULL,
+  role boolean NOT NULL DEFAULT false,
+  profile uuid,
+  CONSTRAINT uid PRIMARY KEY (uid),
+  CONSTRAINT users_username_key UNIQUE (username)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE users
+  OWNER TO mol;
+
+INSERT INTO users(uid, username, password, role) VALUES ('ddcb16a4-c813-4a8d-9724-d0df4e905f0c', 'bigbrother', '65e84be33532fb784c48129675f9eff3a682b27168c0ea744b2cf58ee02337c5', true);
+
+CREATE TABLE profiles
+(
+  profileid uuid NOT NULL,
+  name text  NOT NULL,
+  lastname text  NOT NULL,
+  city text  NOT NULL,
+  birthdate date NOT NULL,
+  mobile text ,
+  marital boolean DEFAULT false,
+  userpic integer,
+  crimes bigint[],
+  CONSTRAINT profileid PRIMARY KEY (profileid)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE profiles
+  OWNER TO mol;
+
+
+CREATE TABLE crimes
+(
+  crimeid bigint NOT NULL,
+  name text  NOT NULL,
+  article text  NOT NULL,
+  city text  NOT NULL,
+  country text  NOT NULL,
+  crimedate date NOT NULL,
+  description text  NOT NULL,
+  participants uuid[],
+  judgement text ,
+  closed boolean DEFAULT false,
+  public boolean DEFAULT true,
+  author uuid,
+  CONSTRAINT crimeid PRIMARY KEY (crimeid)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE crimes
+  OWNER TO mol;
+
+ESQL"
+
+cat << USQL | $sudo "psql mol"
 INSERT INTO profiles(profileid, name, lastname, city, birthdate, mobile, marital, crimes, userpic) VALUES 
 ('2550ecc1968742d0921c2bc807cb5822', 'Pearl', 'Bradley', 'Busselton', '1989-12-12', '0412-854-175', false, NULL, 129),
 ('9a064d17826c4158b1294c4bda2fd6d5', 'Isaac', 'Butler', 'Bathurst', '1985-11-20', '0478-045-379', true, NULL, 9),
@@ -9999,3 +10074,19 @@ INSERT INTO profiles(profileid, name, lastname, city, birthdate, mobile, marital
 ('eb101deb91ef48d2a8fa6f75b0156fc3', 'Bobby', 'Hunter', 'Devonport', '1984-03-04', '0401-516-771', false, NULL, 31),
 ('ecbd72fcff7c42d2a9fb733c20e798cb', 'Michelle', 'Burke', 'Hervey bay', '2007-09-17', '0423-629-388', false, NULL, 199),
 ('83ffd4352c554fb181804c2707a0482c', 'Wanda', 'Ryan', 'Australian capital territory', '1984-03-15', '0474-445-030', true, NULL, 178)
+
+USQL
+
+deb-systemd-helper unmask ructfe-mol.service >/dev/null || true
+
+# was-enabled defaults to true, so new installations run enable.
+if deb-systemd-helper --quiet was-enabled ructfe-mol.service; then
+        # Enables the unit on first installation, creates new
+        # symlinks on upgrades if the unit file has changed.
+        deb-systemd-helper enable ructfe-mol.service >/dev/null || true
+else
+        # Update the statefile to add new symlinks (if any), which need to be
+        # cleaned up on purge. Also remove old symlinks.
+        deb-systemd-helper update-state ructfe-mol.service >/dev/null || true
+fi
+deb-systemd-invoke restart ructfe-mol.service >/dev/null || true
