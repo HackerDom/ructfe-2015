@@ -9,10 +9,10 @@ from signal import signal, SIGTERM
 from json import loads, dumps, JSONEncoder
 from hashlib import sha256
 
-from psycopg2 import ProgrammingError, extras, DataError
+from psycopg2 import extras, ProgrammingError, DataError
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-from tornado.web import Application, StaticFileHandler, RequestHandler
+from tornado.web import Application, StaticFileHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
 from momoko import Pool
@@ -43,25 +43,6 @@ def authorized(f):
             args[0].write_message(dumps(tpl.AUTH_FORM))
 
     return wrapper
-
-
-class Profiles(RequestHandler):
-    def __init__(self, application, request, **kwargs):
-        super().__init__(application, request, **kwargs)
-
-    @gen.coroutine
-    def get(self):
-        cursor = yield self.application.db.execute(
-            "select profileid, name, lastname, userpic from profiles"
-        )
-        db_result = cursor.fetchall()
-        users = [
-            dict(zip('id name lastname userpic'.split(), row))
-            for row in db_result
-        ]
-        for u in users:
-            u["value"] = u["name"] + " " + u["lastname"]
-        self.write({'data': users})
 
 
 class Handler(WebSocketHandler):
@@ -255,13 +236,22 @@ class Handler(WebSocketHandler):
             dict(zip('uid name lastname userpic'.split(), row))
             for row in db_result
         ]
+        if len(users) > 10:
+            yield self.application.db.execute(
+                "DELETE FROM users WHERE uid=%s", (self.uid,)
+            )
+            self.uid = self.role = self.profile = None
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE,
+                           text="Just don't try to hack this! "
+                                "You are banned!")))
         result = tpl.PROFILES.copy()
         result['rows'][0]['data'] = users
         return self.write_message(dumps(result))
 
     @authorized
     @gen.coroutine
-    def show_my_profile(self, message):
+    def show_my_profile(self, _):
         try:
             if self.profile:
                 return self.show_profile({'params': {'uid': str(self.profile)}})
@@ -452,6 +442,15 @@ class Handler(WebSocketHandler):
                 row))
             for row in db_result
         ]
+        if len(crimes) > 10:
+            yield self.application.db.execute(
+                "DELETE FROM users WHERE uid=%s", (self.uid,)
+            )
+            self.uid = self.role = self.profile = None
+            return self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE,
+                           text="Just don't try to hack this! "
+                                "You are banned!")))
         for crime in crimes:
             crime['public'] = "" if crime['public'] else "fa-lock"
         result = tpl.CRIMES.copy()
@@ -597,7 +596,6 @@ if __name__ == '__main__':
     signal(SIGTERM, signal_term_handler)
     app = Application([
         (r"/websocket", Handler),
-        (r"/profiles", Profiles),
         (r"/()", StaticFileHandler, {'path': 'static/index.html'}),
         (r"/(.+)", StaticFileHandler, {'path': 'static/'}),
     ])
