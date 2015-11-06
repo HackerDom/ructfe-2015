@@ -53,28 +53,32 @@ webix.ready(function(){
     };
 });
 
-function search() {ws.send(JSON.stringify({'action': 'search', 'params': {'text':  this.getValue()}}));}
-function auth() {if($$('auth').validate()) ws.send(JSON.stringify({'action': 'auth', 'params': $$('auth').getValues()}));}
-function register(){ws.send(JSON.stringify({'action': 'register', 'params': $$('auth').getValues()}));}
+function send(action, params) {
+    return ws.send(JSON.stringify({'action': action, 'params': params}));
+}
+
+function search() {send('search', {'text':  this.getValue()});}
+function auth() {if($$('auth').validate()) send('auth', $$('auth').getValues());}
+function register(){send('register', $$('auth').getValues());}
 function menuChoice(id) {window[id]();};
-function showLast(){offset = 0; ws.send(JSON.stringify({'action': 'show_profiles', 'params': {'offset': 0}}));}
-function showLastCrimes(){offset = 0; ws.send(JSON.stringify({'action': 'show_crimes', 'params': {'offset': 0}}));}
-function nextCrimes() {offset += 1;ws.send( JSON.stringify({'action': 'show_crimes', 'params': {'offset': offset}}));}
-function prevCrimes() {if (offset > 0) offset -= 1; ws.send(JSON.stringify({'action': 'show_crimes', 'params': {'offset': offset}}));}
-function nextProfiles() {offset += 1;ws.send( JSON.stringify({'action': 'show_profiles', 'params': {'offset': offset}}));}
-function prevProfiles() {if (offset > 0) offset -= 1; ws.send(JSON.stringify({'action': 'show_profiles', 'params': {'offset': offset}}));}
-function showMyProfile(){ ws.send(JSON.stringify({'action': 'show_my_profile'}));};
+function showLast(){offset = 0; send('show_profiles', {'offset': 0});}
+function showLastCrimes(){offset = 0; send('show_crimes', {'offset': 0});}
+function nextCrimes() {offset += 1;send('show_crimes', {'offset': offset});}
+function prevCrimes() {if (offset > 0) offset -= 1; send('show_crimes', {'offset': offset});}
+function nextProfiles() {offset += 1;send('show_profiles', {'offset': offset});}
+function prevProfiles() {if (offset > 0) offset -= 1; send('show_profiles', {'offset': offset});}
+function showMyProfile(){ send('show_my_profile');};
 
 function showCrime(e, id, trg){
     var crimeid = trg.getAttribute('data-crimeid');
     if (!crimeid) crimeid = trg.childNodes[0].getAttribute('data-crimeid');
-    ws.send(JSON.stringify({'action': 'show_crime', 'params': {'crimeid': crimeid}}));
+    send('show_crime', {'crimeid': crimeid});
 };
 
 function showProfile(e, id, trg){
     var uid = trg.getAttribute('data-uid');
     if (!uid) uid = trg.childNodes[0].getAttribute('data-uid');
-    ws.send(JSON.stringify({'action': 'show_profile', 'params': {'uid': uid}}));
+    send('show_profile', {'uid': uid});
 };
 
 function itsMe(uid){
@@ -86,7 +90,7 @@ function itsMe(uid){
         width: "40%",
         callback: function(result) {
             if (result === "0")
-                ws.send(JSON.stringify({'action': 'its_me', 'params': {'profileid': uid, 'info': box.getElementsByTagName("input")[0].value}}));
+                send('its_me', {'profileid': uid, 'info': box.getElementsByTagName("input")[0].value});
         }
     });
 }
@@ -133,7 +137,7 @@ function createReport (){
     function showJudgement () {if (this.getValue())$$("judgement").show();else $$("judgement").hide();};
     function report() {
         if($$('crime_form').validate()) {
-            ws.send(JSON.stringify({'action': 'report', 'params': $$('crime_form').getValues()}));
+            send('report', $$('crime_form').getValues());
             $$('crime_win').close();
         }
     };

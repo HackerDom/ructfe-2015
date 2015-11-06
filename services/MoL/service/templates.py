@@ -20,7 +20,6 @@ AUTH_FORM = {
                 {
                     'view': 'text',
                     'label': "Password",
-
                     'name': "password",
                     'type': 'password',
                     'invalidMessage': 'Password is not present',
@@ -196,19 +195,19 @@ CRIMES = {
         },
         {
             'cols': [
-                        {
-                            'view': 'button',
-                            'label': "<-",
-                            'click': 'prevCrimes',
-                            'height': 50,
-                        },
-                        {
-                            'view': 'button',
-                            'label': "->",
-                            'click': 'nextCrimes',
-                            'height': 50,
-                        },
-                    ],
+                {
+                    'view': 'button',
+                    'label': "<-",
+                    'click': 'prevCrimes',
+                    'height': 50,
+                },
+                {
+                    'view': 'button',
+                    'label': "->",
+                    'click': 'nextCrimes',
+                    'height': 50,
+                },
+            ],
         },
     ],
 }

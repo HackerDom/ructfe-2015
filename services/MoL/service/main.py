@@ -1,35 +1,34 @@
 #!/usr/bin/env python3
+import logging
 from collections import defaultdict
 from datetime import datetime, date, time
+from hashlib import sha256
+from json import loads, dumps, JSONEncoder
 from random import choice
+from signal import signal, SIGTERM
 from time import monotonic
 from uuid import uuid4, UUID
-import logging
-from signal import signal, SIGTERM
-from json import loads, dumps, JSONEncoder
-from hashlib import sha256
 
+import templates as tpl
+from momoko import Pool
 from psycopg2 import extras, ProgrammingError, DataError
+from tornado import gen
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, StaticFileHandler
 from tornado.websocket import WebSocketHandler
-from tornado import gen
-from momoko import Pool
-
-import templates as tpl
 
 extras.register_uuid()
-JSONEncoder_olddefault = JSONEncoder.default
+JSONEncoder_default = JSONEncoder.default
 
 
-def JSONEncoder_newdefault(self, o):
+def json_encoder(self, o):
     if isinstance(o, UUID):
         return str(o)
     if isinstance(o, (datetime, date, time)):
         return o.isoformat()
-    return JSONEncoder_olddefault(self, o)
-JSONEncoder.default = JSONEncoder_newdefault
+    return JSONEncoder_default(self, o)
+JSONEncoder.default = json_encoder
 
 
 def authorized(f):
@@ -74,7 +73,8 @@ class Handler(WebSocketHandler):
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
             )
-        user = defaultdict(lambda: None, message['params'])
+
+        user = defaultdict(lambda: None, **message['params'])
         if 'username' not in user or user['username'] == "":
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
@@ -129,7 +129,7 @@ class Handler(WebSocketHandler):
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
             )
-        user = defaultdict(lambda: None, message['params'])
+        user = defaultdict(lambda: None, **message['params'])
 
         if 'username' not in user or user['username'] == "":
             return self.write_message(

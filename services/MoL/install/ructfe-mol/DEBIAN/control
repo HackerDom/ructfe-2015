@@ -9,4 +9,4 @@ Depends: systemd, postgresql, libpq-dev, python3
 Pre-Depends: python3-pip, dh-systemd
 Installed-Size: 5000
 Priority: optional
-Origin: ructfe.org
+Origin: https://ructf.org/e/2015/
