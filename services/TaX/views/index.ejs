@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<% include blocks/head.ejs %>
+<body>
+<% include blocks/b_head.ejs %>
+<div class="content">
+    <h1>Upload your tax declaration</h1>
+
+    <p>Select your personal data and upload tax declaration.</p>
+
+    <form action="<%= resolve('upload') %>" method="post" enctype="multipart/form-data">
+        <select name="pdata">
+            <% for (var i in datalist) { var data = datalist[i]; %>
+                <option value="<%= data._id %>"><%= data.name %></option>
+            <% } %>
+        </select>
+        <input type="file" name="file" multiple>
+        <button type="submit">Upload</button>
+    </form>
+</div>
+<% include blocks/b_footer.ejs %>
+</body>
+</html>

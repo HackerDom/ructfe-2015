@@ -1,0 +1,28 @@
+<style>
+    .b_head {
+        background: black;
+        padding: 0 30px;
+    }
+
+    .b_head__item {
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 2em;
+        padding: 20px;
+        display: inline-block;
+    }
+
+    .b_head__item:hover {
+        transition: all 0.3s ease-in-out;
+        color: black;
+        background: white;
+    }
+</style>
+<div class="b_head">
+    <a class="b_head__item" href="<%= resolve('index') %>">index</a>
+    <a class="b_head__item" href="<%= resolve('reg') %>">registration</a>
+    <a class="b_head__item" href="<%= resolve('login') %>">login</a>
+    <% if (user) { %><a class="b_head__item" style="float: right;" href="<%= resolve('user') %>"><%= user.name %></a><% } %>
+</div>
