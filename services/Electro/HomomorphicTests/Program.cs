@@ -12,10 +12,10 @@ namespace HomomorphicTests
 	{
 		static void Main(string[] args)
 		{
-			int maxNum = 100;
+			int maxNum = 128;
 			var nums = new []{4, 8, 15, 16, 23};
 
-			const int testsCount = 100 * 1000;
+			const int testsCount = 10 * 1000;
 			var sw = Stopwatch.StartNew();
 			for(int i = 0; i < testsCount; i++)
 			{
@@ -33,7 +33,7 @@ namespace HomomorphicTests
 				var decryptedResult = Decrypt(encResult, homoKeyPair.privateKey, maxNum);
 				if(testResult != decryptedResult)
 				{
-					Console.WriteLine("Failed: expected {testResult} got {decryptedResult}");
+					Console.WriteLine($"Failed: expected {testResult} got {decryptedResult}");
 					Environment.Exit(1);
 				}
 			}
