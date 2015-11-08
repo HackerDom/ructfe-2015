@@ -75,6 +75,20 @@
             return $statement;        
         }
 
+        public function create_table($table_name, $schema)
+        {
+            $statement = 'CREATE TABLE IF NOT EXISTS ' . $this->escape_field_name($table_name) . ' (';
+
+            $columns = [];
+            foreach ($schema as $field_name => $field)
+                $columns[] = $this->escape_field_name($field_name) . ' ' . $field->get_type_definition();
+
+            $statement .= join(', ', $columns);
+            $statement .= ')';
+
+            return $this->query($statement);
+        }
+
         public function select($table_name, $filters, $limit=0)
         {
             $where = $this->build_where_by_filter($filters);
@@ -127,26 +141,29 @@
     class DbModel
     {
         static $connection;
+        static $existing_tables = [];
 
-        protected $table;
-        protected $schema;
+        public static $table;
+        public static $schema;
 
         private $fields;
         private $primary_key;
 
         function __construct($init_fields=[])
         {
-            if ($this->primary_key !== NULL && ! array_key_exists($this->primary_key, $this->schema))
+            if ($this->primary_key !== NULL && ! array_key_exists($this->primary_key, self::get_schema()))
             {
-                warning('Database model ' . get_called_class() . ': can\'t find primary key `' . $this->primary_key . '` in schema');
+                warning('Database model ' . $class . ': can\'t find primary key `' . $this->primary_key . '` in schema');
                 $this->primary_key = NULL;
             }
             if ($this->primary_key == NULL)
             {
                 $this->primary_key = 'id';
-                if (! array_key_exists($this->primary_key, $this->schema))
-                    $this->schema[$this->primary_key] = new DbIntField();
+                if (! array_key_exists($this->primary_key, self::get_schema()))
+                    self::get_schema()[$this->primary_key] = new DbIntField(['primary_key' => true]);
             }
+
+            self::create_table();
 
             $this->init_fields($init_fields);
         }
@@ -155,6 +172,31 @@
         {
             foreach ($fields as $field_name => $field_value)
                 $this->$field_name = $field_value;
+        }
+
+        public static function get_table_name()
+        {
+            $class = get_called_class();
+            return $class::$table;            
+        }
+
+        public static function &get_schema()
+        {
+            $class = get_called_class();
+            return $class::$schema;            
+        }
+
+        public static function create_table()
+        {
+            $table_name = self::get_table_name();
+            $schema = self::get_schema();
+
+            if (in_array($table_name, self::$existing_tables))
+                return;
+
+            self::$existing_tables[] = $table_name;
+
+            return self::$connection->create_table($table_name, $schema);
         }
 
         private static function load_objects($db_result)
@@ -178,10 +220,7 @@
 
         public static function find($filters)
         {
-            $class = get_called_class();
-            $object = new $class;
-
-            return self::load_objects(self::$connection->select($object->table, $filters));
+            return self::load_objects(self::$connection->select(self::get_table_name(), $filters));
         }
 
         public static function objects()
@@ -198,23 +237,25 @@
                                     $this->fields[$this->primary_key] :
                                     NULL;
 
-            return self::$connection->insert_or_update($this->table, $fields_without_pk, [$this->primary_key => $primary_key_value]);
+            return self::$connection->insert_or_update(self::get_table_name(), $fields_without_pk, [$this->primary_key => $primary_key_value]);
         }
 
         public function __get($field)
         {
-            if (array_key_exists($field, $this->schema))
+            debug('DbModel::__get(' . $field . ')');
+            if (array_key_exists($field, self::get_schema()))
                 return $this->fields[$field];
 
-            warning('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
+            warning('Database model ' . $class . ': can\'t find field `' . $field . '` in the schema');
             return NULL;
         }
 
         public function __set($field, $value)
         {
-            if (! array_key_exists($field, $this->schema))
+            debug('DbModel::__set(' . $field . ', ' . $value . ')');
+            if (! array_key_exists($field, self::get_schema()))
             {
-                warning('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
+                warning('Database model ' . $class . ': can\'t find field `' . $field . '` in the schema');
                 return;
             }
             $this->fields[$field] = $value;
