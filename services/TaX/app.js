@@ -21,7 +21,7 @@ app.use(serve(__dirname + '/data'));
 
 app.use(function *(next){
   yield next;
-  if (this.body || !this.idempotent) return;
+  if (this.body) return;
   if (this.template && this.context) {
     this.context['resolve'] = router.resolve;
     this.context['session'] = this.session;

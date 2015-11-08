@@ -10,13 +10,12 @@ var f = function *(next) {
     this.context = {'datalist': datalist};
   } else {
     var body = yield parse(this, { limit: '1kb' });
-    if (!body.name) this.throw(400, '.name required');
-    if (!body.private) this.throw(400, '.private data required');
+    if (!body.name) this.throw(400, 'ERROR: .name required');
+    if (!body.private) this.throw(400, 'ERROR: .private data required');
 
     yield db.pdata.insert({'name': body.name, 'private': body.private, 'user': this.user.name});
     this.redirect(router.resolve('index'));
   }
-
 };
 
 router.addRoute('/me', f, 'user');

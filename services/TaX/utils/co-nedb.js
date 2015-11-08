@@ -16,7 +16,6 @@ var methods = [
     //'count',
     'find',
     'findOne',
-    //'findById',
     //'findAndModify',
     'insert'
 ];
