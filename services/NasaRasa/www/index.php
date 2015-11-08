@@ -11,7 +11,7 @@
     $user->login = 'test_changed' . rand(1, 1000);    
     $user->save();
 
-    User::create('new_user', 'new_password');
+    (new User(['login' => 'new_user', 'password' => 'new_password']))->save();
     html_var_dump(count(User::objects()));
 
     html_var_dump(User::find(['login' => $user->login]));

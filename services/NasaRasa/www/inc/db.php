@@ -134,7 +134,7 @@
         private $fields;
         private $primary_key;
 
-        function __construct()
+        function __construct($init_fields=[])
         {
             if ($this->primary_key !== NULL && ! array_key_exists($this->primary_key, $this->schema))
             {
@@ -147,6 +147,14 @@
                 if (! array_key_exists($this->primary_key, $this->schema))
                     $this->schema[$this->primary_key] = new DbIntField();
             }
+
+            $this->init_fields($init_fields);
+        }
+
+        private function init_fields($fields)
+        {
+            foreach ($fields as $field_name => $field_value)
+                $this->$field_name = $field_value;
         }
 
         private static function load_objects($db_result)
