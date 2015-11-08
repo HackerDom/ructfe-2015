@@ -5,10 +5,11 @@
     {
         function __construct($init_fields=[])
         {
-            $this->table = 'users';
-            $this->schema = ['login' => new DbCharField(250), 'password' => new DbCharField(32)];
-
             parent::__construct($init_fields);
         }
     }
+
+    User::$table = 'users';
+    User::$schema = ['login' => new DbCharField(['max_length' => 250]), 'password' => new DbCharField(['max_length' => 32])];
+
 ?>
