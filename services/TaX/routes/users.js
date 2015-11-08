@@ -3,7 +3,7 @@ var parse = require('co-body');
 var db = require('./../db');
 
 var f = function *(next) {
-  if (!this.user) return this.redirect('/401.html');
+  if (!this.user) return this.redirect(router.resolve('login') + '?next=routes.users');
   if ('POST' != this.method) {
     this.template = 'user';
     var datalist = yield db.pdata.find({'user': this.user.name});

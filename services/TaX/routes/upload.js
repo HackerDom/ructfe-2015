@@ -1,4 +1,5 @@
 var router = require('./../router');
+var getRandomString = require('./../utils/random').getRandomString;
 var parse = require('co-busboy');
 var fs = require('fs');
 var path = require('path');
@@ -17,7 +18,7 @@ var f = function *(next) {
         if (part instanceof Array) {
             kwargs[part[0]] = part[1];
         } else {
-            var file = path.join('data', Math.random().toString());
+            var file = path.join('data', getRandomString(6));
             var stream = fs.createWriteStream(file);
             part.pipe(stream);
             console.log('uploading %s -> %s', part.filename, stream.path);

@@ -14,7 +14,15 @@ var f = function *(next){
         if (user) {
             this.cookies.set('name', body.name);
             this.cookies.set('password', body.password);
-            this.redirect(router.resolve('index'));
+
+            var url = null;
+            if (this.query['next']) {
+                url = router.resolve(this.query['next'])
+            }
+            if (!url) {
+                url = router.resolve('index');
+            }
+            this.redirect(url);
         } else {
             this.throw(401, 'O_o');
         }

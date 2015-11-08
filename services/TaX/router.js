@@ -72,11 +72,10 @@ function routes() {
     var router = {};
 
     var dispatch = function *dispatch(next) {
-        debug('try dispatch()', this.method, this.path);
         var _path = this.routerPath || this.path;
         var func = uri_to_func[_path];
         if (func) {
-            debug('dispatch()', _path, (func.toString().split('\r\n').map(function(v){return v.trim()})).join(''));
+            debug('dispatch()', this.method, this.path);
             if (func.constructor.name === 'GeneratorFunction') {
                 next = func.call(this, next);
             } else {
