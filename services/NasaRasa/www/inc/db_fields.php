@@ -4,12 +4,16 @@
     class DbField
     {
         private $is_primary_key = false;
+        public $is_unique = false;
+
         protected $type_definition = 'UNKNOWN';
         
         function __construct($options=[])
         {
             if (array_key_exists('primary_key', $options))
                 $this->is_primary_key = (bool) $options['primary_key'];
+            if (array_key_exists('unique', $options))
+                $this->is_unique = (bool) $options['unique'];
         }
 
         public function get_type_definition()
@@ -31,7 +35,7 @@
             if (array_key_exists('auto_increment', $options))
                 $this->is_auto_increment = (bool) $options['auto_increment'];
 
-            $this->type_definition = 'INT'.($this->is_auto_increment ? ' AUTO_INCREMENT' : '');
+            $this->type_definition = 'INT' . ($this->is_auto_increment ? ' AUTO_INCREMENT' : '');
         }
     }
 

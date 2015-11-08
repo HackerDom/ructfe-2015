@@ -232,17 +232,25 @@
         private static function load_object($db_row)
         {
             $class = get_called_class();
-            $object = new $class;
+            $object = new $class();
             $object->fields = $db_row;
 
             return $object;
         }
 
-        public static function find($filters)
+        public static function find($filters, $limit=0)
         {
             debug('DbModel::find([' . join(', ', $filters) . '])');
             self::ensure_table_exists();
-            return self::load_objects(self::$connection->select(self::get_table_name(), $filters));
+            return self::load_objects(self::$connection->select(self::get_table_name(), $filters, $limit));
+        }
+
+        public static function find_one($filters)
+        {
+            $result = self::find($filters, 1);
+            if (count($result) == 0)
+                return NULL;
+            return $result[0];
         }
 
         public static function objects()
@@ -260,7 +268,36 @@
                                     $this->fields[self::get_primary_key()] :
                                     NULL;
 
+            if (! $this->check_unique_constraints($fields_without_pk, $primary_key_value))
+            {
+                warning('Can\'t save object: duplicated unique field');
+                return false;
+            }
+
             return self::$connection->insert_or_update(self::get_table_name(), $fields_without_pk, [self::get_primary_key() => $primary_key_value]);
+        }
+
+        function check_unique_constraints($fields_without_pk, $ignored_pk_value)
+        {
+            $objects = self::objects();
+            $schema = self::get_schema();
+
+            foreach ($objects as $object)
+            {
+                if ($object->__get(self::get_primary_key()) == $ignored_pk_value)
+                    continue;
+                /* TODO: optimize */
+                foreach ($schema as $field_name => $field)
+                {
+                    if (! $field->is_unique)
+                        continue;
+                    if ($field_name == self::get_primary_key())
+                        continue;
+                    if ($object->$field_name == $fields_without_pk[$field_name])
+                        return false;
+                }
+            }
+            return true;
         }
 
         public function __get($field)
