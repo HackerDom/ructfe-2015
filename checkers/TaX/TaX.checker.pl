@@ -76,7 +76,7 @@ sub check {
 
     for my $str ('index', 'registration', 'login') {
         do_exit(CHECKER_MUMBLE, "Error on main page")
-            unless $r->context =~ qr/$str/i;
+            unless $r->content =~ qr/$str/i;
     }
 
     $r = $ua->post("$url/r", ['name' => $name, 'password' => $pass]);
@@ -100,9 +100,9 @@ sub put {
     $r = $ua->get("$url/me");
     do_exit(CHECKER_MUMBLE, "Error on `me` page") unless $r->is_success;
 
-    if ($vuln == 0) {
-        $id = "$name:$pass";
-        $dname = rand_str(8, 16);
+    $id = "$name:$pass";
+    $dname = rand_str(8, 16);
+    if ($vuln == 1) {
         $r = $ua->post("$url/me",
             ['name' => $dname,
              'private' => rand_str(64, 512) . " $flag " . rand_str(128, 384)]);
@@ -115,6 +115,22 @@ sub put {
         print "1:$id";
     }
     else {
+        $r = $ua->post("$url/me", ['name' => $dname,
+                                   'private' => rand_str(16, 32)]);
+        do_exit(CHECKER_MUMBLE, "Error while updating `me` page")
+            unless $r->is_success;
+
+        $r->content =~ /"(.*?)">$dname/;
+        $r = $ua->post("$url/u", Content_Type => 'form-data',
+            Content => ['pdata' => $1, Filedata => [
+                undef, "1.txt", Content_Type => 'text/plain',
+                Content => "  $flag  "]]);
+        do_exit(CHECKER_MUMBLE, "Error while uploading file")
+            unless $r->is_success;
+
+        $r->content =~ /"(.*?)">uploaded/i;
+
+        print "2:$id:$1";
     }
 
     do_exit(CHECKER_OK)
@@ -136,6 +152,17 @@ sub get {
             unless $r->content =~ qr/$flag/;
     }
     else {
+        my ($name, $pass, $link) = split /:/, $rest;
+
+        my $r = $ua->post("$url/l", ['name' => $name, 'password' => $pass]);
+        do_exit(CHECKER_DOWN, "Could not connect") unless $r->is_success;
+
+        $r = $ua->get("$url/$link");
+        do_exit(CHECKER_MUMBLE, "Error while downloading file")
+            unless $r->is_success;
+
+        do_exit(CHECKER_NOFLAG, "Flag not found")
+            unless $r->content =~ qr/$flag/;
     }
 
     do_exit(CHECKER_OK)
