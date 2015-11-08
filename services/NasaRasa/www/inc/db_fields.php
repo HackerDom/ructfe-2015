@@ -23,11 +23,16 @@
 
     class DbIntField extends DbField
     {
+        private $is_auto_increment = false;
+
         function __construct($options=[])
         {
             parent::__construct($options);
-            $this->type_definition = 'INT';
-        }        
+            if (array_key_exists('auto_increment', $options))
+                $this->is_auto_increment = (bool) $options['auto_increment'];
+
+            $this->type_definition = 'INT'.($this->is_auto_increment ? ' AUTO_INCREMENT' : '');
+        }
     }
 
     class DbCharField extends DbField

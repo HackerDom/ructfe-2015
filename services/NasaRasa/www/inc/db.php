@@ -145,27 +145,30 @@
 
         public static $table;
         public static $schema;
+        private static $primary_key;
 
         private $fields;
-        private $primary_key;
 
         function __construct($init_fields=[])
         {
-            if ($this->primary_key !== NULL && ! array_key_exists($this->primary_key, self::get_schema()))
-            {
-                warning('Database model ' . $class . ': can\'t find primary key `' . $this->primary_key . '` in schema');
-                $this->primary_key = NULL;
-            }
-            if ($this->primary_key == NULL)
-            {
-                $this->primary_key = 'id';
-                if (! array_key_exists($this->primary_key, self::get_schema()))
-                    self::get_schema()[$this->primary_key] = new DbIntField(['primary_key' => true]);
-            }
-
-            self::create_table();
+            self::ensure_table_exists();
 
             $this->init_fields($init_fields);
+        }
+
+        public static function init_model()
+        {
+            if (self::$primary_key !== NULL && ! array_key_exists(self::$primary_key, self::get_schema()))
+            {
+                warning('Database model ' . $class . ': can\'t find primary key `' . self::$primary_key . '` in schema');
+                self::$primary_key = NULL;
+            }
+            if (self::$primary_key == NULL)
+            {
+                self::$primary_key = 'id';
+                if (! array_key_exists(self::$primary_key, self::get_schema()))
+                    self::get_schema()[self::$primary_key] = new DbIntField(['primary_key' => true, 'auto_increment' => true]);
+            }
         }
 
         private function init_fields($fields)
@@ -186,7 +189,7 @@
             return $class::$schema;            
         }
 
-        public static function create_table()
+        public static function ensure_table_exists()
         {
             $table_name = self::get_table_name();
             $schema = self::get_schema();
@@ -220,6 +223,7 @@
 
         public static function find($filters)
         {
+            self::ensure_table_exists();
             return self::load_objects(self::$connection->select(self::get_table_name(), $filters));
         }
 
@@ -230,14 +234,15 @@
 
         public function save()
         {
+            debug('DbModel::save()');
             $fields_without_pk = $this->fields;
-            unset($fields_without_pk[$this->primary_key]);
+            unset($fields_without_pk[self::$primary_key]);
 
-            $primary_key_value = array_key_exists($this->primary_key, $this->fields) ? 
-                                    $this->fields[$this->primary_key] :
+            $primary_key_value = array_key_exists(self::$primary_key, $this->fields) ? 
+                                    $this->fields[self::$primary_key] :
                                     NULL;
 
-            return self::$connection->insert_or_update(self::get_table_name(), $fields_without_pk, [$this->primary_key => $primary_key_value]);
+            return self::$connection->insert_or_update(self::get_table_name(), $fields_without_pk, [self::$primary_key => $primary_key_value]);
         }
 
         public function __get($field)
@@ -246,7 +251,7 @@
             if (array_key_exists($field, self::get_schema()))
                 return $this->fields[$field];
 
-            warning('Database model ' . $class . ': can\'t find field `' . $field . '` in the schema');
+            warning('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
             return NULL;
         }
 
@@ -255,7 +260,7 @@
             debug('DbModel::__set(' . $field . ', ' . $value . ')');
             if (! array_key_exists($field, self::get_schema()))
             {
-                warning('Database model ' . $class . ': can\'t find field `' . $field . '` in the schema');
+                warning('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
                 return;
             }
             $this->fields[$field] = $value;

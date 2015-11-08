@@ -7,12 +7,18 @@
     html_var_dump(count(User::objects()));
     print '<br>';
 
-    $user = User::objects()[0];
-    $user->login = 'test_changed' . rand(1, 1000);    
-    $user->save();
+    if (count(User::objects()) > 0)
+    {
+        $user = User::objects()[0];
+        $user->login = 'test_changed' . rand(1, 1000);    
+        $user->save();
+
+        $created = true;
+    }
 
     (new User(['login' => 'new_user', 'password' => 'new_password']))->save();
     html_var_dump(count(User::objects()));
 
-    html_var_dump(User::find(['login' => $user->login]));
+    if (isset($created))
+        html_var_dump(User::find(['login' => $user->login]));
 ?>
