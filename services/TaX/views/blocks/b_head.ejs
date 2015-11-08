@@ -22,7 +22,9 @@
 </style>
 <div class="b_head">
     <a class="b_head__item" href="<%= resolve('index') %>">index</a>
+    <% if (!user) { %>
     <a class="b_head__item" href="<%= resolve('reg') %>">registration</a>
     <a class="b_head__item" href="<%= resolve('login') %>">login</a>
+    <% } %>
     <% if (user) { %><a class="b_head__item" style="float: right;" href="<%= resolve('user') %>"><%= user.name %></a><% } %>
 </div>

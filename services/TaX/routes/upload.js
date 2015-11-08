@@ -20,7 +20,8 @@ var f = function *(next) {
             kwargs[part[0]] = part[1];
         } else {
             if (part.filename){
-                var file = path.join('data', getRandomString(6));
+                var name = getRandomString(6);
+                var file = path.join('data', name);
                 var stream = fs.createWriteStream(file);
                 part.pipe(stream);
                 console.log('uploading %s -> %s', part.filename, stream.path);
@@ -34,10 +35,10 @@ var f = function *(next) {
     if (!kwargs['pdata']) return this.throw(400, 'ERROR: .pdata required');
     if (!files) return this.throw(400, 'ERROR: .file required');
 
-    var pdata = yield db.pdata.find({'_id': kwargs['pdata']});
+    var pdata = yield db.pdata.findOne({'_id': kwargs['pdata']});
 
     this.template = 'upload';
-    this.context = {'pdata': pdata, 'file': files[0][1]};
+    this.context = {'pdata': pdata, 'file': name};
 };
 
 router.addRoute('/u', f, 'upload');
