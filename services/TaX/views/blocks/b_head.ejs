@@ -25,6 +25,8 @@
     <% if (!user) { %>
     <a class="b_head__item" href="<%= resolve('reg') %>">registration</a>
     <a class="b_head__item" href="<%= resolve('login') %>">login</a>
-    <% } %>
+    <% } else { %>
+    <a class="b_head__item" href="<%= resolve('logout') %>">logout</a>
+    <% }%>
     <% if (user) { %><a class="b_head__item" style="float: right;" href="<%= resolve('user') %>"><%= user.name %></a><% } %>
 </div>
