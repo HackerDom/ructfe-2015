@@ -1,5 +1,6 @@
 <?php
     require_once __DIR__ . '/db_fields.php';
+    require_once __DIR__ . '/logging.php';
 
     class DbConnection
     {
@@ -39,7 +40,7 @@
 
         private function query($query)
         {
-            print '<b>DEBUG</b> [database query] "'.htmlspecialchars($query).'" <br>';
+            debug('Database query "' . $query . '"');
 
             $result = $this->conn->query($query);
             if ($result === false)
@@ -126,48 +127,58 @@
     class DbModel
     {
         static $connection;
-        private $table;
-        private $schema;
+
+        protected $table;
+        protected $schema;
+
         private $fields;
         private $primary_key;
 
-        function __construct($table, $schema)
+        function __construct()
         {
-            $this->table = $table;
-            $this->schema = $schema;
-            /* TODO */
-            $this->primary_key = 'id';
+            if ($this->primary_key !== NULL && ! array_key_exists($this->primary_key, $this->schema))
+            {
+                warning('Database model ' . get_called_class() . ': can\'t find primary key `' . $this->primary_key . '` in schema');
+                $this->primary_key = NULL;
+            }
+            if ($this->primary_key == NULL)
+            {
+                $this->primary_key = 'id';
+                if (! array_key_exists($this->primary_key, $this->schema))
+                    $this->schema[$this->primary_key] = new DbIntField();
+            }
         }
 
-        private function load_objects($db_result)
+        private static function load_objects($db_result)
         {
             $objects = [];
             while ($db_row = $db_result->fetch_assoc())
-                $objects[] = $this->load_object($db_row);
+                $objects[] = self::load_object($db_row);
 
             $db_result->free();
             return $objects;
         }
 
-        private function load_object($db_row)
+        private static function load_object($db_row)
         {
-            $class = get_class($this);
-
+            $class = get_called_class();
             $object = new $class;
             $object->fields = $db_row;
 
             return $object;
         }
 
-        public function find($filters)
+        public static function find($filters)
         {
-            return $this->load_objects(self::$connection->select($this->table, $filters));
+            $class = get_called_class();
+            $object = new $class;
+
+            return self::load_objects(self::$connection->select($object->table, $filters));
         }
 
         public static function objects()
         {
-            $class = get_called_class();
-            return (new $class)->find([]);
+            return self::find([]);
         }
 
         public function save()
@@ -184,12 +195,20 @@
 
         public function __get($field)
         {
-            /* TODO: check if exists in schema */
-            return $this->fields[$field];
+            if (array_key_exists($field, $this->schema))
+                return $this->fields[$field];
+
+            warning('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
+            return NULL;
         }
 
         public function __set($field, $value)
         {
+            if (! array_key_exists($field, $this->schema))
+            {
+                warning('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
+                return;
+            }
             $this->fields[$field] = $value;
         }
     }

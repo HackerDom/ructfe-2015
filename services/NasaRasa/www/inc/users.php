@@ -5,7 +5,10 @@
     {
         function __construct()
         {
-            parent::__construct('users', ['id' => new DbIntField(), 'login' => new DbCharField(250), 'password' => new DbCharField(32)]);
+            $this->table = 'users';
+            $this->schema = ['login' => new DbCharField(250), 'password' => new DbCharField(32)];
+
+            call_user_func_array('parent::__construct', func_get_args());
         }
 
         public static function create($login, $password)
