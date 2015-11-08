@@ -3,7 +3,7 @@ var name_to_func = {}; // index -> index-function
 var uri_to_func = {}; // / -> index-function
 var path_to_func = {}; // routes.index -> index-function
 var os = require('os');
-var regex = new RegExp("^[A-Z-]+[.][A-Z-]+$", "i");
+var regex = new RegExp("^[A-Z0-9-]+[.][A-Z0-9-]+$", "i");
 
 function debug() {
     "use strict";
@@ -12,12 +12,14 @@ function debug() {
 
 function resolve(name) {
     "use strict";
+    console.log('resolve', name);
     if (name_to_func[name]) {  // by name
         return name_to_func[name].uri;
     } else if (name.indexOf("/") > -1 && uri_to_func[name]) {  // by uri
         return uri_to_func[name].uri;
     } else if (regex.test(name)) {
         try {
+            console.log("try ./" + name.replace('.', '/'));
             require("./" + name.replace('.', '/'));
         } catch (e) {
 
