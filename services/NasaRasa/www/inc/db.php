@@ -143,9 +143,7 @@
         static $connection;
         static $existing_tables = [];
 
-        public static $table;
-        public static $schema;
-        private static $primary_key;
+        static $primary_key = NULL;
 
         private $fields;
 
@@ -156,19 +154,22 @@
             $this->init_fields($init_fields);
         }
 
-        public static function init_model()
+        public static function build_schema($schema)
         {
-            if (self::$primary_key !== NULL && ! array_key_exists(self::$primary_key, self::get_schema()))
+            $primary_key = self::get_defined_primary_key();
+            if ($primary_key !== NULL && ! array_key_exists($primary_key, $schema))
             {
-                warning('Database model ' . $class . ': can\'t find primary key `' . self::$primary_key . '` in schema');
-                self::$primary_key = NULL;
+                warning('Database model ' . get_called_class() . ': can\'t find primary key `' . $primary_key . '` in schema');
+                $primary_key = NULL;
             }
-            if (self::$primary_key == NULL)
+            if ($primary_key === NULL)
             {
-                self::$primary_key = 'id';
-                if (! array_key_exists(self::$primary_key, self::get_schema()))
-                    self::get_schema()[self::$primary_key] = new DbIntField(['primary_key' => true, 'auto_increment' => true]);
+                $primary_key = 'id';
+                if (! array_key_exists($primary_key, $schema))
+                    $schema[$primary_key] = new DbIntField(['primary_key' => true, 'auto_increment' => true]);
             }
+
+            return $schema;
         }
 
         private function init_fields($fields)
@@ -180,13 +181,27 @@
         public static function get_table_name()
         {
             $class = get_called_class();
-            return $class::$table;            
+            return $class::$table_name;            
         }
 
-        public static function &get_schema()
+        public static function get_schema()
         {
             $class = get_called_class();
-            return $class::$schema;            
+            return $class::get_schema();            
+        }
+
+        public static function get_defined_primary_key()
+        {
+            $class = get_called_class();
+            return $class::$primary_key;
+        }
+
+        public static function get_primary_key()
+        {
+            $primary_key = self::get_defined_primary_key();
+            if ($primary_key === NULL)
+                $primary_key = 'id';
+            return $primary_key;
         }
 
         public static function ensure_table_exists()
@@ -196,6 +211,8 @@
 
             if (in_array($table_name, self::$existing_tables))
                 return;
+
+            debug('DbModel::ensure_table_exists(' . $table_name . ')');
 
             self::$existing_tables[] = $table_name;
 
@@ -223,6 +240,7 @@
 
         public static function find($filters)
         {
+            debug('DbModel::find([' . join(', ', $filters) . '])');
             self::ensure_table_exists();
             return self::load_objects(self::$connection->select(self::get_table_name(), $filters));
         }
@@ -236,13 +254,13 @@
         {
             debug('DbModel::save()');
             $fields_without_pk = $this->fields;
-            unset($fields_without_pk[self::$primary_key]);
+            unset($fields_without_pk[self::get_primary_key()]);
 
-            $primary_key_value = array_key_exists(self::$primary_key, $this->fields) ? 
-                                    $this->fields[self::$primary_key] :
+            $primary_key_value = array_key_exists(self::get_primary_key(), $this->fields) ? 
+                                    $this->fields[self::get_primary_key()] :
                                     NULL;
 
-            return self::$connection->insert_or_update(self::get_table_name(), $fields_without_pk, [self::$primary_key => $primary_key_value]);
+            return self::$connection->insert_or_update(self::get_table_name(), $fields_without_pk, [self::get_primary_key() => $primary_key_value]);
         }
 
         public function __get($field)

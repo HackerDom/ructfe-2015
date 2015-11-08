@@ -1,8 +1,10 @@
 <?php
     // error_reporting(~E_ALL);
 
-    require_once 'inc/users.php';
     require_once 'inc/logging.php';
+    require_once 'models/users.php';
+    require_once 'models/posts.php';
+
 
     html_var_dump(count(User::objects()));
     print '<br>';
@@ -21,4 +23,11 @@
 
     if (isset($created))
         html_var_dump(User::find(['login' => $user->login]));
+
+
+    $post = new Post(['title' => 'New post!', 'text' => 'It\'s a text of a new post']);
+    $post->save();
+
+    html_var_dump(count(User::objects()));
+    html_var_dump(count(Post::objects()));
 ?>
