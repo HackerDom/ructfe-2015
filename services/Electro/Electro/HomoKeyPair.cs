@@ -66,9 +66,6 @@ namespace HomomorphicTests
 			{
 				Singleton.Random.NextBytes(buff);
 				var p = BigInteger.Abs(new BigInteger(buff));
-				if(BigInteger.GreatestCommonDivisor(p, maxNum) != 1)
-					continue;
-
 				return new PrivateKey { P = p };
 			}
 		}
