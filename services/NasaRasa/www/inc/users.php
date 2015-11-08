@@ -11,5 +11,6 @@
 
     User::$table = 'users';
     User::$schema = ['login' => new DbCharField(['max_length' => 250]), 'password' => new DbCharField(['max_length' => 32])];
+    User::init_model();
 
 ?>
