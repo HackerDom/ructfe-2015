@@ -8,11 +8,11 @@ import (
 )
 
 func main() {
-    url := "http://localhost:8000"
+    url := "http://localhost:8080"
 
     var query = []byte(``)
     req, err := http.NewRequest("GET", url, bytes.NewBuffer(query))
-    req.Header.Set("Cookie", "myCookie=Polina")
+    req.Header.Set("Cookie", "loggedAs=Polina; auth=somestring; loggedAs=Charlie")
     req.Header.Set("Content-Type", "text/plain")
 
     client := &http.Client{}
