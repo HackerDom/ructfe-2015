@@ -40,6 +40,11 @@
     </style>
     <script src="http://cdn.webix.com/edge/webix.js" type="text/javascript"></script>
     <script src="/ws.min.js"></script>
+    <script>
+        window.onbeforeunload = function() {
+            return "If you leave - we deauthorize you!";
+        }
+    </script>
 </head>
 <body>
 </body>
