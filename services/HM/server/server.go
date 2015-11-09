@@ -9,6 +9,13 @@ import (
 	"net/http"
 )
 
+func healthMetricsHandler(w http.ResponseWriter, request *http.Request) {
+
+	metrics := parseFromForm(request)
+	response := fmt.Sprintf("Comment from form: %v", metrics.Comment)
+	io.WriteString(w, response)
+}
+
 func handleRequest(w http.ResponseWriter, request *http.Request) {
 	response := "Response from server: "
 	cookies := make(map[string]string)
@@ -54,7 +61,7 @@ func (*myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	prepareDb()
+//	prepareDb()
 	var port = flag.String("port", "8000", "please specify the port to start server on")
 	flag.Parse()
 	fmt.Println("Port to start on: " + *port)
@@ -65,6 +72,7 @@ func main() {
 
 	mux = make(map[string]func(http.ResponseWriter, *http.Request))
 	mux["/"] = handleRequest
+	mux["/healthMetrics"] = healthMetricsHandler
 
 	server.ListenAndServe()
 }
