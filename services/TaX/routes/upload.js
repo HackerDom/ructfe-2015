@@ -1,4 +1,6 @@
 var router = require('./../router');
+var getRandomString = require('./../utils/random').getRandomString;
+var db = require('./../db');
 var parse = require('co-busboy');
 var fs = require('fs');
 var path = require('path');
@@ -8,7 +10,7 @@ var f = function *(next) {
     if ('POST' != this.method) return yield next;
 
     // multipart upload
-    var parts = parse(this);
+    var parts = parse(this, { limits: {fileSize: 1024 * 64} });
     var kwargs = {};
     var files = [];
     var part;
@@ -17,16 +19,26 @@ var f = function *(next) {
         if (part instanceof Array) {
             kwargs[part[0]] = part[1];
         } else {
-            var file = path.join('data', Math.random().toString());
-            var stream = fs.createWriteStream(file);
-            part.pipe(stream);
-            console.log('uploading %s -> %s', part.filename, stream.path);
-            files.push([part.filename, stream.path]);
+            if (part.filename){
+                var name = getRandomString(6);
+                var file = path.join('data', name);
+                var stream = fs.createWriteStream(file);
+                part.pipe(stream);
+                console.log('uploading %s -> %s', part.filename, stream.path);
+                files.push([part.filename, stream.path]);
+            } else {
+                return this.throw(400, 'ERROR: .file problem');
+            }
         }
     }
 
-    // TODO: this!
-    this.redirect('/');
+    if (!kwargs['pdata']) return this.throw(400, 'ERROR: .pdata required');
+    if (!files) return this.throw(400, 'ERROR: .file required');
+
+    var pdata = yield db.pdata.findOne({'_id': kwargs['pdata']});
+
+    this.template = 'upload';
+    this.context = {'pdata': pdata, 'file': name};
 };
 
 router.addRoute('/u', f, 'upload');

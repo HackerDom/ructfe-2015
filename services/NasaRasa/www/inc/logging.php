@@ -1,4 +1,14 @@
 <?php
+    function warning($message)
+    {
+        print '<b>[WARNING]</b> ' . htmlspecialchars($message) . '<br>';
+    }
+
+    function debug($message)
+    {
+        print '<b>[DEBUG]</b> ' . htmlspecialchars($message) . '<br>';
+    }
+
     function html_var_dump($var)
     {
         print '<pre>';

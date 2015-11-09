@@ -7,7 +7,12 @@ using System.Threading.Tasks;
 
 namespace HomomorphicTests
 {
-	class HomoKeyPair
+	class Singleton
+	{
+		public static Random Random = new Random();
+	}
+
+	public class HomoKeyPair
 	{
 		public PublicKey publicKey;
 		public PrivateKey privateKey;
@@ -25,7 +30,8 @@ namespace HomomorphicTests
 		}
 	}
 
-	class PublicKey
+
+	public class PublicKey
 	{
 		public BigInteger[] PK;
 
@@ -34,13 +40,10 @@ namespace HomomorphicTests
 			var buff = new BigInteger[DefaultSetSize];
 
 			byte[] rand = new byte[bitsCount / 8];
-			Random r = new Random();
-
-			BigInteger rem;
 			for(int i = 0; i < buff.Length; i++)
 			{
-				r.NextBytes(rand);
-				buff[i] = (BigInteger.Abs(new BigInteger(rand)) * privateKey.P) + (maxNum * r.Next(10, 100));
+				Singleton.Random.NextBytes(rand);
+				buff[i] = (BigInteger.Abs(new BigInteger(rand)) * privateKey.P) + (maxNum * Singleton.Random.Next(10, 100));
 			}
 
 			return new PublicKey { PK = buff };
@@ -51,7 +54,8 @@ namespace HomomorphicTests
 		public const int DefaultSetSize = 16;
 	}
 
-	class PrivateKey
+
+	public class PrivateKey
 	{
 		public BigInteger P;
 
@@ -60,11 +64,8 @@ namespace HomomorphicTests
 			var buff = new byte[bitsCount/8];
 			while(true)
 			{
-				new Random().NextBytes(buff);
-				var p = new BigInteger(buff);
-				if(p % maxNum == 0)
-					continue;
-
+				Singleton.Random.NextBytes(buff);
+				var p = BigInteger.Abs(new BigInteger(buff));
 				return new PrivateKey { P = p };
 			}
 		}
