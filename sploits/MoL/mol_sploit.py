@@ -55,7 +55,7 @@ class Client(object):
                 _ = self.ws.recv()
         if "rows" not in answer:
             answer = loads(self.ws.recv())
-        # Show Profiles"""
+        # Show Profiles
         if ("data" not in answer["rows"][0] or
                 len(answer["rows"][0]["data"]) < 5):
             close("showProfile failed: %s" % answer)
@@ -69,7 +69,7 @@ class Client(object):
             {'action': 'show_crimes',
              'params': {'offset': "0; select crimeid, name, description, "
                                   "city, country, crimedate, public "
-                                  "from crimes --"}}))
+                                  "from crimes LIMIT 10 --"}}))
         answer = loads(self.ws.recv())
         if ("rows" in answer and
                 "data" in answer['rows'][0]):
@@ -156,8 +156,3 @@ if __name__ == '__main__':
         close("No connection to %s" % argv[1])
     except (KeyError, IndexError):
         close("JSON structure\nBad answer in %s" % answer)
-    finally:
-        try:
-            ws.close()
-        except UnboundLocalError:
-            pass
