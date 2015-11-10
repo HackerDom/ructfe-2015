@@ -2,11 +2,16 @@
 
 import paramiko
 import socket
+import json
+import sys
 
 from subprocess import call, PIPE
 from sys import argv
 from random import randint
 from time import sleep
+
+from tempfile import mkdtemp
+from os.path import dirname
 
 def random_name():
     return str(randint(100000, 999999))
@@ -20,14 +25,53 @@ def run(command, fail = False):
 
 class Service:
 
-    def __init__(self, name):
-        pass
+    def __init__(self, name, config):
+        self.name = name
+        self.config = config
+
+    def deploy(self, dirty_machine, team_machine):
+        if self.name not in self.config:
+            raise Exception("No information about {0} in config".format(self.name))
+
+        self.__add_user(team_machine)
+        self.__install_run_deps(team_machine)
+        self.__copy_files(dirty_machine, team_machine)
+        self.__post_copy(dirty_machine, team_machine)
+
+    def __add_user(self, machine):
+        username = self.config[self.name]["username"]
+        machine.run('useradd -m {0}'.format(username))
+
+    def __install_run_deps(self, machine):
+        run_deps = " ".join(self.config[self.name]["run_deps"])
+        machine.run('apt-get update', True)
+        machine.run('DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes {0}'.format(run_deps), True)
+
+    def __copy_files(self, from_machine, to_machine):
+        files = self.config[self.name]["files"]
+        tmp_directory = mkdtemp()
+        for frm, to in files:
+            run('mkdir -p {0}/{1}'.format(tmp_directory, dirname(frm)))
+            from_machine.get('/root/ructfe-2015/{0}'.format(frm), '{0}/{1}'.format(tmp_directory, frm))
+            to_machine.run('mkdir -p {0}'.format(dirname(to)))
+            to_machine.put('{0}/{1}'.format(tmp_directory, frm), to)
+ 
+    def __post_copy(self, from_machine, to_machine):
+        frm, to = self.config[self.name]["postcopy"]
+        tmp_directory = mkdtemp()
+        run('mkdir -p {0}/{1}'.format(tmp_directory, dirname(frm)))
+        from_machine.get('/root/ructfe-2015/{0}'.format(frm), '{0}/{1}'.format(tmp_directory, frm))
+        to_machine.run('mkdir -p {0}'.format(dirname(to)))
+        to_machine.put('{0}/{1}'.format(tmp_directory, frm), to)
+        to_machine.run('bash -x {0}'.format(to), True)
+        to_machine.run('rm {0}'.format(to))
+
 
 class NasaRasa(Service):
 
-    def __init__(self):
-        Service.__init__(self, "NasaRasa")
-
+    def __init__(self, config):
+        Service.__init__(self, "NasaRasa", config)
+    
 class Machine:
 
     def __init__(self, name, ip):
@@ -46,16 +90,19 @@ class Machine:
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         not_started = True
         lap = 0
+        max_lap = 15
         while not_started:
             try:
-                if lap > 15:
-                    run("VBoxManage controlvm {0} reset".format(self.name))
+                if lap > max_lap:
+                    run("VBoxManage controlvm {0} setlinkstate1 off".format(self.name), True)
+                    sleep(10)
+                    run("VBoxManage controlvm {0} setlinkstate1 on".format(self.name), True)
                     lap = 0
+                    max_lap = 3
                 sleep(1)
                 not_started = False
                 self.ssh_client.connect(ip, username="root", key_filename=self.key_filename)
                 self.ssh_client.hostname = ip
-                self.sftp_client = self.ssh_client.open_sftp()
             except (paramiko.ssh_exception.NoValidConnectionsError, socket.error):
                 lap += 1
                 not_started = True
@@ -86,19 +133,21 @@ class Machine:
         sleep(1)
         run("VBoxManage unregistervm {0} --delete".format(self.name), True)
 
-    def copy(self, path_from, path_to):
-        print("[+] remote-copy\t{0}\t{1}\t{2}".format(self.ssh_client.hostname, path_from, path_to))
-        return self.sftp_client.put(path_from, path_to)
+    def put(self, path_from, path_to):
+        print("[+] remote-put\t{0}\t{1}\t{2}".format(self.ssh_client.hostname, path_from, path_to))
+        run("scp -o StrictHostKeyChecking=no -o BatchMode=yes -i deploy-key -r {0} root@{1}:{2}".format(path_from, self.ssh_client.hostname, path_to), True)
 
-    def mkdir(self, path, mode=0777):
-        return self.sftp_client.mkdir(path)
+    def get(self, path_from, path_to):
+        print("[+] remote-get\t{0}\t{1}\t{2}".format(self.ssh_client.hostname, path_from, path_to))
+        run("scp -o StrictHostKeyChecking=no -o BatchMode=yes -i deploy-key -r root@{0}:{1} {2}".format(self.ssh_client.hostname, path_from, path_to), True)
 
-    def chmod(self, path, mode):
-        return self.sftp_client.chmod(path, mode)
-
-    def run(self, command):
+    def run(self, command, show_output=False):
         print("[+] remote-run\t{0}\t{1}".format(self.ssh_client.hostname, command))
-        return self.ssh_client.exec_command(command)
+        stdin, stdout, stderr = self.ssh_client.exec_command(command)
+        if show_output:
+            print('[stdout]\n {0}'.format("".join(stdout.readlines())))
+            print('[stderr]\n {0}'.format("".join(stderr.readlines())))
+
 
 class DirtyMachine(Machine):
 
@@ -106,14 +155,10 @@ class DirtyMachine(Machine):
         Machine.__init__(self, random_name(), "10.70.0.3")
 
     def __clone_ructfe(self):
-        self.copy('deploy-key', '/root/.ssh/id_rsa')
-        self.chmod('/root/.ssh/id_rsa', 0600)
-        _, stdout, stderr = self.run('ssh-keyscan github.com >> /root/.ssh/known_hosts')
-        print(stdout.readlines())
-        print(stderr.readlines())
-        _, stdout, stderr = self.run('git clone git@github.com:HackerDom/ructfe-2015.git /root/ructfe-2015')
-        print(stdout.readlines())
-        print(stderr.readlines())
+        self.put('deploy-key', '/root/.ssh/id_rsa')
+        self.run('chmod 600 /root/.ssh/id_rsa')
+        self.run('ssh-keyscan github.com >> /root/.ssh/known_hosts', True)
+        self.run('git clone git@github.com:HackerDom/ructfe-2015.git /root/ructfe-2015', True)
 
     def __enter__(self):
         try:
@@ -122,13 +167,43 @@ class DirtyMachine(Machine):
         except (KeyboardInterrupt, Exception) as e:
             self.stop()
             raise
+        return self
 
     def __exit__(self, exit_type, exit_value, exit_traceback):
         self.stop()
 
+class TeamMachine(Machine):
+
+    def __init__(self, name, ip):
+        Machine.__init__(self, name, ip)
+
+    def __enter__(self):
+        try:
+            self.start()
+        except (KeyboardInterrupt, Exception) as e:
+            self.stop()
+            raise
+        return self
+
+    def __exit__(self, exit_type, exit_value, exit_traceback):
+        self.stop()
+
+def read_config(filename):
+    with open(filename) as f:
+        return json.load(f)
+
 def main(argv):
-    with DirtyMachine() as dirty_machine:
-        services = [NasaRasa()]
+    if len(argv) != 2:
+        print("./deploy.py config.json")
+        return 0
+
+    config = read_config(argv[1])
+    with DirtyMachine() as dirty_machine, TeamMachine("team01", "10.70.0.100") as team_machine:
+        services = [NasaRasa(config)]
+        for service in services:
+            service.deploy(dirty_machine, team_machine)
+
+        sys.stdin.read(1)
 
 if __name__ == "__main__":
     main(argv)

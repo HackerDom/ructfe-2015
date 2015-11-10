@@ -1,7 +1,7 @@
 {
 	"NasaRasa" : {
-		"user" : "nasarasa",
-		"postcopy" : "deploy/nasarasa/postcopy.sh",
+		"username" : "nasarasa",
+		"postcopy" : ["deploy/nasarasa/postcopy.sh", "/root/nasarasa/postcopy.sh"],
 		"run_deps" : [
 			"nginx",
 			"php5-fpm",
@@ -11,7 +11,15 @@
 		],
 		"files" : [
 			["deploy/nasarasa/files/nasarasa", "/etc/nginx/sites-available/nasarasa"],
-			["services/NasaRasa/www", "/home/nasarasa/www"
+			["services/NasaRasa/www/models/User.php", "/home/nasarasa/www/models/User.php"],
+			["services/NasaRasa/www/models/Post.php", "/home/nasarasa/www/models/Post.php"],
+			["services/NasaRasa/www/models/users.php", "/home/nasarasa/www/models/users.php"],
+			["services/NasaRasa/www/models/posts.php", "/home/nasarasa/www/models/posts.php"],
+			["services/NasaRasa/www/index.php", "/home/nasarasa/www/index.php"],
+			["services/NasaRasa/www/inc/db_fields.php", "/home/nasarasa/www/inc/db_fields.php"],
+			["services/NasaRasa/www/inc/logging.php", "/home/nasarasa/www/inc/logging.php"],
+			["services/NasaRasa/www/inc/db.php", "/home/nasarasa/www/inc/db.php"],
+			["services/NasaRasa/www/inc/UserManager.php", "/home/nasarasa/www/inc/UserManager.php"]
 		]
 	}
 }
