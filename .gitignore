@@ -4,3 +4,6 @@ services/Electro/HomomorphicTests/bin
 services/Electro/HomomorphicTests/obj
 services/Electro/Electro/bin
 services/Electro/Electro/obj
+
+services/HM/server/*.exe
+services/HM/server/*.db

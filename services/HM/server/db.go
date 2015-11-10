@@ -2,16 +2,17 @@ package main
 
 import (
 	"database/sql"
-//	"fmt"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
 )
-const DbName = "./health.db" 
-const CreateTable = `
-	CREATE TABLE index (id integer not null primary key, weight integer, bp integer, pulse integer, walking_distance integer, comment text);
-	DELETE FROM index;
-	`
+const (
+	DbName = "./health.db" 
+	CreateTable = "CREATE TABLE healthIndices(id integer not null primary key, weight integer, bp integer, pulse integer, walking_distance integer, comment text); DELETE FROM healthIndices;"
+	InsertValues = "INSERT INTO healthIndices(id, weight, bp, pulse, walking_distance, comment) VALUES (?, ?, ?, ?, ?, ?)"
+	SelectRows = "SELECT id, comment FROM healthIndices"
+)
 
 func prepareDb() {
 	os.Remove(DbName)
@@ -28,34 +29,36 @@ func prepareDb() {
 		return
 	}
 
-	// tx, err := db.Begin()
-	// if err != nil {
-		// log.Fatal(err)
-	// }
-	// stmt, err := tx.Prepare("insert into foo(id, name) values(?, ?)")
-	// if err != nil {
-		// log.Fatal(err)
-	// }
-	// defer stmt.Close()
-	// for i := 0; i < 100; i++ {
-		// _, err = stmt.Exec(i, fmt.Sprintf("こんにちわ世界%03d", i))
-		// if err != nil {
-			// log.Fatal(err)
-		// }
-	// }
-	// tx.Commit()
+	 tx, err := db.Begin()
+	 if err != nil {
+		log.Fatal(err)
+	 }
+	 stmt, err := tx.Prepare(InsertValues)
+	 if err != nil {
+		log.Fatal(err)
+	 }
+	 defer stmt.Close()
+	 
+	 for i := 0; i < 100; i++ {
+	 _, err = stmt.Exec(i, i*3, i+3, (i-1)*4, i-2, fmt.Sprintf("Comment number %03d", i))
+	 if err != nil {
+		 log.Fatal(err)
+	 }
+	 }
+	 tx.Commit()
 
-	// rows, err := db.Query("select id, name from foo")
-	// if err != nil {
-		// log.Fatal(err)
-	// }
-	// defer rows.Close()
-	// for rows.Next() {
-		// var id int
-		// var name string
-		// rows.Scan(&id, &name)
-		// fmt.Println(id, name)
-	// }
+	 rows, err := db.Query(SelectRows)
+	 if err != nil {
+		log.Fatal(err)
+	 }
+	 defer rows.Close()
+	 
+	 for rows.Next() {
+		var id int
+		var comment string
+		rows.Scan(&id, &comment)
+		fmt.Println(id, comment)
+	 }
 
 	// stmt, err = db.Prepare("select name from foo where id = ?")
 	// if err != nil {

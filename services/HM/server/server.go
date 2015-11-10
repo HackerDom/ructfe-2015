@@ -61,7 +61,7 @@ func (*myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-//	prepareDb()
+	prepareDb()
 	var port = flag.String("port", "8000", "please specify the port to start server on")
 	flag.Parse()
 	fmt.Println("Port to start on: " + *port)
