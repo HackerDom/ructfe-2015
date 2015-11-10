@@ -33,7 +33,7 @@ namespace HomomorphicTests
 
 	public class PublicKey
 	{
-		public BigInteger[] PK;
+		public BigInteger[] KeyParts;
 
 		public static PublicKey GenPublicKey(PrivateKey privateKey, int maxNum, int bitsCount = DefaultBitsCount)
 		{
@@ -43,10 +43,10 @@ namespace HomomorphicTests
 			for(int i = 0; i < buff.Length; i++)
 			{
 				Singleton.Random.NextBytes(rand);
-				buff[i] = (BigInteger.Abs(new BigInteger(rand)) * privateKey.P) + (maxNum * Singleton.Random.Next(10, 100));
+				buff[i] = (BigInteger.Abs(new BigInteger(rand)) * privateKey.Key) + (maxNum * Singleton.Random.Next(10, 100));
 			}
 
-			return new PublicKey { PK = buff };
+			return new PublicKey { KeyParts = buff };
 		}
 
 		public const int DefaultBitsCount = 8 * 16;
@@ -57,7 +57,7 @@ namespace HomomorphicTests
 
 	public class PrivateKey
 	{
-		public BigInteger P;
+		public BigInteger Key;
 
 		public static PrivateKey GenPrivateKey(int maxNum, int bitsCount = DefaultBitsCount)
 		{
@@ -66,7 +66,7 @@ namespace HomomorphicTests
 			{
 				Singleton.Random.NextBytes(buff);
 				var p = BigInteger.Abs(new BigInteger(buff));
-				return new PrivateKey { P = p };
+				return new PrivateKey { Key = p };
 			}
 		}
 

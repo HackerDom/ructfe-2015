@@ -1,23 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Numerics;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HomomorphicTests
 {
-	class Program
+	static class Program
 	{
 		static void Main(string[] args)
 		{
 			int maxNum = 128;
-			var nums = new []{0, 0, 1, 0, 0};
+			var nums = new []{1, 2, 3, 4, 5};
 
-			const int testsCount = 10 * 1000;
+			const int testsCount = 10;
 			var sw = Stopwatch.StartNew();
 			for(int i = 0; i < testsCount; i++)
 			{
@@ -50,14 +45,14 @@ namespace HomomorphicTests
 		{
 			BigInteger b = 0;
 			var r = RandomNumberGenerator.Create();
-			for(int i = 0; i < publicKey.PK.Length; i++)
+			for(int i = 0; i < publicKey.KeyParts.Length; i++)
 			{
 				byte[] bb = new byte[1];
 				r.GetBytes(bb);
 				var random = bb[0]%2;
 				Console.Write(random);
 				if(i == 0 || random == 1)
-					b = b + publicKey.PK[i];
+					b = b + publicKey.KeyParts[i];
 			}
 			Console.WriteLine();
 			return b + m;
@@ -65,7 +60,7 @@ namespace HomomorphicTests
 
 		private static BigInteger Decrypt(BigInteger c, PrivateKey privateKey, int maxNum)
 		{
-			var m = c % privateKey.P;
+			var m = c % privateKey.Key;
 			return m % maxNum;
 		}
 	}
