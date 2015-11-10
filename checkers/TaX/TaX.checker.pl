@@ -41,8 +41,11 @@ my @agents = (
     "Wget/1.8.1"
 );
 
+my @vuln_vec = (1, 2, 2, 2, 2);
+
 ($mode, $ip, $id, $flag, $vuln) = @ARGV;
-%handlers = ('check' => \&check, 'put' => \&put, 'get' => \&get);
+%handlers = ('info' => \&info,
+             'check' => \&check, 'put' => \&put, 'get' => \&get);
 
 $ua = LWP::UserAgent->new();
 $ua->agent($agents[int rand @agents]);
@@ -63,23 +66,65 @@ sub do_exit {
     exit $code;
 }
 
+sub rand_abc {
+    my ($min, $max, @abc) = @_;
+    join '', map { $abc[int rand @abc] } (0 .. ($min + int rand ($max - $min)))
+}
+
 sub rand_str {
-    join '', map { ['a'..'z']->[int rand 26] } (
-        0 .. ($_[0] + int rand ($_[1] - $_[0])))
+    rand_abc(@_, 'a'..'z')
+}
+
+sub rand_text {
+    rand_abc(@_, ('a'..'z', 'A'..'Z', '0'..'9', ' '))
+}
+
+sub _check {
+    my ($r, $msg) = @_;
+    do_exit(CHECKER_DOWN, "$msg (1)") unless $r->is_success;
+    do_exit(CHECKER_MUMBLE, "$msg (2)") if $r->content =~ /error/i;
+}
+
+sub _register {
+    my ($name, $pass) = @_;
+    my $r = $ua->post("$url/r", ['name' => $name, 'password' => $pass]);
+    _check($r, "Registration error");
+    $r
+}
+
+sub _login {
+    my ($name, $pass) = @_;
+    my $r = $ua->post("$url/l", ['name' => $name, 'password' => $pass]);
+    _check($r, "Login error");
+    $r
+}
+
+sub _update_me {
+    my ($name, $private) = @_;
+    my $r = $ua->post("$url/me", ['name' => $name, 'private' => $private]);
+    _check($r, "`Me` page update error");
+    $r
+}
+
+sub info {
+    my %c;
+    map { ++ $c{$_} } @vuln_vec;
+    print join ':', 'vulns', (map { $c{$_} } sort { $a <=> $b } keys %c);
+    do_exit(CHECKER_OK)
 }
 
 sub check {
     my ($name, $pass) = (rand_str(8, 16), rand_str(8, 16));
 
     my $r = $ua->get("$url");
-    do_exit(CHECKER_DOWN, "Could not connect") unless $r->is_success;
+    _check($r, "Retrieve main page error");
 
     for my $str ('index', 'registration', 'login') {
         do_exit(CHECKER_MUMBLE, "Error on main page")
             unless $r->content =~ qr/$str/i;
     }
 
-    $r = $ua->post("$url/r", ['name' => $name, 'password' => $pass]);
+    $r = _register($name, $pass);
     for my $str ('Upload your tax', $name) {
         do_exit(CHECKER_MUMBLE, "Error while registering user")
             unless $r->content =~ qr/$str/i;
@@ -90,79 +135,76 @@ sub check {
 
 sub put {
     my ($id, $flag, $vuln) = @_;
-    $vuln ||= int rand 2;
+    $vuln = $vuln_vec[int rand @vuln_vec] unless $vuln;
 
     my ($name, $pass) = (rand_str(8, 16), rand_str(8, 16));
 
-    my $r = $ua->post("$url/r", ['name' => $name, 'password' => $pass]);
-    do_exit(CHECKER_DOWN, "Could not connect") unless $r->is_success;
+    _register($name, $pass);
 
-    $r = $ua->get("$url/me");
+    my $r = $ua->get("$url/me");
     do_exit(CHECKER_MUMBLE, "Error on `me` page") unless $r->is_success;
 
     $id = "$name:$pass";
     $dname = rand_str(8, 16);
     if ($vuln == 1) {
-        $r = $ua->post("$url/me",
-            ['name' => $dname,
-             'private' => rand_str(64, 512) . " $flag " . rand_str(128, 384)]);
-        do_exit(CHECKER_MUMBLE, "Error while updating `me` page")
-            unless $r->is_success;
-
+        $r = _update_me($dname,
+                        rand_text(128, 512) . " $flag " . rand_text(128, 384));
         do_exit(CHECKER_MUMBLE, "New personal data not found")
             unless $r->content =~ $dname;
 
         print "1:$id";
     }
-    else {
-        $r = $ua->post("$url/me", ['name' => $dname,
-                                   'private' => rand_str(16, 32)]);
+    elsif ($vuln == 2) {
+        $r = _update_me($dname, rand_text(256, 896));
         do_exit(CHECKER_MUMBLE, "Error while updating `me` page")
             unless $r->is_success;
 
-        $r->content =~ /"(.*?)">$dname/;
+        my $fn = join ':', rand_str(5, 8), rand_str(2, 4);
+        my $cont = join ' ', rand_text(512, 1024), $flag, rand_text(512, 1024);
+        $r->content =~ /"(.*?)">\s*$dname/;
         $r = $ua->post("$url/u", Content_Type => 'form-data',
             Content => ['pdata' => $1, Filedata => [
-                undef, "1.txt", Content_Type => 'text/plain',
-                Content => "  $flag  "]]);
+                undef, $fn, Content_Type => 'text/plain', Content => $cont]]);
         do_exit(CHECKER_MUMBLE, "Error while uploading file")
             unless $r->is_success;
 
-        $r->content =~ /"(.*?)">uploaded/i;
+        $r->content =~ /"(.*?)">\s*uploaded/i;
 
         print "2:$id:$1";
+    }
+    else {
+        do_exit(CHECKER_ERROR, "<PUT> Unknown flag type");
     }
 
     do_exit(CHECKER_OK)
 }
 
 sub get {
-    my ($id, $flag) = @_;
+    my ($id, $flag, $vuln) = @_;
     my ($t, $rest) = split /:/, $id, 2;
+    # do_exit(CHECKER_ERROR, "flag type mismatch") if $vuln != $t;
+
     if ($t == 1) {
         my ($name, $pass) = split /:/, $rest;
+        _login($name, $pass);
 
-        my $r = $ua->post("$url/l", ['name' => $name, 'password' => $pass]);
-        do_exit(CHECKER_DOWN, "Could not connect") unless $r->is_success;
-
-        $r = $ua->get("$url/me");
+        my $r = $ua->get("$url/me");
         do_exit(CHECKER_MUMBLE, "Error on `me` page") unless $r->is_success;
+        do_exit(CHECKER_NOFLAG, "Flag not found")
+            unless $r->content =~ qr/$flag/;
+    }
+    elsif ($t == 2) {
+        my ($name, $pass, $link) = split /:/, $rest;
+        _login($name, $pass);
 
+        my $r = $ua->get("$url/$link");
+        do_exit(CHECKER_MUMBLE, "Error while downloading file")
+            unless $r->is_success;
         do_exit(CHECKER_NOFLAG, "Flag not found")
             unless $r->content =~ qr/$flag/;
     }
     else {
-        my ($name, $pass, $link) = split /:/, $rest;
-
-        my $r = $ua->post("$url/l", ['name' => $name, 'password' => $pass]);
-        do_exit(CHECKER_DOWN, "Could not connect") unless $r->is_success;
-
-        $r = $ua->get("$url/$link");
-        do_exit(CHECKER_MUMBLE, "Error while downloading file")
-            unless $r->is_success;
-
-        do_exit(CHECKER_NOFLAG, "Flag not found")
-            unless $r->content =~ qr/$flag/;
+        do_exit(CHECKER_ERROR, "<GET> Unknown flag type");
     }
 
     do_exit(CHECKER_OK)
