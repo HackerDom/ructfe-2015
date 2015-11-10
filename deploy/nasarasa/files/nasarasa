@@ -1,0 +1,24 @@
+server{
+    server_name example.com;
+    
+    access_log /home/nasarasa/access.log;
+    error_log  /home/nasarasa/error.log;
+    
+    root /home/nasarasa/www;
+        
+    location ~ \.php$ {
+        try_files $uri = 404;
+        include fastcgi_params;
+        fastcgi_pass  unix:/var/run/php5-fpm.sock;
+        fastcgi_index index.php;
+
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+    }
+    
+    # порядок индексов    
+    location /
+    {
+        index  index.php index.html index.htm;
+    }
+    
+}
