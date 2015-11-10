@@ -241,10 +241,12 @@ class Handler(WebSocketHandler):
                 "DELETE FROM users WHERE uid=%s", (self.uid,)
             )
             self.uid = self.role = self.profile = None
+            self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE,
+                           text="Hands off, dirty hacker!")))
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
-                           text="Just don't try to hack this! "
-                                "You are banned!")))
+                           text="User deleted")))
         result = tpl.PROFILES.copy()
         result['rows'][0]['data'] = users
         return self.write_message(dumps(result))
@@ -447,10 +449,12 @@ class Handler(WebSocketHandler):
                 "DELETE FROM users WHERE uid=%s", (self.uid,)
             )
             self.uid = self.role = self.profile = None
+            self.write_message(
+                dumps(dict(tpl.ERROR_MESSAGE,
+                           text="Hands off, dirty hacker!")))
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
-                           text="Just don't try to hack this! "
-                                "You are banned!")))
+                           text="User deleted")))
         for crime in crimes:
             crime['public'] = "" if crime['public'] else "fa-lock"
         result = tpl.CRIMES.copy()
