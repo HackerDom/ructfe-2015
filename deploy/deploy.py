@@ -75,7 +75,7 @@ class NasaRasa(Service):
 class Machine:
 
     def __init__(self, name, ip):
-        self.key_filename = "deploy-key"
+        self.key_filename = "/tmp/deploy-key-vbox"
         self.clean_name = "clean" # name of clean machine in vbox
         self.clean_ip = "10.70.0.2" # its ip
         self.name = name
@@ -135,11 +135,11 @@ class Machine:
 
     def put(self, path_from, path_to):
         print("[+] remote-put\t{0}\t{1}\t{2}".format(self.ssh_client.hostname, path_from, path_to))
-        run("scp -o StrictHostKeyChecking=no -o BatchMode=yes -i deploy-key -r {0} root@{1}:{2}".format(path_from, self.ssh_client.hostname, path_to), True)
+        run("scp -o StrictHostKeyChecking=no -o BatchMode=yes -i {3} -r {0} root@{1}:{2}".format(path_from, self.ssh_client.hostname, path_to, self.key_filename), True)
 
     def get(self, path_from, path_to):
         print("[+] remote-get\t{0}\t{1}\t{2}".format(self.ssh_client.hostname, path_from, path_to))
-        run("scp -o StrictHostKeyChecking=no -o BatchMode=yes -i deploy-key -r root@{0}:{1} {2}".format(self.ssh_client.hostname, path_from, path_to), True)
+        run("scp -o StrictHostKeyChecking=no -o BatchMode=yes -i {3} -r root@{0}:{1} {2}".format(self.ssh_client.hostname, path_from, path_to, self.key_filename), True)
 
     def run(self, command, show_output=False):
         print("[+] remote-run\t{0}\t{1}".format(self.ssh_client.hostname, command))
@@ -155,7 +155,7 @@ class DirtyMachine(Machine):
         Machine.__init__(self, random_name(), "10.70.0.3")
 
     def __clone_ructfe(self):
-        self.put('deploy-key', '/root/.ssh/id_rsa')
+        self.put(self.key_filename, '/root/.ssh/id_rsa')
         self.run('chmod 600 /root/.ssh/id_rsa')
         self.run('ssh-keyscan github.com >> /root/.ssh/known_hosts', True)
         self.run('git clone git@github.com:HackerDom/ructfe-2015.git /root/ructfe-2015', True)
@@ -198,6 +198,8 @@ def main(argv):
         return 0
 
     config = read_config(argv[1])
+    run('cp deploy-key /tmp/deploy-key-vbox', True)
+    run('chmod 600 /tmp/deploy-key-vbox', True)
     with DirtyMachine() as dirty_machine, TeamMachine("team01", "10.70.0.100") as team_machine:
         services = [NasaRasa(config)]
         for service in services:

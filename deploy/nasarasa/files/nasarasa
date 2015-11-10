@@ -1,5 +1,5 @@
 server{
-    server_name example.com;
+    server_name nasarasa.*;
     
     access_log /home/nasarasa/access.log;
     error_log  /home/nasarasa/error.log;
