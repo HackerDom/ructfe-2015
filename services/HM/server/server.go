@@ -9,11 +9,36 @@ import (
 	"net/http"
 )
 
+func addHealthMetricsHandler(w http.ResponseWriter, request *http.Request) {
+
+	response := ""
+	metrics := parseFromForm(request)
+	success, id := tryAddMetrics(metrics)
+	if (success) {
+		response = fmt.Sprintf("Metrics was successfully added, id assigned: %v", id)
+	} else {
+		response = "Metrics was not added"
+	}
+	io.WriteString(w, response)
+}
+
 func healthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 
-	metrics := parseFromForm(request)
-	response := fmt.Sprintf("Comment from form: %v", metrics.Comment)
+	response := ""
+	uId := getUserId(request)
+	success, metrics := tryGetUserMetrics(uId)
+	if (success) {
+		for _,m := range metrics {
+			response += m.toString()
+		}
+	} else {
+		response = "Metrics was not added"
+	}
 	io.WriteString(w, response)
+}
+
+func getUserId(request *http.Request) string {
+	return "" //
 }
 
 func handleRequest(w http.ResponseWriter, request *http.Request) {
@@ -59,9 +84,14 @@ func (*myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "My server: "+r.URL.String())
 }
 
+func initService(){
+	prepareDb()
+}
+
 func main() {
 
-	prepareDb()
+	initService()
+	
 	var port = flag.String("port", "8000", "please specify the port to start server on")
 	flag.Parse()
 	fmt.Println("Port to start on: " + *port)
@@ -73,6 +103,7 @@ func main() {
 	mux = make(map[string]func(http.ResponseWriter, *http.Request))
 	mux["/"] = handleRequest
 	mux["/healthMetrics"] = healthMetricsHandler
+	mux["/addHealthMetrics"] = addHealthMetricsHandler
 
 	server.ListenAndServe()
 }

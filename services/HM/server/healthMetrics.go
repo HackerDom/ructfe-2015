@@ -32,3 +32,7 @@ func getIntField(r *http.Request, name string) int {
     }
 	return res
 }
+
+func (this HealthMetrics) toString() string {
+	return fmt.Sprintf("%d, %d, %d, %d, %v", this.Weight, this.BloodPressure, this.Pulse, this.WalkingDistance, this.Comment)
+}
