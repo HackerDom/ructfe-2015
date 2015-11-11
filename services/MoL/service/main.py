@@ -58,13 +58,16 @@ class Handler(WebSocketHandler):
     def on_message(self, message):
         message = loads(message)
         logging.debug("Message received")
-        if hasattr(self, message['action']):
-            try:
-                return getattr(self, message['action'])(message)
-            except:
-                self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
-                                              text="Bad request")))
-        else:
+        try:
+            if hasattr(self, message['action']):
+                try:
+                    return getattr(self, message['action'])(message)
+                except:
+                    self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
+                                                  text="Bad request")))
+            else:
+                return self.write_message(dumps(tpl.AUTH_FORM))
+        except (TypeError, KeyError):
             return self.write_message(dumps(tpl.AUTH_FORM))
 
     def about(self, message):

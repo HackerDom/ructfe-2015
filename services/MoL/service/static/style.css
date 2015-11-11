@@ -1,14 +1,14 @@
 .about {margin-top: 5%;}
-.navbar-default {z-index:0;}
+.page {height:100%; padding:15px;padding-top:68px;}
 .navbar-brand {background: none !important; width: auto !important; text-indent: 0 !important; letter-spacing: 2px !important;margin-left:0px !important;}
 .navbar-default .navbar-brand {background-image: none !important;}
 .navbar-collapse {background-color: #363940 !important;}
 .navbar-form {border: none!important;box-shadow:none!important}
-.navbar-form input {background-color: #363940 !important;border:none !important;}
-.navbar-form input:focus {background-color: #fff !important;}
+.navbar-form input {background-color: #363940 !important;border:none !important;-webkit-transition: all 0.6s ease-in-out;-moz-transition: all 0.6s ease-in-out;-o-transition: all 0.6s ease-in-out;-ms-transition: all 0.6s ease-in-out;transition: all 0.6s ease-in-out;}
+.navbar-form input:focus {background-color: #fff !important;-webkit-transition: all 0.6s ease-in-out;-moz-transition: all 0.6s ease-in-out;-o-transition: all 0.6s ease-in-out;-ms-transition: all 0.6s ease-in-out;transition: all 0.6s ease-in-out;}
 .webix_required:after {content:none !important;}
-.page {height:100%; padding-top:68px;padding-left:15px;}
 .menu {border-right: 1px #edf2f1 solid;}
+.webix_message_area {top: 70px!important;}
 .webix_message_area .webix_default div, .webix_info div {background-color: transparent !important; border:none !important;}
 button, button span {background-color:transparent !important; border-color:#ccc !important;color:#363940 !important;}
 button_success {background-color: #545454 !important;}
@@ -27,3 +27,5 @@ button, button:focus, button:active, button:hover {-webkit-transition: all 0.6s 
 
 .success_icon {font-size: 20px; display:block; margin:auto;}
 .profile h2 {min-width: 200px;}
+.btn-blank {margin-top:5%;}
+.btn-blank:before {background: #363940 !important;}

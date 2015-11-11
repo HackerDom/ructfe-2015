@@ -15,6 +15,7 @@ ABOUT = {
                     Love your neighbor, respect the law.<br>
                     Be careful.
                 </p>
+                <button class="btn btn-blank" onclick="send();">Log in</button>
             </div>
         </div>
         """}

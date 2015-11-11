@@ -27,14 +27,20 @@
     <div class="container-fluid">
         <div class="navbar-header">
 
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#search-input" aria-expanded="false"><span class="sr-only">Toggle navigation</span>
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-coll" aria-expanded="false"><span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="#">Ministry of Love <span class='webix_icon fa-heartbeat'></span></a>
         </div>
-        <div class="collapse navbar-collapse" id="search-input">
+        <div class="collapse navbar-collapse" id="navbar-coll">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a id="showLast" href="#"><span class='webix_icon fa-users'></span> <span class="visible-xs-inline">People</span></a></li>
+                <li><a id="showLastCrimes" href="#"><span class='webix_icon fa-hourglass-2'></span> <span class="visible-xs-inline">Last crimes</span></a></li>
+                <li><a id="showMyProfile" href="#"><span class='webix_icon fa-user'></span> <span class="visible-xs-inline">My Profile</span></a></li>
+                <li><a id="createReport" class="hidden" href="#"><span class='webix_icon fa-bullhorn'></span> <span class="visible-xs-inline">Report a crime</span></a></li>
+            </ul>
             <form class="navbar-form navbar-right" role="search">
                 <input type="search" id="searchField" class="form-control input-lg" placeholder="                             Search">
             </form>
