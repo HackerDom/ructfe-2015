@@ -1,4 +1,21 @@
 {
+    "MoL" : {
+        "username" : "mol",
+        "precopy" : "deploy/MoL/precopy.sh"
+        "build_deps" : [
+            "python3-pip",
+            "dh-systemd"
+         ],
+        "run_deps" : [
+            "systemd",
+            "postgresql",
+            "libpq-dev",
+            "python3"
+         ],
+         "files" : [
+         ] 
+    }
+    ,
 	"NasaRasa" : {
 		"username" : "nasarasa",
 		"postcopy" : ["deploy/nasarasa/postcopy.sh", "/root/nasarasa/postcopy.sh"],
