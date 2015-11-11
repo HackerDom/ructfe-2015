@@ -1,0 +1,15 @@
+- hosts: all
+  roles: [common]
+
+- hosts: router
+  roles: [router]
+
+- hosts: dns-master:dns-slave
+  roles: [dns]
+
+- hosts: checksystem-app
+  roles: [checksystem-app]
+
+- hosts: checksystem-db
+  roles: [checksystem-db]
+

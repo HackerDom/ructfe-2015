@@ -1,0 +1,13 @@
+teams_networks : [10.60.0.0/15, 10.80.0.0/15]
+dev_network    : 10.8.0.0/24
+jury_network   : 10.10.10.0/24
+
+allow_udp_ports      : []
+allow_tcp_ports      : []
+
+allow_dev_udp_ports  : []
+allow_dev_tcp_ports  : []
+
+allow_jury_udp_ports : []
+allow_jury_tcp_ports : []
+

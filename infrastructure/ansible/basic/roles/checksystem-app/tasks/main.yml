@@ -1,0 +1,10 @@
+- name: Install packages
+  apt: name={{item}} state=present
+  with_items:
+    - libssl-dev
+    - libpq-dev
+    - cpanminus
+
+- name: Create checksystem user
+  user: name=checksystem state=present
+

@@ -1,0 +1,24 @@
+- name: Install packages
+  apt: name={{item}} state=present
+  with_items:
+    - postgresql-9.4
+    - python-psycopg2
+
+- name: Create ructfe PostgreSQL user
+  sudo: yes
+  sudo_user: postgres
+  postgresql_user: name=ructfe password=jrCiW2c9268x state=present
+
+- name: Create ructfe PostgreSQL database
+  sudo: yes
+  sudo_user: postgres
+  postgresql_db: name=ructfe owner=ructfe state=present
+
+- name: Copy pg_hba.conf
+  template: src=pg_hba.conf.j2 dest=/etc/postgresql/9.4/main/pg_hba.conf
+  notify: restart postgresql
+
+- name: Copy postgresql.conf
+  template: src=postgresql.conf.j2 dest=/etc/postgresql/9.4/main/postgresql.conf
+  notify: restart postgresql
+

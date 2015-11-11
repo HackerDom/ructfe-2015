@@ -1,0 +1,22 @@
+- name: Copy apt sources.list
+  template: src=sources.list.j2 dest=/etc/apt/sources.list
+
+- name: Add PostgreSQL APT key
+  apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
+
+- name: Update apt cache
+  apt: update_cache=yes cache_valid_time=79800
+
+- name: Install common network packages
+  apt: name={{item}} state=present
+  with_items:
+    - conntrack
+    - iptables
+    - iptables-persistent
+    - telnet
+    - tcpdump
+
+- name: Copy sshd_config
+  template: src=sshd_config.j2 dest=/etc/ssh/sshd_config
+  notify: restart ssh
+
