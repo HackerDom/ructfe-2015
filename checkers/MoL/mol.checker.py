@@ -253,7 +253,11 @@ def get(*args):
             pass
 
 
-COMMANDS = {'check': check, 'put': put, 'get': get}
+def info(*args):
+    close(OK, "vulns: 1")
+
+
+COMMANDS = {'check': check, 'put': put, 'get': get, 'info': info}
 
 
 def not_found(*args):
