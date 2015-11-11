@@ -16,7 +16,7 @@ namespace Electro
 			return users.TryAdd(user.Id, user);
 		}
 
-		public Election StartElection(string name, User firstCandidate, bool isPublic, )
+		public Election StartElection(string name, User firstCandidate, bool isPublic)
 		{
 			var election = new Election { Id = Guid.NewGuid(), Name = name, Candidates = new Dictionary<Guid, User> { {firstCandidate.Id, firstCandidate } }, IsPublic = isPublic};
 			elections[election.Id] = election;

@@ -9,7 +9,7 @@ namespace Electro.Utils
 {
 	class CryptoUtils
 	{
-		public string CalcHash(string str)
+		public static string CalcHash(string str)
 		{
 			var sha1 = SHA1.Create();
 			var buff = Encoding.UTF8.GetBytes(str);
