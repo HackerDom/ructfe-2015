@@ -1,3 +1,17 @@
+///////////////////////////////////////////
+// Display loading image while page loads
+///////////////////////////////////////////
+
+// Wait for window load
+$(window).load(function() {
+    // Animate loader off screen
+    $(".page-loader").fadeOut("slow");
+});
+
+
+
+
+
 /////////////////////////////////////////////////////////////////////
 // jQuery for page scrolling feature - requires jQuery Easing plugin
 /////////////////////////////////////////////////////////////////////
@@ -64,18 +78,6 @@ $('body').scrollspy({
 
 
 
-///////////////////////////////////////////
-// Display loading image while page loads
-///////////////////////////////////////////
-
-// Wait for window load
-$(window).load(function() {
-    // Animate loader off screen
-    $(".page-loader").fadeOut("slow");
-});
-
-
-
 ////////////////////////////////////////////////////
 // OWL Carousel: http://owlgraphic.com/owlcarousel
 ////////////////////////////////////////////////////
@@ -108,81 +110,6 @@ $("#owl-testimonial").owlCarousel({
     pagination : true,
     autoHeight : true
 })
-
-
-////////////////////////////////////////////////////////////////////
-// Stellar (parallax): https://github.com/markdalgleish/stellar.js
-////////////////////////////////////////////////////////////////////
-
-$.stellar({
-    // Set scrolling to be in either one or both directions
-    horizontalScrolling: false,
-    verticalScrolling: true,
-});
-
-
-
-///////////////////////////////////////////////////////////
-// WOW animation scroll: https://github.com/matthieua/WOW
-///////////////////////////////////////////////////////////
-
-new WOW().init();
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// Counter-Up (requires jQuery waypoints.js plugin): https://github.com/bfintal/Counter-Up
-////////////////////////////////////////////////////////////////////////////////////////////
-
-$('.counter').counterUp({
-    delay: 10,
-    time: 2000
-});
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// Isotop Package
-////////////////////////////////////////////////////////////////////////////////////////////
-$(window).load(function() {
-$('.portfolio_menu ul li').click(function(){
-	$('.portfolio_menu ul li').removeClass('active_prot_menu');
-	$(this).addClass('active_prot_menu');
-});
-
-var $container = $('#portfolio');
-$container.isotope({
-  itemSelector: '.col-sm-4',
-  layoutMode: 'fitRows'
-});
-$('#filters').on( 'click', 'a', function() {
-  var filterValue = $(this).attr('data-filter');
-  $container.isotope({ filter: filterValue });
-  return false;
-});
-});
-
-
-
-/////////////////////////
-// Scroll to top button
-/////////////////////////
-
-// Check to see if the window is top if not then display button
-$(window).scroll(function(){
-    if ($(this).scrollTop() > 100) {
-        $('.scrolltotop').fadeIn();
-    } else {
-        $('.scrolltotop').fadeOut();
-    }
-});
-
-// Click event to scroll to top
-$('.scrolltotop').click(function(){
-    $('html, body').animate({scrollTop : 0}, 1500, 'easeInOutExpo');
-    return false;
-});
-
 
 
 ////////////////////////////////////////////////////////////////////
