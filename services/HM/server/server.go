@@ -37,6 +37,21 @@ func healthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 	io.WriteString(w, response)
 }
 
+func addUserHandler(w http.ResponseWriter, request *http.Request) {
+
+	response := ""
+	user := parseUser(request)
+	result, uId := tryAddUser(user)
+	if result == Success {
+		response = fmt.Sprintf("User was successfully added, id assigned: %v", uId)
+	} else if result == AlreadyExists {
+		response = "User with this login already exists"
+	} else {
+		response = "Metrics was not added"
+	}
+	io.WriteString(w, response)
+}
+
 func getUserId(request *http.Request) string {
 	return "" //
 }
@@ -104,6 +119,7 @@ func main() {
 	mux["/"] = handleRequest
 	mux["/healthMetrics"] = healthMetricsHandler
 	mux["/addHealthMetrics"] = addHealthMetricsHandler
+	mux["/newUser"] = addUserHandler
 
 	server.ListenAndServe()
 }

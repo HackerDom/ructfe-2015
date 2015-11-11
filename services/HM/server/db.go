@@ -3,17 +3,32 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
 )
 const (
 	DbName = "./health.db" 
-	CreateTable = "CREATE TABLE healthIndices(id integer not null primary key AUTOINCREMENT, weight integer, bp integer, pulse integer, walking_distance integer, comment text); DELETE FROM healthIndices;"
+	CreateIndicesTable = "CREATE TABLE healthIndices(id integer not null primary key AUTOINCREMENT, weight integer, bp integer, pulse integer, walking_distance integer, comment text); DELETE FROM healthIndices;"
 	InsertValues = "INSERT INTO healthIndices(weight, bp, pulse, walking_distance, comment) VALUES (?, ?, ?, ?, ?)"
 	InsertValue = "INSERT INTO healthIndices(weight, bp, pulse, walking_distance, comment) VALUES (?, ?, ?, ?, ?)"
-	SelectRows = "SELECT id, weight, bp, pulse, walking_distance, comment FROM healthIndices"
+	SelectRows = "SELECT id, comment FROM healthIndices"
+	
 )
+
+const (
+	CreateUsersTable = "CREATE TABLE users(id integer not null primary key AUTOINCREMENT, login text, pass text); DELETE FROM users;"
+	FindUser = "SELECT id, login FROM users WHERE login = ?"
+	AddUser = "INSERT INTO users (login, pass) VALUES (?, ?)"
+)
+
+const (  
+	Success = iota  
+	Error = iota  
+	AlreadyExists = iota  
+)
+
 
 func tryAddMetrics(m *HealthMetrics) (bool, int64) {
 
@@ -76,6 +91,43 @@ func tryGetUserMetrics(uId string) (bool, []HealthMetrics) {
 	 return true, res
 }
 
+func tryAddUser(user *User) (int, string){
+	db, err := sql.Open("sqlite3", DbName)
+	if err != nil {
+		log.Fatal("Error while connecting to db: ", err)
+	}
+	defer db.Close()
+	
+	rows, err := db.Query(FindUser, user.Login)
+	if err != nil {
+		log.Fatal(err)
+		return Error, ""
+	}
+	
+	if rows.Next() {
+		return AlreadyExists, ""
+	}
+	
+	stmt, err := db.Prepare(AddUser)
+	if err != nil {
+		log.Fatal(err)
+		return Error, ""
+	}
+	
+	res, err := stmt.Exec(user.Login, user.Pass) 
+	if err != nil {
+		log.Fatal(err)
+		return Error, ""
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		log.Fatal(err)
+		return Error, ""
+	}
+	
+	return Success, "u_" + strconv.FormatInt(id, 10)
+}
+
 func prepareDb() {
 	os.Remove(DbName)
 
@@ -85,9 +137,15 @@ func prepareDb() {
 	}
 	defer db.Close()
 
-	_, err = db.Exec(CreateTable)
+	_, err = db.Exec(CreateIndicesTable)
 	if err != nil {
-		log.Printf("%q: %s\n", err, CreateTable)
+		log.Printf("%q: %s\n", err, CreateIndicesTable)
+		return
+	}
+	
+	_, err = db.Exec(CreateUsersTable)
+	if err != nil {
+		log.Printf("%q: %s\n", err, CreateUsersTable)
 		return
 	}
 
@@ -101,7 +159,7 @@ func prepareDb() {
 	 }
 	 defer stmt.Close()
 	 
-	 for i := 0; i < 100; i++ {
+	 for i := 0; i < 5; i++ {
 	 _, err = stmt.Exec(i, i*3, i+3, (i-1)*4, fmt.Sprintf("Comment number %03d", i))
 	 if err != nil {
 		 log.Fatal(err)
