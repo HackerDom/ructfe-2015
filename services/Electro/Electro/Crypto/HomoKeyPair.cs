@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace HomomorphicTests
+namespace Electro.Crypto
 {
 	class Singleton
 	{
@@ -14,28 +10,25 @@ namespace HomomorphicTests
 
 	public class HomoKeyPair
 	{
-		public PublicKey publicKey;
-		public PrivateKey privateKey;
-		public int MaxNum;
+		public PublicKey PublicKey { get; set; }
+		public PrivateKey PrivateKey { get; set; }
 
 		public static HomoKeyPair GenKeyPair(int maxNum)
 		{
 			var privateKey = PrivateKey.GenPrivateKey(maxNum);
 			return new HomoKeyPair
 			{
-				MaxNum = maxNum,
-				privateKey = privateKey,
-				publicKey = PublicKey.GenPublicKey(privateKey, maxNum)
+				PrivateKey = privateKey,
+				PublicKey = PublicKey.GenPublicKey(privateKey, maxNum)
 			};
 		}
 	}
-
 
 	public class PublicKey
 	{
 		public BigInteger[] KeyParts;
 
-		public static PublicKey GenPublicKey(PrivateKey privateKey, int maxNum, int bitsCount = DefaultBitsCount)
+		public static PublicKey GenPublicKey(PrivateKey privateKey, int bitsCount = DefaultBitsCount)
 		{
 			var buff = new BigInteger[DefaultSetSize];
 
@@ -43,7 +36,7 @@ namespace HomomorphicTests
 			for(int i = 0; i < buff.Length; i++)
 			{
 				Singleton.Random.NextBytes(rand);
-				buff[i] = (BigInteger.Abs(new BigInteger(rand)) * privateKey.Key) + (maxNum * Singleton.Random.Next(10, 100));
+				buff[i] = (BigInteger.Abs(new BigInteger(rand)) * privateKey.Key) + (privateKey.MaxNum * Singleton.Random.Next(10, 100));
 			}
 
 			return new PublicKey { KeyParts = buff };
@@ -54,10 +47,10 @@ namespace HomomorphicTests
 		public const int DefaultSetSize = 16;
 	}
 
-
 	public class PrivateKey
 	{
-		public BigInteger Key;
+		public BigInteger Key { get; set; }
+		public int MaxNum { get; set; }
 
 		public static PrivateKey GenPrivateKey(int maxNum, int bitsCount = DefaultBitsCount)
 		{
@@ -66,7 +59,7 @@ namespace HomomorphicTests
 			{
 				Singleton.Random.NextBytes(buff);
 				var p = BigInteger.Abs(new BigInteger(buff));
-				return new PrivateKey { Key = p };
+				return new PrivateKey { Key = p, MaxNum = maxNum};
 			}
 		}
 
