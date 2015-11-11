@@ -1,8 +1,10 @@
 {
     "MoL" : {
         "username" : "mol",
-        "precopy" : "deploy/MoL/precopy.sh"
+        "precopy" : "deploy/MoL/precopy.sh",
+        "postcopy" : ["deploy/MoL/postcopy.sh", "/root/mol/postcopy.sh"],
         "build_deps" : [
+            "md5deep",
             "python3-pip",
             "dh-systemd"
          ],
@@ -13,7 +15,8 @@
             "python3"
          ],
          "files" : [
-         ] 
+             ["services/MoL/install/ructfe-mol.deb", "/root/mol/ructfe-mol.db"]
+        ]
     }
     ,
 	"NasaRasa" : {

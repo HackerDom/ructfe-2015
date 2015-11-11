@@ -33,6 +33,8 @@ class Service:
         if self.name not in self.config:
             raise Exception("No information about {0} in config".format(self.name))
 
+        self.__install_build_deps(dirty_machine)
+        self.__pre_copy(dirty_machine)
         self.__add_user(team_machine)
         self.__install_run_deps(team_machine)
         self.__copy_files(dirty_machine, team_machine)
@@ -41,6 +43,11 @@ class Service:
     def __add_user(self, machine):
         username = self.config[self.name]["username"]
         machine.run('useradd -m {0}'.format(username))
+
+    def __install_build_deps(self, machine):
+        build_deps = " ".join(self.config[self.name]["build_deps"])
+        machine.run('apt-get update', True)
+        machine.run('DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes {0}'.format(build_deps), True)
 
     def __install_run_deps(self, machine):
         run_deps = " ".join(self.config[self.name]["run_deps"])
@@ -55,7 +62,11 @@ class Service:
             from_machine.get('/root/ructfe-2015/{0}'.format(frm), '{0}/{1}'.format(tmp_directory, frm))
             to_machine.run('mkdir -p {0}'.format(dirname(to)))
             to_machine.put('{0}/{1}'.format(tmp_directory, frm), to)
- 
+
+    def __pre_copy(self, machine):
+        script = self.config[self.name]["precopy"]
+        machine.run('bash -x /root/ructfe-2015/{0}'.format(script), True)
+
     def __post_copy(self, from_machine, to_machine):
         frm, to = self.config[self.name]["postcopy"]
         tmp_directory = mkdtemp()
@@ -67,11 +78,7 @@ class Service:
         to_machine.run('rm {0}'.format(to))
 
 
-class NasaRasa(Service):
-
-    def __init__(self, config):
-        Service.__init__(self, "NasaRasa", config)
-    
+   
 class Machine:
 
     def __init__(self, name, ip):
@@ -95,10 +102,9 @@ class Machine:
             try:
                 if lap > max_lap:
                     run("VBoxManage controlvm {0} setlinkstate1 off".format(self.name), True)
-                    sleep(10)
                     run("VBoxManage controlvm {0} setlinkstate1 on".format(self.name), True)
                     lap = 0
-                    max_lap = 3
+                    max_lap = 2
                 sleep(1)
                 not_started = False
                 self.ssh_client.connect(ip, username="root", key_filename=self.key_filename)
@@ -188,6 +194,16 @@ class TeamMachine(Machine):
     def __exit__(self, exit_type, exit_value, exit_traceback):
         self.stop()
 
+class NasaRasa(Service):
+
+    def __init__(self, config):
+        Service.__init__(self, "NasaRasa", config)
+
+class MoL(Service):
+
+    def __init__(self, config):
+        Service.__init__(self, "MoL", config)
+  
 def read_config(filename):
     with open(filename) as f:
         return json.load(f)
@@ -201,7 +217,7 @@ def main(argv):
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
     with DirtyMachine() as dirty_machine, TeamMachine("team01", "10.70.0.100") as team_machine:
-        services = [NasaRasa(config)]
+        services = [MoL(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
 

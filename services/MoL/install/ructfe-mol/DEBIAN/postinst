@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-useradd mol
+useradd -m mol
 pip3 install momoko
 
 sudo="su - postgres -c "
