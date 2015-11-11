@@ -1,7 +1,7 @@
 var grid;
 var ws;
 var offset = 0;
-//window.onbeforeunload = function() {return "If you leave - we deauthorize you!";}
+window.onbeforeunload = function() {return "If you leave - we deauthorize you!";}
 
 webix.ready(function(){
     webix.ui.fullScreen();

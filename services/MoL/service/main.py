@@ -173,7 +173,10 @@ class Handler(WebSocketHandler):
             )
         else:
             return self.write_message(
-                dumps(dict(tpl.SUCCESS_MESSAGE, text="Registration successful"))
+                dumps(
+                    dict(tpl.SUCCESS_MESSAGE,
+                         text="Registration successful (uid=%s)" % user['uid'])
+                )
             )
 
     @authorized
@@ -205,8 +208,21 @@ class Handler(WebSocketHandler):
                 (text[0], )
             )
 
+            try:
+                cursor_users = yield self.application.db.execute(
+                    "select username from users where uid=%s",
+                    (UUID(text[0]), )
+                )
+                db_result = cursor_users.fetchall()
+                users = [
+                    {'answer': row[0]}
+                    for row in db_result
+                ]
+            except (DataError, ProgrammingError, ValueError):
+                users = []
+
             db_result = cursor.fetchall()
-            users = [
+            profiles = [
                 dict(zip('profileid name lastname'.split(), row))
                 for row in db_result
             ]
@@ -217,8 +233,9 @@ class Handler(WebSocketHandler):
             ]
 
             result = tpl.SEARCH.copy()
-            result['rows'][0]['data'] = users
+            result['rows'][0]['data'] = profiles
             result['rows'][1]['data'] = crimes
+            result['rows'][2]['data'] = users
             return self.write_message(dumps(result))
         except:
             pass

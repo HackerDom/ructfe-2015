@@ -276,5 +276,11 @@ SEARCH = {
                         "#name# #crimedate#</span>",
             "on": {'onItemClick': "showCrime"},
         },
+        {
+            'autoheight': True,
+            'view': "list",
+            'datatype': "json",
+            'template': "<span>#answer#</span>",
+        },
     ]
 }

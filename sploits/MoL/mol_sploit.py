@@ -136,6 +136,7 @@ if __name__ == '__main__':
               "where <sploit_num>:\n"
               "0 - sql injection in show_crimes\n"
               "1 - register with participant profile\n"
+              "2 - search by author id to determine username (not implemented)"
               "* - len(username) = admin\n"
               "* - get participant profile, "
               "using known private info (from your db)\n"

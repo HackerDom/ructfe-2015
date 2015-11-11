@@ -35,6 +35,8 @@ class Client(object):
         answer = loads(self.ws.recv())
         if "successful" not in answer["text"]:
             close(CORRUPT, "Registration", "registration failed: %s" % answer)
+        else:
+            return answer['text'].split('uid=')[-1].split(')')[0]
         return answer
 
     def auth(self):
@@ -43,16 +45,13 @@ class Client(object):
             {'action': 'auth',
              'params': {'username': self.username, 'password': self.password}}))
         answer = loads(self.ws.recv())
-        if "Welcome" not in answer["text"]:
-            close(CORRUPT,
-                  "Authentication", "authentication failed: %s" % answer)
-
-        if "text" not in answer and "Welcome" not in answer["text"]:
+        if "text" not in answer or "Welcome" not in answer["text"]:
             if "id" not in answer:
                 close(CORRUPT,
                       "Authentication", "authentication failed: %s" % answer)
             else:
                 _ = self.ws.recv()
+
         if "rows" not in answer:
             answer = loads(self.ws.recv())
         # Show Profiles"""
@@ -114,7 +113,10 @@ class Client(object):
         return answer
 
     def report(self, flag_id=None, flag=None):
-        """Report a crime"""
+        """Report a crime
+        :param flag:
+        :param flag_id:
+        """
         crimes = list(reader(open(
             path.join(path.dirname(path.realpath(__file__)), "crimes.csv"))))
         uids = list(open(path.join(path.dirname(path.realpath(__file__)),
@@ -124,10 +126,10 @@ class Client(object):
         if flag_id:
             crime['name'] = flag_id
 
-        crime['private'] = True if flag_id else choice([True, False])
+        crime['private'] = True if flag_id else False
 
         if flag:
-            crime['description'] += " " + flag
+            crime['description'] += " " + str(flag)
         crime['closed'] = crime['closed'] == "true"
         crime['participants'] = ",".join(map(lambda u: u.strip(),
                                              sample(uids, randint(1, 5))))
@@ -138,7 +140,10 @@ class Client(object):
         return answer
 
     def show_report(self, flag_id, flag):
-        """Show crime and check"""
+        """Show crime and check
+        :param flag:
+        :param flag_id:
+        """
         self.ws.send(dumps({'action': 'search', 'params': {'text': flag_id}}))
         answer = loads(self.ws.recv())
         if ("rows" not in answer or
@@ -163,6 +168,20 @@ class Client(object):
                     answer['rows'][0]['data']['description'].split()[-1]):
                 close(OK)
 
+        close(GET_ERROR)
+
+    def search_uid(self, flag_id, flag):
+        self.ws.send(dumps({'action': 'search', 'params': {'text': flag_id}}))
+        answer = loads(self.ws.recv())
+        if ("rows" not in answer or
+                len(answer['rows']) < 3 or
+                'data' not in answer['rows'][2]):
+            close(CORRUPT, "Search", "search failed: %s" % answer)
+        if len(answer['rows'][2]['data']) < 1:
+            close(GET_ERROR, "Search", "user not searchable: %s" % answer)
+        for user in answer['rows'][2]['data']:
+            if user['answer'] == flag:
+                close(OK)
         close(GET_ERROR)
 
 
@@ -200,6 +219,7 @@ def put(*args):
     addr = args[0]
     flag_id = args[1]
     flag = args[2]
+    vuln = int(args[3]) if len(args) > 3 else 1
     answer = ""
     if not addr or not flag_id or not flag:
         close(INTERNAL_ERROR, None, "Incorrect parameters")
@@ -209,11 +229,18 @@ def put(*args):
         answer = loads(ws.recv())
         if answer['rows'][0]['view'] != "form":
             raise KeyError
-        c = Client(ws, '%x' % randrange(16**15), '%x' % randrange(16**15))
-        c.register()
+        username, password = '%x' % randrange(16**15), '%x' % randrange(16**15)
+        if vuln == 2:
+            username = flag
+        c = Client(ws, username, password)
+        uid = c.register()
         c.auth()
-        c.report(flag_id, flag)
-        close(OK, "%s:%s:%s" % (c.username, c.password, flag_id))
+        if vuln == 2:
+            c.report()
+            close(OK, "%s" % uid)
+        else:
+            c.report(flag_id, flag)
+            close(OK, "%s:%s:%s" % (c.username, c.password, flag_id))
     except (gaierror, ConnectionRefusedError):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
@@ -227,10 +254,11 @@ def put(*args):
 
 def get(*args):
     addr = args[0]
-    username, password, flag_id = args[1].split(":")
+    checker_flag_id = args[1]
     flag = args[2]
+    vuln = int(args[3]) if len(args) > 3 else 1
     answer = ""
-    if not addr or not username or not password or not flag_id or not flag:
+    if not addr or not checker_flag_id or not flag:
         close(INTERNAL_ERROR, None, "Incorrect parameters")
     try:
         ws = create_connection("ws://%s:1984/websocket" % addr)
@@ -238,14 +266,24 @@ def get(*args):
         answer = loads(ws.recv())
         if answer['rows'][0]['view'] != "form":
             raise KeyError
-        c = Client(ws, username, password)
-        c.auth()
-        c.show_report(flag_id, flag)
+        if vuln == 1:
+            username, password, flag_id = checker_flag_id.split(":")
+            c = Client(ws, username, password)
+            c.auth()
+            c.show_report(flag_id, flag)
+        else:
+            c = Client(ws, '%x' % randrange(16**15), '%x' % randrange(16**15))
+            c.register()
+            c.auth()
+            c.search_uid(checker_flag_id, flag)
+
         close(OK)
     except (gaierror, ConnectionRefusedError):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
+    except ValueError:
+        close(GET_ERROR, private="Incorrect vuln")
     finally:
         try:
             ws.close()
@@ -254,7 +292,7 @@ def get(*args):
 
 
 def info(*args):
-    close(OK, "vulns: 1")
+    close(OK, "vulns: 3:1")
 
 
 COMMANDS = {'check': check, 'put': put, 'get': get, 'info': info}
