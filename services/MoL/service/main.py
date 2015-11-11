@@ -58,20 +58,26 @@ class Handler(WebSocketHandler):
     def on_message(self, message):
         message = loads(message)
         logging.debug("Message received")
-        if hasattr(self, message['action']):
-            try:
-                return getattr(self, message['action'])(message)
-            except:
-                self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
-                                              text="Bad request")))
-        else:
+        try:
+            if hasattr(self, message['action']):
+                try:
+                    return getattr(self, message['action'])(message)
+                except:
+                    self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
+                                                  text="Bad request")))
+            else:
+                return self.write_message(dumps(tpl.AUTH_FORM))
+        except (TypeError, KeyError):
             return self.write_message(dumps(tpl.AUTH_FORM))
+
+    def about(self, message):
+        return self.write_message(dumps(tpl.ABOUT))
 
     @gen.coroutine
     def auth(self, message):
         if 'params' not in message:
             return self.write_message(
-                dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
+                dumps(dict(tpl.WARN_MESSAGE, text="Invalid request"))
             )
 
         user = defaultdict(lambda: None, **message['params'])
@@ -99,7 +105,7 @@ class Handler(WebSocketHandler):
         if user['password'] != db_result[1]:
             if db_result[0] in self.application.wsPool:
                 self.application.wsPool[db_result[0]].write_message(
-                    dumps(dict(tpl.ERROR_MESSAGE,
+                    dumps(dict(tpl.WARN_MESSAGE,
                                text="Someone wants to hack you")))
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Invalid password"))
@@ -118,7 +124,7 @@ class Handler(WebSocketHandler):
             if db_result:
                 name = " ".join(db_result)
 
-        self.write_message(dumps(dict(tpl.MESSAGE,
+        self.write_message(dumps(dict(tpl.SUCCESS_MESSAGE,
                                       text="Welcome, %s" % name)))
 
         self.application.wsPool[self.uid] = self
@@ -127,7 +133,7 @@ class Handler(WebSocketHandler):
     def register(self, message):
         if 'params' not in message:
             return self.write_message(
-                dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
+                dumps(dict(tpl.WARN_MESSAGE, text="Invalid request"))
             )
         user = defaultdict(lambda: None, **message['params'])
 
@@ -167,7 +173,10 @@ class Handler(WebSocketHandler):
             )
         else:
             return self.write_message(
-                dumps(dict(tpl.MESSAGE, text="Registration successful"))
+                dumps(
+                    dict(tpl.SUCCESS_MESSAGE,
+                         text="Registration successful (uid=%s)" % user['uid'])
+                )
             )
 
     @authorized
@@ -199,8 +208,21 @@ class Handler(WebSocketHandler):
                 (text[0], )
             )
 
+            try:
+                cursor_users = yield self.application.db.execute(
+                    "select username from users where uid=%s",
+                    (UUID(text[0]), )
+                )
+                db_result = cursor_users.fetchall()
+                users = [
+                    {'answer': row[0]}
+                    for row in db_result
+                ]
+            except (DataError, ProgrammingError, ValueError):
+                users = []
+
             db_result = cursor.fetchall()
-            users = [
+            profiles = [
                 dict(zip('profileid name lastname'.split(), row))
                 for row in db_result
             ]
@@ -211,8 +233,9 @@ class Handler(WebSocketHandler):
             ]
 
             result = tpl.SEARCH.copy()
-            result['rows'][0]['data'] = users
+            result['rows'][0]['data'] = profiles
             result['rows'][1]['data'] = crimes
+            result['rows'][2]['data'] = users
             return self.write_message(dumps(result))
         except:
             pass
@@ -241,10 +264,12 @@ class Handler(WebSocketHandler):
                 "DELETE FROM users WHERE uid=%s", (self.uid,)
             )
             self.uid = self.role = self.profile = None
-            return self.write_message(
+            self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
-                           text="Just don't try to hack this! "
-                                "You are banned!")))
+                           text="Hands off, dirty hacker!")))
+            return self.write_message(
+                dumps(dict(tpl.WARN_MESSAGE,
+                           text="User deleted")))
         result = tpl.PROFILES.copy()
         result['rows'][0]['data'] = users
         return self.write_message(dumps(result))
@@ -257,7 +282,7 @@ class Handler(WebSocketHandler):
                 return self.show_profile({'params': {'uid': str(self.profile)}})
             else:
                 self.write_message(
-                    dumps(dict(tpl.ERROR_MESSAGE,
+                    dumps(dict(tpl.WARN_MESSAGE,
                                text="You does not have a profile")))
         except Exception as e:
             self.write_message(dumps(dict(tpl.ERROR_MESSAGE,
@@ -276,7 +301,7 @@ class Handler(WebSocketHandler):
             db_result = cursor.fetchone()
             if not db_result:
                 return self.write_message(
-                    dumps(dict(tpl.ERROR_MESSAGE,
+                    dumps(dict(tpl.WARN_MESSAGE,
                                text="Profile not found")))
             user = dict(zip("name lastname userpic birthdate "
                             "city mobile marital crimes".split(),
@@ -324,7 +349,7 @@ class Handler(WebSocketHandler):
             info = message['params']['info']
             if self.profile:
                 return self.write_message(
-                    dumps(dict(tpl.ERROR_MESSAGE,
+                    dumps(dict(tpl.WARN_MESSAGE,
                                text="You already have a profile"))
                 )
             if not self.uid:
@@ -364,7 +389,7 @@ class Handler(WebSocketHandler):
             else:
                 self.profile = profileid
                 return self.write_message(
-                    dumps(dict(tpl.MESSAGE, text="Assignment successful"))
+                    dumps(dict(tpl.SUCCESS_MESSAGE, text="Assignment successful"))
                 )
 
         except Exception as e:
@@ -447,10 +472,12 @@ class Handler(WebSocketHandler):
                 "DELETE FROM users WHERE uid=%s", (self.uid,)
             )
             self.uid = self.role = self.profile = None
-            return self.write_message(
+            self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
-                           text="Just don't try to hack this! "
-                                "You are banned!")))
+                           text="Hands off, dirty hacker!")))
+            return self.write_message(
+                dumps(dict(tpl.WARN_MESSAGE,
+                           text="User deleted")))
         for crime in crimes:
             crime['public'] = "" if crime['public'] else "fa-lock"
         result = tpl.CRIMES.copy()
@@ -510,12 +537,12 @@ class Handler(WebSocketHandler):
         try:
             if 'params' not in message:
                 return self.write_message(
-                    dumps(dict(tpl.ERROR_MESSAGE, text="Invalid request"))
+                    dumps(dict(tpl.WARN_MESSAGE, text="Invalid request"))
                 )
             params = dict(filter(lambda i: i[1], message['params'].items()))
             if len(params) < 6:
                 return self.write_message(
-                    dumps(dict(tpl.ERROR_MESSAGE, text="Small input"))
+                    dumps(dict(tpl.WARN_MESSAGE, text="Small input"))
                 )
             params['city'] = params['city'].title()
             if len(params['country']) < 4:
@@ -569,7 +596,7 @@ class Handler(WebSocketHandler):
                     if self.application.wsPool[ws] == self:
                         continue
                     self.application.wsPool[ws].write_message(
-                        dumps(dict(tpl.MESSAGE,
+                        dumps(dict(tpl.INFO_MESSAGE,
                                    text="New crime (%s)" % params['name']))
                     )
             except Exception as e:
@@ -577,7 +604,7 @@ class Handler(WebSocketHandler):
                                 % (e, self.application.wsPool.keys()))
             else:
                 return self.write_message(
-                    dumps(dict(tpl.MESSAGE,
+                    dumps(dict(tpl.SUCCESS_MESSAGE,
                                text="Crime %s submited" % params['name']))
                 )
 

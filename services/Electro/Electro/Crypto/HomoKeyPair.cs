@@ -7,7 +7,12 @@ using System.Threading.Tasks;
 
 namespace HomomorphicTests
 {
-	class HomoKeyPair
+	class Singleton
+	{
+		public static Random Random = new Random();
+	}
+
+	public class HomoKeyPair
 	{
 		public PublicKey publicKey;
 		public PrivateKey privateKey;
@@ -25,25 +30,23 @@ namespace HomomorphicTests
 		}
 	}
 
-	class PublicKey
+
+	public class PublicKey
 	{
-		public BigInteger[] PK;
+		public BigInteger[] KeyParts;
 
 		public static PublicKey GenPublicKey(PrivateKey privateKey, int maxNum, int bitsCount = DefaultBitsCount)
 		{
 			var buff = new BigInteger[DefaultSetSize];
 
 			byte[] rand = new byte[bitsCount / 8];
-			Random r = new Random();
-
-			BigInteger rem;
 			for(int i = 0; i < buff.Length; i++)
 			{
-				r.NextBytes(rand);
-				buff[i] = (BigInteger.Abs(new BigInteger(rand)) * privateKey.P) + (maxNum * r.Next(10, 100));
+				Singleton.Random.NextBytes(rand);
+				buff[i] = (BigInteger.Abs(new BigInteger(rand)) * privateKey.Key) + (maxNum * Singleton.Random.Next(10, 100));
 			}
 
-			return new PublicKey { PK = buff };
+			return new PublicKey { KeyParts = buff };
 		}
 
 		public const int DefaultBitsCount = 8 * 16;
@@ -51,21 +54,19 @@ namespace HomomorphicTests
 		public const int DefaultSetSize = 16;
 	}
 
-	class PrivateKey
+
+	public class PrivateKey
 	{
-		public BigInteger P;
+		public BigInteger Key;
 
 		public static PrivateKey GenPrivateKey(int maxNum, int bitsCount = DefaultBitsCount)
 		{
 			var buff = new byte[bitsCount/8];
 			while(true)
 			{
-				new Random().NextBytes(buff);
-				var p = new BigInteger(buff);
-				if(p % maxNum == 0)
-					continue;
-
-				return new PrivateKey { P = p };
+				Singleton.Random.NextBytes(buff);
+				var p = BigInteger.Abs(new BigInteger(buff));
+				return new PrivateKey { Key = p };
 			}
 		}
 

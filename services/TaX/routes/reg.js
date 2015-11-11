@@ -8,8 +8,8 @@ var f = function *(next){
         this.context = {};
     } else {
         var body = yield parse(this, { limit: '1kb' });
-        if (!body.name) this.throw(400, '.name required');
-        if (!body.password) this.throw(400, '.password required');
+        if (!body.name) this.throw(400, 'ERROR: .name required');
+        if (!body.password) this.throw(400, 'ERROR: .password required');
         var user = yield db.users.insert({'name': body.name, 'password': body.password});
         this.cookies.set('name', body.name);
         this.cookies.set('password', body.password);

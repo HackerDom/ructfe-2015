@@ -8,15 +8,23 @@ var f = function *(next){
         this.context = {};
     } else {
         var body = yield parse(this, { limit: '1kb' });
-        if (!body.name) this.throw(400, '.name required');
-        if (!body.password) this.throw(400, '.password required');
+        if (!body.name) this.throw(400, 'ERROR: .name required');
+        if (!body.password) this.throw(400, 'ERROR: .password required');
         var user = yield db.users.findOne({'name': body.name, 'password': body.password});
         if (user) {
             this.cookies.set('name', body.name);
             this.cookies.set('password', body.password);
-            this.redirect(router.resolve('index'));
+
+            var url = null;
+            if (this.query['next']) {
+                url = router.resolve(this.query['next'])
+            }
+            if (!url) {
+                url = router.resolve('index');
+            }
+            this.redirect(url);
         } else {
-            this.throw(401, 'O_o');
+            this.throw(401, 'ERROR: O_o');
         }
     }
 };

@@ -1,52 +1,37 @@
 var grid;
 var ws;
 var offset = 0;
+window.onbeforeunload = function() {return "If you leave - we deauthorize you!";}
 
 webix.ready(function(){
     webix.ui.fullScreen();
-    webix.ui({cols: [
-        {template:"Ministry of Love <span class='webix_icon fa-heartbeat'></span>", css:"header"},
-        {view: 'search', placeholder: "Search...", id: "searchField", width:300, css:"header", on:{"onTimedKeyPress": search}},
-    ]});
-    grid = webix.ui({rows: [
+    grid = webix.ui({
+        container:"grid",
+        rows: [
         {type: "line", id:'page', height:"100%", cols:[
-                {
-                    view: "menu", layout: 'y', id: "menu", maxWidth:200, minWidth:100,
-                    height:"auto",on: {onItemClick: menuChoice}, css: "menu",
-                    data: [
-                        {id:"showLast",value: "People",icon: "users"},
-                        {id:"showLastCrimes",value:"Last crimes",icon:"hourglass-2"},
-                        {$template: "Separator"},
-                        {id:"showMyProfile",value:"My Profile",icon:"user"},
-                        {$template: "Separator"},
-                        {$template: "Spacer"},
-                        {id:"createReport",value:"Report a crime",icon:"bullhorn"},
-                    ]
-                },
                 {id: "main", type:"clean", rows:[{id:"canvas",template:"<h2>WebSockets must be enabled</h2>"},]},
             ]
         },
     ]});
-    $$('menu').hideItem('createReport');
     webix.ui({
-        id: "searchPopup", view:"popup", autofocus: false, width:300,
+        id: "searchPopup", view:"popup", autofocus: false, width:300, top:70,
         body: {view:"list", id:"searchresult", datatype:"json",
             template:"#row#",
             data:[{"row": "hello"}, {"row": "world"}]
         }
     });
     ws = new WebSocket("ws://" + window.location.host + "/websocket");
-    ws.onopen = function() {ws.send('{"action": "hello"}');};
+    ws.onopen = function() {ws.send('{"action": "about"}');};
     ws.onmessage = function (evt) {
         var main = JSON.parse(evt.data);
-        if (main['type'] === 'error')
+        if (main['type'] === 'default alert alert-danger')
             webix.message(main)
-        else if (main['type'] === 'default') {
-            $$('menu').showItem('createReport');
+        else if (main['type'] && main['type'].indexOf("default") > -1) {
+            $('#createReport').removeClass('hidden');
             webix.message(main);
         } else if (main['id'] === 'searchresult') {
             webix.ui(main, $$("searchPopup"), $$("searchresult"));
-            $$("searchPopup").show($$("searchField").$view);
+            $$("searchPopup").show($("#searchField"));
         } else
             webix.ui(main, $$("main"), $$("canvas"));
         grid.resize();
@@ -57,17 +42,16 @@ function send(action, params) {
     return ws.send(JSON.stringify({'action': action, 'params': params}));
 }
 
-function search() {send('search', {'text':  this.getValue()});}
+$('#searchField').on('input', function(){send('search', {'text':  $(this).val()});});
 function auth() {if($$('auth').validate()) send('auth', $$('auth').getValues());}
 function register(){send('register', $$('auth').getValues());}
-function menuChoice(id) {window[id]();};
-function showLast(){offset = 0; send('show_profiles', {'offset': 0});}
-function showLastCrimes(){offset = 0; send('show_crimes', {'offset': 0});}
+$('#showLast').click(function(){offset = 0; send('show_profiles', {'offset': 0});});
+$('#showLastCrimes').click(function(){offset = 0; send('show_crimes', {'offset': 0});});
 function nextCrimes() {offset += 1;send('show_crimes', {'offset': offset});}
 function prevCrimes() {if (offset > 0) offset -= 1; send('show_crimes', {'offset': offset});}
 function nextProfiles() {offset += 1;send('show_profiles', {'offset': offset});}
 function prevProfiles() {if (offset > 0) offset -= 1; send('show_profiles', {'offset': offset});}
-function showMyProfile(){ send('show_my_profile');};
+$('#showMyProfile').click(function(){ send('show_my_profile');});
 
 function showCrime(e, id, trg){
     var crimeid = trg.getAttribute('data-crimeid');
@@ -95,7 +79,7 @@ function itsMe(uid){
     });
 }
 
-function createReport (){
+$('#createReport').click(function(){
     var report = webix.ui({
         view:"window",
         id:"crime_win",
@@ -141,5 +125,5 @@ function createReport (){
             $$('crime_win').close();
         }
     };
-};
+});
 

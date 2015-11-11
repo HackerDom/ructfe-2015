@@ -1,6 +1,28 @@
 # coding=utf-8
 __author__ = 'm_messiah'
 
+ABOUT = {
+    'id': 'canvas',
+    'rows': [
+        {'template': """
+        <div class="row about">
+            <div class="col-sm-4 center-block">
+                <img src="/mol.png" class="img-responsive">
+            </div>
+            <div class="col-sm-8">
+                <h1>Ministry of Love</h1>
+                <p>
+                    Love your neighbor, respect the law.<br>
+                    Be careful.
+                </p>
+                <button class="btn btn-blank" onclick="send();">Log in</button>
+            </div>
+        </div>
+        """}
+    ]
+
+}
+
 AUTH_FORM = {
     'id': 'canvas',
     'rows': [
@@ -8,6 +30,7 @@ AUTH_FORM = {
             'view': "form",
             'id': "auth",
             'width': 350,
+            'css': 'form-horizontal',
             'bottomPadding': 18,
             'elements': [
                 {
@@ -26,6 +49,7 @@ AUTH_FORM = {
                     'required': True,
                 },
                 {
+                    'css': 'form-group',
                     'cols': [
                         {
                             'view': 'button',
@@ -34,7 +58,6 @@ AUTH_FORM = {
                             'type': 'iconButton',
                             'icon': 'sign-in',
                             'align': 'center',
-                            'css': "button_success",
                         },
                         {
                             'view': 'button',
@@ -51,8 +74,10 @@ AUTH_FORM = {
     ]
 }
 
-ERROR_MESSAGE = {'type': "error"}
-MESSAGE = {'type': 'default'}
+ERROR_MESSAGE = {'type': "default alert alert-danger"}
+SUCCESS_MESSAGE = {'type': 'default alert alert-success'}
+INFO_MESSAGE = {'type': 'default alert alert-info'}
+WARN_MESSAGE = {'type': 'default alert alert-warning'}
 
 PROFILES = {
     'id': 'canvas',
@@ -108,6 +133,7 @@ PROFILE = {
                         },
                         {
                             'height': 170,
+                            'css': 'center-block',
                             'template': "<img src='/userpics/#userpic#.jpg' />"
                         },
                         {
@@ -122,7 +148,7 @@ PROFILE = {
                                     'template': """
                         <div class='profile'>
                             <h2>#name# #lastname#</h2>
-                            <dl class="profile_info">
+                            <dl class="dl-horizontal">
                                 <dt>Birth</dt><dd>#birthdate#</dd>
                                 <dt>Mobile</dt><dd>#mobile#</dd>
                                 <dt>City</dt><dd>#city#</dd>
@@ -219,7 +245,7 @@ CRIME = {
             'template': """
                 <div class='profile'>
                     <h2>#name# #article#</h2>
-                    <dl class="profile_info">
+                    <dl class="dl-horizontal">
                         <dt>City</dt><dd>#country#/#city#</dd>
                         <dt>Date</dt><dd>#crimedate#</dd>
                         <dt>Description</dt><dd>#description#</dd>
@@ -249,6 +275,12 @@ SEARCH = {
             'template': "<span data-crimeid='#crimeid#'>"
                         "#name# #crimedate#</span>",
             "on": {'onItemClick': "showCrime"},
+        },
+        {
+            'autoheight': True,
+            'view': "list",
+            'datatype': "json",
+            'template': "<span>#answer#</span>",
         },
     ]
 }
