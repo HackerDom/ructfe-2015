@@ -1,0 +1,29 @@
+.about {margin-top: 5%;}
+.navbar-default {z-index:0;}
+.navbar-brand {background: none !important; width: auto !important; text-indent: 0 !important; letter-spacing: 2px !important;margin-left:0px !important;}
+.navbar-default .navbar-brand {background-image: none !important;}
+.navbar-collapse {background-color: #363940 !important;}
+.navbar-form {border: none!important;box-shadow:none!important}
+.navbar-form input {background-color: #363940 !important;border:none !important;}
+.navbar-form input:focus {background-color: #fff !important;}
+.webix_required:after {content:none !important;}
+.page {height:100%; padding-top:68px;padding-left:15px;}
+.menu {border-right: 1px #edf2f1 solid;}
+.webix_message_area .webix_default div, .webix_info div {background-color: transparent !important; border:none !important;}
+button, button span {background-color:transparent !important; border-color:#ccc !important;color:#363940 !important;}
+button_success {background-color: #545454 !important;}
+button:focus, button:hover {background-color:#363940 !important; color:#fff !important;}
+button:focus span, button:hover span {color:#fff !important;}
+.webix_pressed button {background-color: #D3F3D3 !important;}
+button, button:focus, button:active, button:hover {-webkit-transition: all 0.6s ease-in-out;-moz-transition: all 0.6s ease-in-out;-o-transition: all 0.6s ease-in-out;-ms-transition: all 0.6s ease-in-out;transition: all 0.6s ease-in-out;}
+.webix_el_datepicker span.webix_input_icon {background: none !important; color: #888 !important;}
+.center-block img {display:block; margin:auto;}
+.card {width: 450px; height: 150px; float:left; margin: 10px;border: 1px solid #eee;}
+.card:hover { box-shadow: 2px 2px 8px rgba(0,0,0,.3); border-radius: 2px;}
+.cardImage { float: left !important; margin: 0 !important; width: 150px !important;}
+.cardTitle { padding-left: 255px;font-size: 16px; padding-top: 61px;}
+.cardMain { padding-left: 61px;font-size: 16px; padding-top: 61px;}
+.cardInfo { padding-left: 255px;font-size: 14px;padding-top: 10px; }
+
+.success_icon {font-size: 20px; display:block; margin:auto;}
+.profile h2 {min-width: 200px;}
