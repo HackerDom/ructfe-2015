@@ -3,20 +3,3 @@
   sudo_user: checksystem
   git: repo=https://github.com/HackerDom/checksystem.git dest=/home/checksystem/repo/
 
-- name: cpanm installdeps
-  cpanm: name={{item}}
-  with_items:
-    - Convert::Color
-    - EV
-    - IO::Socket::SSL
-    - IO::Socket::IP
-    - IPC::Run
-    - List::Util
-    - String::Random
-    - Mojolicious
-    - Mojolicious::Plugin::Model
-    - DBI
-    - DBD::Pg
-    - Mojo::Pg
-    - Minion
-
