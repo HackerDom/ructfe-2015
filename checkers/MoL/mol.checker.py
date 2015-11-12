@@ -4,7 +4,7 @@ from random import randrange, choice, shuffle, randint, sample
 from sys import argv, stderr
 from os import path
 from websocket import create_connection
-from socket import gaierror
+from socket import error as net_error
 from json import loads, dumps
 from csv import reader
 
@@ -204,7 +204,7 @@ def check(*args):
         for checker in checkers:
             checker()
         close(OK)
-    except (gaierror, ConnectionRefusedError):
+    except net_error:
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
@@ -241,7 +241,7 @@ def put(*args):
         else:
             c.report(flag_id, flag)
             close(OK, "%s:%s:%s" % (c.username, c.password, flag_id))
-    except (gaierror, ConnectionRefusedError):
+    except net_error:
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
@@ -278,7 +278,7 @@ def get(*args):
             c.search_uid(checker_flag_id, flag)
 
         close(OK)
-    except (gaierror, ConnectionRefusedError):
+    except net_error:
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
