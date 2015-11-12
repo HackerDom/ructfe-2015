@@ -1,4 +1,26 @@
 {
+    "MoL" : {
+        "username" : "mol",
+        "precopy" : "deploy/MoL/precopy.sh",
+        "postcopy" : ["deploy/MoL/postcopy.sh", "/root/mol/postcopy.sh"],
+        "build_deps" : [
+            "md5deep",
+            "python3-pip",
+            "dh-systemd"
+         ],
+        "run_deps" : [
+            "systemd",
+            "postgresql",
+            "libpq-dev",
+            "python3",
+            "python3-pip",
+            "dh-systemd"
+         ],
+         "files" : [
+             ["services/MoL/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"]
+        ]
+    }
+    ,
 	"NasaRasa" : {
 		"username" : "nasarasa",
 		"postcopy" : ["deploy/nasarasa/postcopy.sh", "/root/nasarasa/postcopy.sh"],

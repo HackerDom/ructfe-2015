@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Security.Cryptography;
+using Electro.Crypto;
 
 namespace HomomorphicTests
 {
@@ -24,12 +25,12 @@ namespace HomomorphicTests
 				foreach(var num in nums)
 				{
 					testResult += num;
-					var c = Encrypt(num, homoKeyPair.publicKey);
+					var c = Encrypt(num, homoKeyPair.PublicKey);
 					Console.WriteLine($"num {num} c {c}");
 					encResult += c;
 				}
 				Console.WriteLine();
-				var decryptedResult = Decrypt(encResult, homoKeyPair.privateKey, maxNum);
+				var decryptedResult = Decrypt(encResult, homoKeyPair.PrivateKey);
 				
 				if(testResult != decryptedResult)
 				{
@@ -58,10 +59,10 @@ namespace HomomorphicTests
 			return b + m;
 		}
 
-		private static BigInteger Decrypt(BigInteger c, PrivateKey privateKey, int maxNum)
+		private static BigInteger Decrypt(BigInteger c, PrivateKey privateKey)
 		{
 			var m = c % privateKey.Key;
-			return m % maxNum;
+			return m % privateKey.MaxNum;
 		}
 	}
 }
