@@ -8,7 +8,7 @@
   apt: update_cache=yes cache_valid_time=79800
 
 - name: Install common network packages
-  apt: name={{item}} state=present
+  apt: name={{item}} state=latest
   with_items:
     - conntrack
     - iptables
