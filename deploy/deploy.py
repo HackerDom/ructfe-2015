@@ -151,8 +151,10 @@ class Machine:
         print("[+] remote-run\t{0}\t{1}".format(self.ssh_client.hostname, command))
         stdin, stdout, stderr = self.ssh_client.exec_command(command)
         if show_output:
-            print('[stdout]\n {0}'.format("".join(stdout.readlines())))
-            print('[stderr]\n {0}'.format("".join(stderr.readlines())))
+            lines = map(lambda x: x.encode('ascii', 'ignore'), stdout.readlines())
+            print('[stdout]\n {0}'.format("".join(lines).encode('ascii', 'ignore')))
+            lines = map(lambda x: x.encode('ascii', 'ignore'), stderr.readlines())
+            print('[stderr]\n {0}'.format("".join(lines).encode('ascii', 'ignore')))
 
 
 class DirtyMachine(Machine):
