@@ -65,6 +65,9 @@ class Client(object):
         self.ws.send(dumps({'action': 'show_crimes',
                             'params': {'offset': 0}}))
         answer = loads(self.ws.recv())
+        while 'text' in answer and 'New crime' in answer['text']:
+            answer = loads(self.ws.recv())
+        
         if ("rows" not in answer or
                 "data" not in answer["rows"][0] or
                 len(answer["rows"][0]["data"]) < 2 or
@@ -79,6 +82,9 @@ class Client(object):
                                     'crimeid': choice(crimes)["crimeid"]
                                 }}))
             answer = loads(self.ws.recv())
+            while 'text' in answer and 'New crime' in answer['text']:
+                answer = loads(self.ws.recv())
+
             if ("type" in answer and answer['type'] == "error" and
                     "text" in answer):
                 if len(answer["text"]) > 26:
@@ -95,6 +101,8 @@ class Client(object):
              'params': {'profileid': "c452b3012f534f51a7c12981b82821ac",
                         'info': "1991-07-27"}}))
         answer = loads(self.ws.recv())
+        while 'text' in answer and 'New crime' in answer['text']:
+            answer = loads(self.ws.recv())
         if "successful" not in answer["text"]:
             close(CORRUPT, "Assignment", "assignment failed: %s" % answer)
         return answer
@@ -104,6 +112,8 @@ class Client(object):
         self.assign_profile()
         self.ws.send(dumps({'action': 'show_my_profile'}))
         answer = loads(self.ws.recv())
+        while 'text' in answer and 'New crime' in answer['text']:
+            answer = loads(self.ws.recv())
         if ("rows" not in answer or
                 "cols" not in answer["rows"][0] or
                 'rows' not in answer['rows'][0]['cols'][0] or
@@ -135,6 +145,8 @@ class Client(object):
                                              sample(uids, randint(1, 5))))
         self.ws.send(dumps({'action': 'report', 'params': crime}))
         answer = loads(self.ws.recv())
+        while 'text' in answer and 'New crime' in answer['text']:
+            answer = loads(self.ws.recv())
         if "text" not in answer or "submited" not in answer["text"]:
             close(CORRUPT, "Report", "flag put failed: %s" % answer)
         return answer
@@ -146,6 +158,8 @@ class Client(object):
         """
         self.ws.send(dumps({'action': 'search', 'params': {'text': flag_id}}))
         answer = loads(self.ws.recv())
+        while 'text' in answer and 'New crime' in answer['text']:
+            answer = loads(self.ws.recv())
         if ("rows" not in answer or
                 len(answer['rows']) < 2 or
                 'data' not in answer['rows'][1]):
@@ -159,6 +173,8 @@ class Client(object):
                                 'params': {'crimeid': crime['crimeid']}}))
 
             answer = loads(self.ws.recv())
+            while 'text' in answer and 'New crime' in answer['text']:
+                answer = loads(self.ws.recv())
             if ("rows" in answer and len(answer['rows']) and
                     'data' in answer['rows'][0] and
                     'description' in answer['rows'][0]['data'] and
@@ -173,6 +189,8 @@ class Client(object):
     def search_uid(self, flag_id, flag):
         self.ws.send(dumps({'action': 'search', 'params': {'text': flag_id}}))
         answer = loads(self.ws.recv())
+        while 'text' in answer and 'New crime' in answer['text']:
+            answer = loads(self.ws.recv())
         if ("rows" not in answer or
                 len(answer['rows']) < 3 or
                 'data' not in answer['rows'][2]):

@@ -10,10 +10,9 @@ import (
 )
 const (
 	DbName = "./health.db" 
-	CreateIndicesTable = "CREATE TABLE healthIndices(id integer not null primary key AUTOINCREMENT, weight integer, bp integer, pulse integer, walking_distance integer, comment text); DELETE FROM healthIndices;"
-	InsertValues = "INSERT INTO healthIndices(weight, bp, pulse, walking_distance, comment) VALUES (?, ?, ?, ?, ?)"
-	InsertValue = "INSERT INTO healthIndices(weight, bp, pulse, walking_distance, comment) VALUES (?, ?, ?, ?, ?)"
-	SelectRows = "SELECT id, comment FROM healthIndices"
+	CreateIndicesTable = "CREATE TABLE healthIndices(id integer not null primary key AUTOINCREMENT, userId integer, weight integer, bp integer, pulse integer, walking_distance integer, comment text); DELETE FROM healthIndices;"
+	InsertValues = "INSERT INTO healthIndices(userId, weight, bp, pulse, walking_distance, comment) VALUES (?, ?, ?, ?, ?, ?)"
+	SelectRows = "SELECT id, comment FROM healthIndices WHERE userId = ?"
 	
 )
 
@@ -30,7 +29,7 @@ const (
 )
 
 
-func tryAddMetrics(m *HealthMetrics) (bool, int64) {
+func tryAddMetrics(uId int, m *HealthMetrics) (bool, int64) {
 
 	db, err := sql.Open("sqlite3", DbName)
 	if err != nil {
@@ -44,7 +43,7 @@ func tryAddMetrics(m *HealthMetrics) (bool, int64) {
 		return false, -1
 	}
 	
-	res, err := stmt.Exec(m.Weight, m.BloodPressure, m.Pulse, m.WalkingDistance, m.Comment) //todo
+	res, err := stmt.Exec(uId, m.Weight, m.BloodPressure, m.Pulse, m.WalkingDistance, m.Comment) 
 	if err != nil {
 		log.Fatal(err)
 		return false, -1
@@ -70,12 +69,18 @@ func tryGetUserMetrics(uId string) (bool, []HealthMetrics) {
 	}
 	defer db.Close()
 	
-	 rows, err := db.Query(SelectRows)
+	 stmt, err := db.Prepare(SelectRows)
 	 if err != nil {
 		log.Fatal(err)
 		return false, nil
 	 }
-	 defer rows.Close()
+	 defer stmt.Close()
+	 
+	 rows, err := stmt.Query(uId)
+	 if err != nil {
+		log.Fatal(err)
+		return false, nil
+	 }
 	 
 	 for rows.Next() {
 		var id int
@@ -113,6 +118,7 @@ func tryAddUser(user *User) (int, string){
 		log.Fatal(err)
 		return Error, ""
 	}
+	defer stmt.Close()
 	
 	res, err := stmt.Exec(user.Login, user.Pass) 
 	if err != nil {
