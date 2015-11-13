@@ -1,5 +1,38 @@
 - name: get checksystem from github
   sudo: yes
   sudo_user: checksystem
-  git: repo=https://github.com/HackerDom/checksystem.git dest=/home/checksystem/repo/
+  git: repo=https://github.com/HackerDom/checksystem.git dest=/home/checksystem/cs/
+
+- name: upload checksystem config
+  sudo: yes
+  sudo_user: checksystem
+  template: src=c_s.conf.test.j2 dest=/home/checksystem/cs/c_s.conf
+
+- name: upload checkers
+  sudo: yes
+  sudo_user: checksystem
+  copy: src=../../../../../../checkers/ dest=/home/checksystem/checkers/
+
+- name: checker requirements - MoL - python3
+  apt: name={{item}} state=present
+  with_items:
+    - python3
+    - python3-setuptools
+    - unicode
+
+- name: checker requirements - MoL - pip
+  easy_install: executable=easy_install3 name=pip
+
+- name: checker requirements - MoL - websocket-client
+  pip: executable=pip3 name=websocket-client state=present
+
+# commented, because it fails when package is already uninstalled
+#- name: checker requirements - MoL - remove websocket
+#  pip: executable=pip3 name=websocket state=absent
+#  ignore_errors: yes
+
+- name: checker requirements - TaX
+  apt: name={{item}} state=latest
+  with_items:
+    - libwww-perl
 

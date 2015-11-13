@@ -1,4 +1,4 @@
-- name: Install packages
+- name: install packages
   apt: name={{item}} state=latest
   with_items:
     - libssl-dev
@@ -6,7 +6,7 @@
     - cpanminus
     - git
 
-- name: Create checksystem user
+- name: create checksystem user
   user: name=checksystem state=present
 
 - name: cpanm installdeps
@@ -17,7 +17,7 @@
     - IO::Socket::SSL
     - IO::Socket::IP
     - IPC::Run
-    - List::Util
+    - List::Util~1.42
     - String::Random
     - Mojolicious
     - Mojolicious::Plugin::Model
