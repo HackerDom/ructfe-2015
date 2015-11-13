@@ -15,6 +15,6 @@ apt-get install -y npm
 
 npm install
 
-chown -R root:root
+chown -R root:root .
 chown -R ${USERNAME}:${USERNAME} ./data
 chown ${USERNAME}:${USERNAME} *.db
