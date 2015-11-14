@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,7 +39,7 @@ namespace Electro
 		}
 
 
-		public bool Vote(Guid electionId, User user, Vote vote)
+		public bool Vote(Guid electionId, User user, BigInteger[] voteArray)
 		{
 			Election election;
 			if(!elections.TryGetValue(electionId, out election))
@@ -48,8 +49,7 @@ namespace Electro
 			{
 				if(election.IsFinished)
 					return false;
-
-				election.Votes[user.Id] = vote;
+				election.Votes[user.Id] = new Vote {UserId = user.Id, EncryptedVector = voteArray};
 			}
 
 			return true;

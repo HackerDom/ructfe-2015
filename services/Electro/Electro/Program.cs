@@ -43,6 +43,9 @@ namespace Electro
 				var registerCandidateHandler = new RegisterCandidateHandler(electroController, authController, GetPrefix("registerCandidate"));
 				registerCandidateHandler.Start();
 
+				var voteHandler = new VoteHandler(electroController, authController, GetPrefix("vote"));
+				voteHandler.Start();
+
 				Thread.Sleep(Timeout.Infinite);
 			}
 			catch(Exception e)
