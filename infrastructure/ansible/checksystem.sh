@@ -1,2 +1,2 @@
 #!/bin/bash
-ansible-playbook checksystem/playbook.yml
+ansible-playbook checksystem/playbook.yml $@

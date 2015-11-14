@@ -1,2 +1,2 @@
 #!/bin/bash
-ansible-playbook basic/playbook.yml
+ansible-playbook basic/playbook.yml $@

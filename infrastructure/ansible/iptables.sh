@@ -1,2 +1,2 @@
 #!/bin/bash
-ansible-playbook iptables/playbook.yml
+ansible-playbook iptables/playbook.yml $@
