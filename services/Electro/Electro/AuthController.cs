@@ -1,32 +1,28 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using Electro.Model;
+using Electro.Utils;
 
-namespace Electro.Utils
+namespace Electro
 {
 	class AuthController
 	{
-		public bool AddUser(string name, string pass)
+		public bool AddUser(string login, string pass)
 		{
 			var user = new User
 			{
 				Id = Guid.NewGuid(),
-				Name = name,
-				Hash = CryptoUtils.CalcHash(pass)
+				Login = login,
+				Hash = CryptUtils.CalcHash(pass)
 			};
-			return users.TryAdd(name, user);
+			return users.TryAdd(login, user);
 		}
 
-		public User FindUser(string name, string pass)
+		public User FindUser(string login, string pass)
 		{
-			var passHash = CryptoUtils.CalcHash(pass);
+			var passHash = CryptUtils.CalcHash(pass);
 			User user;
-			return users.TryGetValue(name, out user) && user.Hash == passHash ? user : null;
+			return users.TryGetValue(login, out user) && user.Hash == passHash ? user : null;
 		}
 
 		ConcurrentDictionary<string, User> users = new ConcurrentDictionary<string, User>();
