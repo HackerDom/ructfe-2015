@@ -4,7 +4,7 @@
 - hosts: router
   roles: [router]
 
-- hosts: dns-master:dns-slave
+- hosts: dns
   roles: [dns]
 
 - hosts: checksystem-app
