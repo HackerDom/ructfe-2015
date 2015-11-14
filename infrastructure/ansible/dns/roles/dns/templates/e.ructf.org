@@ -10,8 +10,6 @@ $TTL    10M
 @               IN      NS      ructf-srv01h.ructf.yandex.net.
 @               IN      TXT     "RuCTFE2015"
 
-ns0             IN      A       84.201.188.129
-ns1             IN      A       130.193.60.209
 vpn             IN      A       130.193.60.216
 
 $INCLUDE teams
