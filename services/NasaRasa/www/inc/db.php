@@ -89,7 +89,7 @@
             return $this->query($statement);
         }
 
-        public function select($table_name, $filters, $limit=0)
+        public function select($table_name, $filters, $limit=0, $order_by=false)
         {
             $where = $this->build_where_by_filter($filters);
 
@@ -97,6 +97,19 @@
             
             if (strlen($where) > 0)
                 $query .= ' WHERE ' . $where;
+
+            if ($order_by)
+            {
+                $order_by = (string) $order_by;
+                $order = 'ASC';
+                if ($order_by[0] == '-')
+                {
+                    $order = 'DESC';
+                    $order_by = substr($order_by, 1);
+                }
+
+                $query .= ' ORDER BY ' . $this->escape_field_name($order_by) . ' ' . $order;
+            }
 
             if ($limit != 0)
                 $query .= ' LIMIT ' . (int) $limit;
@@ -254,6 +267,8 @@
             return $object;
         }
 
+        /* TODO: make $limit as a filter */
+        /* TODO: may be vulnarable via $$var all filters which are __[\w\d]*__ */
         public static function find($filters, $limit=0)
         {
             if (array_key_exists('__pk__', $filters))
@@ -261,12 +276,19 @@
                 $filters[self::get_primary_key()] = $filters['__pk__'];
                 unset($filters['__pk__']);
             }
+            $order_by = false;
+            if (array_key_exists('__order_by__', $filters))
+            {
+                $order_by = $filters['__order_by__'];
+                unset($filters['__order_by__']);
+            }
+
             debug('DbModel::find(' . var_export($filters, true) . ')');
             self::ensure_table_exists();
 
             self::modify_fields_for_setting($filters);
 
-            return self::load_objects(self::$connection->select(self::get_table_name(), $filters, $limit));
+            return self::load_objects(self::$connection->select(self::get_table_name(), $filters, $limit, $order_by));
         }
 
         public static function find_one($filters)

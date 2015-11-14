@@ -9,5 +9,9 @@ service nginx stop
 
 ln -s /etc/nginx/sites-available/nasarasa /etc/nginx/sites-enabled/nasarasa
 
+pushd /home/nasarasa
+composer update
+popd
+
 service php5-fpm start
 service nginx start
