@@ -34,6 +34,9 @@ namespace Electro
 				var startElectionHandler = new StartElectionHandler(electroController, authController, GetPrefix("startElection"));
 				startElectionHandler.Start();
 
+				var listElectionHandler = new ListElectionsHandler(electroController, GetPrefix("listElections"));
+				listElectionHandler.Start();
+
 				Thread.Sleep(Timeout.Infinite);
 			}
 			catch(Exception e)

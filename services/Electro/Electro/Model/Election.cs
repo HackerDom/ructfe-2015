@@ -23,4 +23,19 @@ namespace Electro.Model
 
 		[IgnoreDataMember] public bool IsFinished  { get { return Till < DateTime.UtcNow; } }
 	}
+
+	[DataContract]
+	class ElectionPulicCore
+	{
+		public static ElectionPulicCore Create(Election election)
+		{
+			return new ElectionPulicCore {Id = election.Id, Name = election.Name, Till = election.Till};
+		}
+
+		[DataMember] public Guid Id { get; set; }
+		[DataMember] public string Name { get; set; }
+
+		[DataMember] private string till { get; set; }
+		[IgnoreDataMember] public DateTime Till { get { return DateTimeUtils.TryParseSortable(till); } set {till = value.ToSortable();} }
+	}
 }
