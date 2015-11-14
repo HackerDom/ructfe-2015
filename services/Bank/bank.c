@@ -19,9 +19,9 @@ long get_hash(unsigned char *buf);
 // usernames(64 chars max) * 256, tree nodes * (2 ** 12), functions(1K)
 
 struct tree_node {
-	long hash;
-    char* keys[MAX_ITEMS_IN_BUCKET];
-    long values[MAX_ITEMS_IN_BUCKET];
+	unsigned long hash;
+    unsigned short key_offsets[MAX_ITEMS_IN_BUCKET];
+    unsigned long values[MAX_ITEMS_IN_BUCKET];
 };
 
 struct tree {
@@ -86,13 +86,15 @@ void* set(unsigned char* key, int value)
 	// return bucket_ptr;
 
 	for (i = 0; i < MAX_ITEMS_IN_BUCKET; i+=1) {
-		if(!curr_node->keys[i]) {
+        unsigned char* key_ptr = mem_start + curr_node->key_offsets[i];
+
+		if(!curr_node->key_offsets[i]) {
 			break;
 		}
 
 		int j;
-		for (j = 0; key[j] && curr_node->keys[i][j] && key[j] == curr_node->keys[i][j]; j++) {}
-		if(key[j] == curr_node->keys[i][j] == 0) {
+		for (j = 0; key[j] && key_ptr[j] && key[j] == key_ptr[j]; j++) {}
+		if(key[j] == 0 && key_ptr[j] == 0) {
 			break;  // equals
 		}
 	}
@@ -100,11 +102,11 @@ void* set(unsigned char* key, int value)
 	curr_node->values[i] = value;
 
 	// place the key
-	if(!curr_node->keys[i]) {
+	if(!curr_node->key_offsets[i]) {
 		// find a place for the key
 		unsigned char *key_offset = 0;
 		int j;
-		for (j = 0; j < MAX_KEYS * MAX_KEY_LEN; j += MAX_KEY_LEN) {
+		for (j = MAX_KEY_LEN; j < MAX_KEYS * MAX_KEY_LEN; j += MAX_KEY_LEN) {
 			key_offset = mem_start + j;
 			if(*key_offset == 0) {
 				break;
@@ -116,7 +118,8 @@ void* set(unsigned char* key, int value)
 		}
 		key_offset[j] = 0;
 
-		curr_node->keys[i] = key_offset;
+		curr_node->key_offsets[i] = key_offset - mem_start;
+        // return *(mem_start + curr_node->key_offsets[i]);
 	}
 
 	return curr_node;
@@ -125,7 +128,6 @@ void* set(unsigned char* key, int value)
 void* get(unsigned char* key) {
   	unsigned char* mem_start;
 	int i;
-  	
 
   	// Get tree start address
   	asm volatile("callq 1f;"
@@ -172,14 +174,15 @@ void* get(unsigned char* key) {
 		return 0;
 	}
 
-	for (i = 0; i < MAX_ITEMS_IN_BUCKET; i+=1) {
-		if(!curr_node->keys[i]) {
+	for (i = 0; i < MAX_ITEMS_IN_BUCKET; i += 1) {
+        unsigned char* key_ptr = mem_start + curr_node->key_offsets[i];
+		if(!curr_node->key_offsets[i]) {
 			return 0;
 		}
 
 		int j;
-		for (j = 0; key[j] && curr_node->keys[i][j] && key[j] == curr_node->keys[i][j]; j++) {}
-		if(key[j] == 0 && curr_node->keys[i][j] == 0) {
+		for (j = 0; key[j] && key_ptr[j] && key[j] == key_ptr[j]; j++) {}
+		if(key[j] == 0 && key_ptr[j] == 0) {
 			return curr_node->values[i];
 		}
 	}
@@ -217,7 +220,9 @@ void init_structs() {
 	printf("%p\n", ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)("testt", 2000));
 	printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
 	printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("testt"));
-	printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
+    printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
+    printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
+	printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("testt"));
 
 }
 
