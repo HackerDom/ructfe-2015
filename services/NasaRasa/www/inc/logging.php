@@ -1,4 +1,6 @@
 <?php
+    $DEBUG_MODE = false;
+
     function warning($message)
     {
         print '<b>[WARNING]</b> ' . htmlspecialchars($message) . '<br>';
@@ -6,7 +8,9 @@
 
     function debug($message)
     {
-        print '<b>[DEBUG]</b> ' . htmlspecialchars($message) . '<br>';
+        global $DEBUG_MODE;
+        if ($DEBUG_MODE)
+            print '<b>[DEBUG]</b> ' . htmlspecialchars($message) . '<br>';
     }
 
     function html_var_dump($var)
