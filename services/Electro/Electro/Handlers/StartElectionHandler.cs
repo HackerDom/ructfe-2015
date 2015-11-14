@@ -20,6 +20,7 @@ namespace Electro.Handlers
 
 		protected override void ProcessAuthorizedRequest(HttpListenerContext context, User user)
 		{
+			context.Request.AssertMethod(WebRequestMethods.Http.Post);
 			var form = context.Request.GetPostData();
 			string electionName;
 			string isPublicString; bool isPublic;

@@ -11,17 +11,32 @@ namespace Electro
 {
 	class ElectroController
 	{
-//		public bool AddUser(User user)
-//		{
-//			return users.TryAdd(user.Id, user);
-//		}
-
 		public Election StartElection(string electionName, User firstCandidate, bool isPublic, DateTime till)
 		{
-			var election = new Election { Id = Guid.NewGuid(), Name = electionName, Till = till, Candidates = new Dictionary<Guid, User> { {firstCandidate.Id, firstCandidate } }, IsPublic = isPublic};
+			var election = new Election { Id = Guid.NewGuid(), Name = electionName, Till = till, Candidates = new Dictionary<Guid, UserPublic> { {firstCandidate.Id, UserPublic.Convert(firstCandidate) } }, IsPublic = isPublic};
 			elections[election.Id] = election;
 			return election;
 		}
+
+		public bool RegisterCandidate(Guid electionId, User user)
+		{
+			Election election;
+			if(!elections.TryGetValue(electionId, out election))
+				return false;
+
+			lock (election)
+			{
+				if(election.IsFinished)
+					return false;
+
+				if(election.Candidates.ContainsKey(user.Id))
+					return false;
+
+				election.Candidates[user.Id] = UserPublic.Convert(user);
+				return true;
+			}
+		}
+
 
 		public bool Vote(Guid electionId, User user, Vote vote)
 		{
@@ -61,7 +76,6 @@ namespace Electro
 			return elections.Select(pair => pair.Value);
 		}
 
-//		private ConcurrentDictionary<Guid, User> users = new ConcurrentDictionary<Guid, User>();
 		private ConcurrentDictionary<Guid, Election> elections = new ConcurrentDictionary<Guid, Election>();
 	}
 }
