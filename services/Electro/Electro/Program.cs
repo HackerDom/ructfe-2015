@@ -31,6 +31,9 @@ namespace Electro
 				var loginHandler = new LoginHandler(authController, GetPrefix("login"));
 				loginHandler.Start();
 
+				var startElectionHandler = new StartElectionHandler(electroController, authController, GetPrefix("startElection"));
+				startElectionHandler.Start();
+
 				Thread.Sleep(Timeout.Infinite);
 			}
 			catch(Exception e)

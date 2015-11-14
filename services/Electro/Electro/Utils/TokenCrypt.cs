@@ -12,7 +12,7 @@ namespace Electro.Utils
 		{
 			try
 			{
-				CryptKey = AesKey.ParseJson(File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, KeyFile)).Trim());
+				CryptKey = JsonHelper.ParseJson<AesKey>(File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, KeyFile)).Trim());
 			}
 			catch(FileNotFoundException)
 			{
@@ -49,16 +49,14 @@ namespace Electro.Utils
 		}
 
 		[DataContract]
-		private class AesKey : JsonHelper<AesKey>
+		private class AesKey
 		{
 			[DataMember(Name = "k", Order = 1)] private string key;
 			[DataMember(Name = "iv", Order = 2)] private string iv;
 
 			//NOTE: [OnSerializing] and [OnDeserialized] not used in mono
-			[IgnoreDataMember]
-			public byte[] Key { get { return Convert.FromBase64String(key); } set { key = Convert.ToBase64String(value); } }
-			[IgnoreDataMember]
-			public byte[] IV { get { return Convert.FromBase64String(iv); } set { iv = Convert.ToBase64String(value); } }
+			[IgnoreDataMember] public byte[] Key { get { return Convert.FromBase64String(key); } set { key = Convert.ToBase64String(value); } }
+			[IgnoreDataMember] public byte[] IV { get { return Convert.FromBase64String(iv); } set { iv = Convert.ToBase64String(value); } }
 
 			/*[OnSerializing]
 			private void OnSerializing(StreamingContext context)

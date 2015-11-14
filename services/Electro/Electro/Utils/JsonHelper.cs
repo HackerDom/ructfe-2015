@@ -6,35 +6,56 @@ using System.Xml;
 
 namespace Electro.Utils
 {
-	[Serializable]
-	public class JsonHelper<T> where T : class
+	public static class JsonHelper
 	{
-		public static T ParseJson(string record)
+		public static T ParseJson<T>(string record, bool useSimpleDictionaryFormat = false)
 		{
-			var reader = JsonReaderWriterFactory.CreateJsonReader(Encoding.UTF8.GetBytes(record), XmlDictionaryReaderQuotas.Max);
+			return ParseJson<T>(Encoding.UTF8.GetBytes(record), useSimpleDictionaryFormat);
+		}
+
+		public static T ParseJson<T>(byte[] record, bool useSimpleDictionaryFormat = false)
+		{
+			return ParseJson<T>(record, 0, record.Length, useSimpleDictionaryFormat);
+		}
+
+		public static T ParseJson<T>(byte[] record, int offset, int length, bool useSimpleDictionaryFormat = false)
+		{
+			var reader = JsonReaderWriterFactory.CreateJsonReader(record, offset, length, XmlDictionaryReaderQuotas.Max);
+			return (T)new DataContractJsonSerializer(typeof(T), useSimpleDictionaryFormat ? SimpleDictionarySettings : DefaultSettings).ReadObject(reader);
+		}
+
+		public static T ParseJson<T>(Stream stream)
+		{
+			var reader = JsonReaderWriterFactory.CreateJsonReader(stream, XmlDictionaryReaderQuotas.Max);
 			return (T)new DataContractJsonSerializer(typeof(T)).ReadObject(reader);
 		}
 
-		public string ToJsonString()
+		public static string ToJsonString<T>(this T obj, bool runtime = true, bool useSimpleDictionaryFormat = false)
 		{
-			return Encoding.UTF8.GetString(ToJson());
+			return Encoding.UTF8.GetString(obj.ToJson(runtime, useSimpleDictionaryFormat));
 		}
 
-		public byte[] ToJson()
+		public static byte[] ToJson<T>(this T obj, bool runtime = true, bool useSimpleDictionaryFormat = false)
 		{
 			using(var stream = new MemoryStream())
 			{
-				ToJson(stream);
+				obj.ToJson(stream, runtime, useSimpleDictionaryFormat);
 				return stream.ToArray();
 			}
 		}
 
-		public void ToJson(Stream stream)
+		public static void ToJson<T>(this T obj, Stream stream, bool runtime = true, bool useSimpleDictionaryFormat = false)
 		{
 			using(var writer = JsonReaderWriterFactory.CreateJsonWriter(stream, Encoding.UTF8, false))
-				new DataContractJsonSerializer(typeof(T)).WriteObject(writer, this);
+				new DataContractJsonSerializer(runtime ? obj.TryGetRuntimeType() : typeof(T), useSimpleDictionaryFormat ? SimpleDictionarySettings : DefaultSettings).WriteObject(writer, obj);
 		}
 
-		private static readonly object NullObject = new object();
+		public static Type TryGetRuntimeType<T>(this T obj)
+		{
+			return Equals(obj, null) ? typeof(T) : obj.GetType();
+		}
+
+		private static readonly DataContractJsonSerializerSettings DefaultSettings = new DataContractJsonSerializerSettings();
+		private static readonly DataContractJsonSerializerSettings SimpleDictionarySettings = new DataContractJsonSerializerSettings { UseSimpleDictionaryFormat = true };
 	}
 }
