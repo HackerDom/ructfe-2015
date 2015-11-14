@@ -13,7 +13,9 @@
 #define MAX_KEY_LEN		        (64)
 #define BUFF_ADDR 		        ((char *) 0x000000dead000000)
 
+// long get_hash(unsigned char *buf);
 long get_hash(unsigned char *buf);
+
 // num requests to win = 16
 
 // usernames(64 chars max) * 256, tree nodes * (2 ** 12), functions(1K)
@@ -34,34 +36,21 @@ void* set(unsigned char* key, int value)
 // __attribute__((optnone)) 
 {
   	unsigned char* mem_start;
-  	int i;
-	
-  	// Get tree start address
-  	asm volatile("callq 1f;"
-  		"1: popq %0;"
-  		"andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
-	);
+    long hash;
+    int i;
+
+    long (*volatile get_hash_ptr)(unsigned char * key) = get_hash;
+    hash = get_hash_ptr(key);
+
+    // Get tree start address
+    asm volatile("callq 1f;"
+        "1: popq %0;"
+        "andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
+    );
 
   	// mem_start = 0xdead000000;
 
-	long hash;
-
-
-	// Call get_hash by far address 
-	asm volatile("mov %1, %%rdi;"
-		"leaq get_hash, %%rax;"
-		"callq *%%rax;"
-		"movq %%rax, %0;"
-		:"=m" (hash): "m" (key) : 
-		"%rax", "%rbx", "%rcx", "%rdx", "%rsi", "%rdi",
-		"%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", 
-		"memory", "cc");
-
-
-	// return hash;
-	// get_hash(key);
-
-	const unsigned char* TREE_NODES_ADDR = mem_start + MAX_KEY_LEN * MAX_KEYS;
+    const unsigned char* TREE_NODES_ADDR = mem_start + MAX_KEY_LEN * MAX_KEYS;
 
 	struct tree_node* curr_node = (struct tree_node*) TREE_NODES_ADDR;
 	long curr_node_offset = 0;
@@ -127,28 +116,20 @@ void* set(unsigned char* key, int value)
 
 void* get(unsigned char* key) {
   	unsigned char* mem_start;
-	int i;
-
-  	// Get tree start address
-  	asm volatile("callq 1f;"
-  		"1: popq %0;"
-  		"andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
-	);
-
-  	// mem_start = 0xdead000000;
-
 	long hash;
+    int i;
 
-	// Call get_hash by far address 
-	asm volatile("mov %1, %%rdi;"
-		"leaq get_hash, %%rax;"
-		"callq *%%rax;"
-		"movq %%rax, %0;"
-		:"=m" (hash): "m" (key) : 
-		"%rax", "%rbx", "%rcx", "%rdx", "%rsi", "%rdi",
-		"%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", 
-		"memory", "cc");
-	// hash = 0x657d4c8881d0869f;
+    // Call get_hash by far address 
+    long (*volatile get_hash_ptr)(unsigned char * key) = get_hash;
+    hash = get_hash_ptr(key);
+
+    // Get tree start address
+    asm volatile("callq 1f;"
+        "1: popq %0;"
+        "andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
+    );
+
+    // mem_start = 0xdead000000;
 
 	const unsigned char* TREE_NODES_ADDR = mem_start + MAX_KEY_LEN * MAX_KEYS;
 
@@ -165,10 +146,7 @@ void* get(unsigned char* key) {
 			break;
 		}
 		curr_node = (struct tree_node*) TREE_NODES_ADDR + curr_node_offset;
-		// printf("%d %ld %p\n", curr_node_offset, curr_node->hash, curr_node);
 	}
-
-	// return curr_node; // debug
 
 	if(curr_node->hash == 0) {
 		return 0;
@@ -224,10 +202,15 @@ void init_structs() {
     printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
 	printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("testt"));
 
+    ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)("test", 2000);
+    printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
+
+
+
 }
 
 
-long get_hash(unsigned char *buf)
+long __attribute__ ((noinline)) get_hash(unsigned char *buf)
 // __attribute__((optnone)) 
 {
 	int len = strlen((char *) buf);
