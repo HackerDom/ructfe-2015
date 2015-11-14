@@ -56,6 +56,7 @@
     <Compile Include="Handlers\BaseHttpHandler.cs" />
     <Compile Include="Handlers\HttpException.cs" />
     <Compile Include="Handlers\HttpListenerUtils.cs" />
+    <Compile Include="Handlers\ListElectionsHandler.cs" />
     <Compile Include="Handlers\LoginHandler.cs" />
     <Compile Include="Handlers\RegisterHandler.cs" />
     <Compile Include="Handlers\StartElectionHandler.cs" />
