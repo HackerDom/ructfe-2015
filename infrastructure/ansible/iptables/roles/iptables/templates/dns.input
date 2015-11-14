@@ -1,0 +1,2 @@
+-A INPUT -p udp --dport 53 -j ACCEPT
+
