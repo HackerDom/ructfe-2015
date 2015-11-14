@@ -8,12 +8,13 @@ import (
 	"log"
 	"os"
 	"errors"
+	"strings"
 )
 const (
 	DbName = "./health.db" 
 	CreateIndicesTable = "CREATE TABLE healthIndices(id integer not null primary key AUTOINCREMENT, userId integer, weight integer, bp integer, pulse integer, walking_distance integer, comment text); DELETE FROM healthIndices;"
 	InsertValues = "INSERT INTO healthIndices(userId, weight, bp, pulse, walking_distance, comment) VALUES (?, ?, ?, ?, ?, ?)"
-	SelectRows = "SELECT id, comment FROM healthIndices WHERE userId = ?"
+	SelectRows = "SELECT id, weight, bp, pulse, walking_distance, comment FROM healthIndices WHERE userId = ?"
 	SelectTopRows = "SELECT id, comment FROM healthIndices LIMIT 10"
 	
 )
@@ -78,7 +79,9 @@ func tryGetUserMetrics(uId string) (bool, []HealthMetrics) {
 	 }
 	 defer stmt.Close()
 	 
-	 rows, err := stmt.Query(uId)
+	 id := parseUId(uId)
+	 
+	 rows, err := stmt.Query(id)
 	 if err != nil {
 		log.Fatal(err)
 		return false, nil
@@ -133,6 +136,23 @@ func tryAddUser(user *User) (int, string){
 		return Error, ""
 	}
 	
+	//debug
+	users, err := db.Query("SELECT id, login, pass FROM users")
+	 if err != nil {
+		log.Fatal(err)
+	 }
+	 defer users.Close()
+	 
+	 fmt.Println("Users for now:")
+	 for users.Next() {
+		var id int
+		var login string
+		var pass string
+		users.Scan(&id, &login, &pass)
+		fmt.Println(id, login, pass)
+	 }
+	 //end debug
+	
 	return Success, createUId(id)
 }
 
@@ -168,6 +188,14 @@ func findUser(user *User) (string, error) {
 
 func createUId(id int64) string {
 	return "u_" + strconv.FormatInt(id, 10)
+}
+
+func parseUId(uId string) int {
+	res, err := strconv.Atoi(strings.Split(uId, "_")[1])
+	if err != nil {
+		log.Fatal("Can't parse uId=", uId)
+	}
+	return res
 }
 
 func prepareDb() {

@@ -14,7 +14,7 @@ import (
 const (
 	Unauthorized = "User is not authorized"
 	AuthenticationFailed = "Authentication failed"
-	Key = "" //todo
+	Key = "f11ecd5521ddf2614e17e4fb074a86da" //todo
 )
 
 func addHealthMetricsHandler(w http.ResponseWriter, request *http.Request) {
@@ -57,8 +57,9 @@ func healthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 	} else {
 		response += uId // debug
 		success, metrics := tryGetUserMetrics(uId)
-		if (success) {
+		if success {
 			status = http.StatusOK
+			response += "; " + strconv.Itoa(len(metrics))
 			for _,m := range metrics {
 				response += m.toString()
 			}
@@ -175,7 +176,7 @@ func loginHandler(w http.ResponseWriter, request *http.Request) {
 			idCookie := http.Cookie{Name : "id", Value: id, Expires: expire}
 			http.SetCookie(w, &authCookie) 
 			http.SetCookie(w, &idCookie) 
-			response = fmt.Sprintf("Welcome, ", user.Login)
+			response = fmt.Sprintf("Welcome, %v", user.Login)
 		}
 	}
 	w.WriteHeader(status)
