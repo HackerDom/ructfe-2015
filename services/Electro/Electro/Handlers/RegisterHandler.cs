@@ -33,14 +33,18 @@ namespace Electro.Handlers
 			if(!Regex.IsMatch(login, @"^\w+$"))
 				throw new HttpException(HttpStatusCode.BadRequest, @"Only \w chars allowed in login");
 
-			if(!authController.AddUser(login, pass))
+			User user;
+			if((user = authController.AddUser(login, pass)) == null)
 				throw new HttpException(HttpStatusCode.Conflict, string.Format("User '{0}' already exists", login));
 
-			context.Response.SetCookie("login", login);
-			context.Response.SetCookie("token", TokenCrypt.Encrypt(new Token { Login = login, DateTime = DateTime.UtcNow }.ToJsonString()), true);
+			context.Response.SetCookie(LoginCookieName, login);
+			context.Response.SetCookie(TokenCookieName, TokenCrypt.Encrypt(new Token { Login = login, DateTime = DateTime.UtcNow }.ToJsonString()), true);
 
 			WriteString(context, "Register OK");
 		}
+
+		public const string TokenCookieName = "authtoken";
+		private const string LoginCookieName = "login";
 
 		private const int MaxLength = 64;
 	}

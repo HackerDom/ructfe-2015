@@ -7,7 +7,7 @@ namespace Electro
 {
 	class AuthController
 	{
-		public bool AddUser(string login, string pass)
+		public User AddUser(string login, string pass)
 		{
 			var user = new User
 			{
@@ -15,14 +15,13 @@ namespace Electro
 				Login = login,
 				Hash = CryptUtils.CalcHash(pass)
 			};
-			return users.TryAdd(login, user);
+			return users.TryAdd(login, user) ? user : null;
 		}
 
-		public User FindUser(string login, string pass)
+		public User FindUser(string login, string pass = null)
 		{
-			var passHash = CryptUtils.CalcHash(pass);
 			User user;
-			return users.TryGetValue(login, out user) && user.Hash == passHash ? user : null;
+			return users.TryGetValue(login, out user) && (pass == null || user.Hash == CryptUtils.CalcHash(pass)) ? user : null;
 		}
 
 		ConcurrentDictionary<string, User> users = new ConcurrentDictionary<string, User>();

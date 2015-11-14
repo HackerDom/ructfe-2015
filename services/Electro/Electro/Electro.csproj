@@ -52,12 +52,13 @@
   <ItemGroup>
     <Compile Include="Crypto\HomoCrypto.cs" />
     <Compile Include="ElectroController.cs" />
-    <Compile Include="Handlers\AuthorizedBathHandler.cs" />
+    <Compile Include="Handlers\AuthorizedBaseHandler.cs" />
     <Compile Include="Handlers\BaseHttpHandler.cs" />
     <Compile Include="Handlers\HttpException.cs" />
     <Compile Include="Handlers\HttpListenerUtils.cs" />
     <Compile Include="Handlers\LoginHandler.cs" />
     <Compile Include="Handlers\RegisterHandler.cs" />
+    <Compile Include="Handlers\StartElectionHandler.cs" />
     <Compile Include="Handlers\StaticHandler.cs" />
     <Compile Include="Crypto\HomoKeyPair.cs" />
     <Compile Include="Model\Election.cs" />
