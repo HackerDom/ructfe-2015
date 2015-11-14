@@ -131,10 +131,20 @@
             if ($this->select($table_name, $filters, 1)->num_rows > 0)
                 $result = $this->update($table_name, $fields, $filters);
             else
+            {
                 $result = $this->insert($table_name, $fields);
+                if ($result)
+                    $result = $this->conn->insert_id;
+            }
             $this->conn->commit();
 
             return $result;
+        }
+
+        public function drop($table_name)
+        {
+            $query = 'DROP TABLE ' . $this->escape_field_name($table_name);
+            return $this->query($query);
         }
     }
 
@@ -143,6 +153,7 @@
         static $connection;
         static $existing_tables = [];
 
+        /* TODO: make own primary_key for each child of DbModel */
         static $primary_key = NULL;
 
         private $fields;
@@ -154,6 +165,7 @@
             $this->init_fields($init_fields);
         }
 
+        /* TODO: cache results? */
         public static function build_schema($schema)
         {
             $primary_key = self::get_defined_primary_key();
@@ -181,13 +193,13 @@
         public static function get_table_name()
         {
             $class = get_called_class();
-            return $class::$table_name;            
+            return $class::$table_name;
         }
 
         public static function get_schema()
         {
             $class = get_called_class();
-            return $class::get_schema();            
+            return $class::get_schema();
         }
 
         public static function get_defined_primary_key()
@@ -235,13 +247,25 @@
             $object = new $class();
             $object->fields = $db_row;
 
+            $schema = self::get_schema();
+            foreach ($object->fields as $field_name => &$field_value)
+                $field_value = $schema[$field_name]->modify_on_get($field_value);
+
             return $object;
         }
 
         public static function find($filters, $limit=0)
         {
-            debug('DbModel::find([' . join(', ', $filters) . '])');
+            if (array_key_exists('__pk__', $filters))
+            {
+                $filters[self::get_primary_key()] = $filters['__pk__'];
+                unset($filters['__pk__']);
+            }
+            debug('DbModel::find(' . var_export($filters, true) . ')');
             self::ensure_table_exists();
+
+            self::modify_fields_for_setting($filters);
+
             return self::load_objects(self::$connection->select(self::get_table_name(), $filters, $limit));
         }
 
@@ -258,6 +282,12 @@
             return self::find([]);
         }
 
+        public static function count($filters=[])
+        {
+            /* TODO: Optimize to SELECT COUNT(*) */
+            return count(self::find($filters));
+        }
+
         public function save()
         {
             debug('DbModel::save()');
@@ -270,14 +300,27 @@
 
             if (! $this->check_unique_constraints($fields_without_pk, $primary_key_value))
             {
-                warning('Can\'t save object: duplicated unique field');
+                throw new DbConstraintsException('Can\'t save object: duplicated unique field');
                 return false;
             }
 
-            return self::$connection->insert_or_update(self::get_table_name(), $fields_without_pk, [self::get_primary_key() => $primary_key_value]);
+            self::modify_fields_for_setting($fields_without_pk);
+
+            $result = self::$connection->insert_or_update(self::get_table_name(), $fields_without_pk, [self::get_primary_key() => $primary_key_value]);
+            if (is_int($result))
+                $this->fields[self::get_primary_key()] = $result;
+
+            return $result;
         }
 
-        function check_unique_constraints($fields_without_pk, $ignored_pk_value)
+        private static function modify_fields_for_setting(&$fields)
+        {
+            $schema = self::get_schema();
+            foreach ($fields as $field_name => &$field_value)
+                $field_value = $schema[$field_name]->modify_on_set($field_value);
+        }
+
+        private function check_unique_constraints($fields_without_pk, $ignored_pk_value)
         {
             $objects = self::objects();
             $schema = self::get_schema();
@@ -306,21 +349,45 @@
             if (array_key_exists($field, self::get_schema()))
                 return $this->fields[$field];
 
-            warning('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
+            throw new DbException('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
             return NULL;
         }
 
         public function __set($field, $value)
         {
-            debug('DbModel::__set(' . $field . ', ' . $value . ')');
-            if (! array_key_exists($field, self::get_schema()))
+            debug('DbModel::__set(' . $field . ', ' . var_export($value, true) . ')');
+            $schema = self::get_schema();
+            if (! array_key_exists($field, $schema))
             {
-                warning('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
-                return;
+                throw new DbException('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
             }
+            if ($field == $this->get_primary_key())
+            {
+                throw new DbException('Can\'t assign a value to the primary key of the object');
+            }
+            if (! $schema[$field]->can_assign_value($value))
+            {
+                warning('Can\'t assign this value to ' . get_called_class() . '::' . $field . ':');
+                html_var_dump($value);
+                throw new InvalidValueException('Can\'t assign this value to ' . get_called_class() . '::' . $field . ':');
+            }
+
             $this->fields[$field] = $value;
+            return true;
         }
     }
 
     DbModel::$connection = new DbConnection();
+
+    class DbException extends Exception
+    {
+    }
+
+    class InvalidValueException extends DbException
+    {
+    }
+
+    class DbConstraintsException extends DbException
+    {
+    }
 ?>

@@ -26,6 +26,7 @@ func parseFromForm(r *http.Request) *HealthMetrics {
 }
 
 func getIntField(r *http.Request, name string) int {
+	fmt.Println(name, " ", r.FormValue(name))
 	res, err := strconv.Atoi(r.FormValue(name))
     if err != nil {
         fmt.Println(err)

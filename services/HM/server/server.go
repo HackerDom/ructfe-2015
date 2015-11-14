@@ -9,12 +9,13 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"html/template"
 )
 
 const (
 	Unauthorized = "User is not authorized"
 	AuthenticationFailed = "Authentication failed"
-	Key = "" //todo
+	Key = "f11ecd5521ddf2614e17e4fb074a86da" //todo
 )
 
 func addHealthMetricsHandler(w http.ResponseWriter, request *http.Request) {
@@ -57,8 +58,9 @@ func healthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 	} else {
 		response += uId // debug
 		success, metrics := tryGetUserMetrics(uId)
-		if (success) {
+		if success {
 			status = http.StatusOK
+			response += "; " + strconv.Itoa(len(metrics))
 			for _,m := range metrics {
 				response += m.toString()
 			}
@@ -128,16 +130,19 @@ func extractUid(idStr string) string {
 	return f[len(f)-1]
 }
 
-//debug
 func handleRequest(w http.ResponseWriter, request *http.Request) {
-	response := "Response from server: "
-	uId, err := getUserId(request)
-	if err != nil {
-		response += err.Error()
-	} else {
-		response += uId
-	}
-	io.WriteString(w, response)
+	render(w, "static/login.html")
+}
+
+func render(w http.ResponseWriter, tmpl string) {
+    t, err := template.ParseFiles(tmpl)
+    if err != nil {
+        fmt.Println("template parsing error: ", err)
+    }
+    err = t.Execute(w, "")
+    if err != nil {
+        fmt.Println("template executing error: ", err)
+    }
 }
 
 func authVerified(auth string, uId string) (bool, error) {
@@ -175,7 +180,7 @@ func loginHandler(w http.ResponseWriter, request *http.Request) {
 			idCookie := http.Cookie{Name : "id", Value: id, Expires: expire}
 			http.SetCookie(w, &authCookie) 
 			http.SetCookie(w, &idCookie) 
-			response = fmt.Sprintf("Welcome, ", user.Login)
+			response = fmt.Sprintf("Welcome, %v", user.Login)
 		}
 	}
 	w.WriteHeader(status)
