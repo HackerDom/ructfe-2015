@@ -80,28 +80,28 @@ void set(unsigned char* key, int value)
 
 	// place the key
 	if(!curr_node->key_offsets[i]) {
-		// find a place for the key
-		unsigned char *key_offset;
-        for (key_offset = mem_start + MAX_KEY_LEN; *key_offset; key_offset += MAX_KEY_LEN) {
-            if (key_offset >= mem_start + MAX_KEYS * MAX_KEY_LEN) {
-                return;  // too much items
-            }
+        unsigned long* keys_cnt = (unsigned long*) mem_start;
+		unsigned char *key_offset = (*keys_cnt + 1) * MAX_KEY_LEN + mem_start;
+
+        if(*keys_cnt >= MAX_KEYS - 1) {
+            return;  // too much items
         }
 
-        // copy new key to founded place
+        // copy new key to free place
 		int j;
 		for (j = 0; j < MAX_KEY_LEN - 1 && key[j]; j++) {
 			key_offset[j] = key[j];
 		}
 
 		curr_node->key_offsets[i] = key_offset - mem_start;
+        *keys_cnt += 1;
 	}
 
     curr_node->hash = hash;
     curr_node->values[i] = value;
 }
 
-void* get(unsigned char* key) {
+long get(unsigned char* key) {
   	unsigned char* mem_start;
 	long hash;
     int i;
@@ -151,7 +151,35 @@ void* get(unsigned char* key) {
 	return 0;  // Not found
 }
 
+unsigned char* key_at(int num) {
+    unsigned char* mem_start;
 
+    // Get tree start address
+    asm volatile("callq 1f;"
+        "1: popq %0;"
+        "andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
+    );
+
+    unsigned long* keys_cnt = (unsigned long*) mem_start;
+    unsigned char* key_ptr = mem_start + (num + 1) * MAX_KEY_LEN;
+    if(num >= *keys_cnt || key_ptr[0] == 0) {
+        return 0;
+    }
+    return key_ptr;
+}
+
+long size() {
+    unsigned char* mem_start;
+
+    // Get tree start address
+    asm volatile("callq 1f;"
+        "1: popq %0;"
+        "andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
+    );
+
+    unsigned long* keys_cnt = (unsigned long*) mem_start;
+    return *keys_cnt;
+}
 
 
 void end() {}
@@ -163,15 +191,23 @@ void init_structs() {
 	// bucket_arrays = BUFF_ADDR + 32 * 256 + size
 
 	const char* TREE_NODES_ADDR = BUFF_ADDR + MAX_KEY_LEN * MAX_KEYS;
-	const char* FUNCTION_SET_ADDR = TREE_NODES_ADDR + TREE_MAX_NODES * sizeof(struct tree_node);
-	const char* FUNCTION_GET_ADDR = FUNCTION_SET_ADDR + 0x1000;
+    const char* FUNCTION_SET_ADDR = TREE_NODES_ADDR + TREE_MAX_NODES * sizeof(struct tree_node);
+    int FUNCTION_SET_SIZE = (void *)get - (void *)set;
+    const char* FUNCTION_GET_ADDR = FUNCTION_SET_ADDR + FUNCTION_SET_SIZE;
+    int FUNCTION_GET_SIZE = (void *)key_at - (void *)get;
+    const char* FUNCTION_KEY_AT_ADDR = FUNCTION_GET_ADDR + FUNCTION_GET_SIZE;
+    int FUNCTION_KEY_AT_SIZE = (void *)size - (void *)key_at;
+    const char* FUNCTION_SIZE_ADDR = FUNCTION_KEY_AT_ADDR + FUNCTION_KEY_AT_SIZE;
+	int FUNCTION_SIZE_SIZE = (void *)end - (void *)size;
 
-	memcpy((void *)FUNCTION_SET_ADDR,  (void*) set, (void *)get - (void *)set);
-	memcpy((void *)FUNCTION_GET_ADDR,  (void*) get, (void *)end - (void *)get);
+	memcpy((void *)FUNCTION_SET_ADDR,  (void*) set, FUNCTION_SET_SIZE);
+    memcpy((void *)FUNCTION_GET_ADDR,  (void*) get, FUNCTION_GET_SIZE);
+    memcpy((void *)FUNCTION_KEY_AT_ADDR,  (void*) key_at, FUNCTION_KEY_AT_SIZE);
+	memcpy((void *)FUNCTION_SIZE_ADDR,  (void*) size, FUNCTION_SIZE_SIZE);
 
 
     printf("%p %p %p %p\n", BUFF_ADDR, TREE_NODES_ADDR, FUNCTION_SET_ADDR, FUNCTION_GET_ADDR);
-	printf("set = %d get = %d\n", (void *)get - (void *)set, (void *)end - (void *)get);
+	printf("set = %d get = %d key_at = %d size = %d \n", FUNCTION_SET_SIZE, FUNCTION_GET_SIZE, FUNCTION_KEY_AT_SIZE, FUNCTION_SIZE_SIZE);
 	
 	// void* a = ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)("test", 1000);
 	// void* a = set("test", 1000);
@@ -200,28 +236,29 @@ void init_structs() {
     long prevhash = 0;
 
     int i;
-    for (i = 0; i < 15; i += 1) {
-        int j;
-        for (j = 0;; j += 1) {
-            sprintf(buf, "testttq16%d_%d", i, j);
-            if(get_hash(buf) > prevhash) {
-                prevhash = get_hash(buf);
+    for (i = 0; i < 15000; i += 1) {
+        // int j;
+        // for (j = 0;; j += 1) {
+            // sprintf(buf, "testttq16%d_%d", i, j);
+            sprintf(buf, "testttq16%d", i);
+            // if(get_hash(buf) > prevhash) {
+                // prevhash = get_hash(buf);
                 void* a = ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)(buf, i * 2 + 1);
-                printf("%p\n", a);
+                // printf("%p\n", a);
                 // fflush(stdout);
                 if (a > max_addr) {
                     max_addr = a;
                 }
-                break;
-            }
-        }
+                // break;
+            // }
+        // }
     }
 
     for (i = 0; i < 32000; i += 1) {
         sprintf(buf, "testttq16%d", i);
-        void* a = ((void *(*)(char* key))FUNCTION_GET_ADDR)(buf);
+        long a = ((long (*)(char* key))FUNCTION_GET_ADDR)(buf);
         if(a || i == 0) {
-            printf("%p ", a);
+            printf("%lu ", a);
         }
         // fflush(stdout);
     }
@@ -229,7 +266,17 @@ void init_structs() {
     printf("%d, %d\n", (max_addr - (void*) TREE_NODES_ADDR) / sizeof(struct tree_node), sizeof(struct tree_node));
     // void* a = ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)("test", 1000);
 
+    printf("%lu\n", ((long (*)()) FUNCTION_SIZE_ADDR)());
 
+    for (i = 0; i < ((long (*)()) FUNCTION_SIZE_ADDR)() + 1; i ++) {
+        unsigned char *c = ((unsigned char *(*)(int i))FUNCTION_KEY_AT_ADDR)(i);
+        if(c) {
+            printf("i = %d key = %s\n", i, c);
+        } else {
+            printf("i = %d key = <nil>\n", i);
+        }
+
+    }
 
 
 }
@@ -255,7 +302,7 @@ long __attribute__ ((noinline)) get_hash(unsigned char *buf)
 int main() {
 	int ret;
 
-	unsigned char* buf = (unsigned char*) mmap((void *)0x000000dead000000, 1024 * 1024,
+	unsigned char* buf = (unsigned char*) mmap((void *)0x000000dead000000, BUFLEN,
 		PROT_EXEC | PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_FIXED,
 		0, 0);
 
