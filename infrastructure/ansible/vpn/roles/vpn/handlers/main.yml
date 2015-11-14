@@ -1,2 +1,7 @@
+- name: stop openvpn
+  service: name=openvpn state=stopped
+  when: inventory_hostname != primary_vpn
+
 - name: restart openvpn
   service: name=openvpn state=restarted
+  when: inventory_hostname == primary_vpn

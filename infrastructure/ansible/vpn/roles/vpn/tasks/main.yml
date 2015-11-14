@@ -1,3 +1,5 @@
 - name: upload vpn configs
   synchronize: src=../../../../../vpn/prod/server/ dest=/etc/openvpn/
-  notify: restart openvpn
+  notify:
+    - stop openvpn
+    - restart openvpn
