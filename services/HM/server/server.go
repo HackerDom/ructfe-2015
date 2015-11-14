@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"html/template"
 )
 
 const (
@@ -129,16 +130,19 @@ func extractUid(idStr string) string {
 	return f[len(f)-1]
 }
 
-//debug
 func handleRequest(w http.ResponseWriter, request *http.Request) {
-	response := "Response from server: "
-	uId, err := getUserId(request)
-	if err != nil {
-		response += err.Error()
-	} else {
-		response += uId
-	}
-	io.WriteString(w, response)
+	render(w, "static/login.html")
+}
+
+func render(w http.ResponseWriter, tmpl string) {
+    t, err := template.ParseFiles(tmpl)
+    if err != nil {
+        fmt.Println("template parsing error: ", err)
+    }
+    err = t.Execute(w, "")
+    if err != nil {
+        fmt.Println("template executing error: ", err)
+    }
 }
 
 func authVerified(auth string, uId string) (bool, error) {
