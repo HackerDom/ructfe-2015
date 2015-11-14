@@ -1,5 +1,11 @@
 - name: upload vpn configs
   synchronize: src=../../../../../vpn/prod/server/ dest=/etc/openvpn/
-  notify:
-    - stop openvpn
-    - restart openvpn
+  notify: restart openvpn
+
+- name: ensure backup vpn server is stopped
+  service: name=openvpn state=stopped
+  when: inventory_hostname != primary_vpn
+
+- name: ensure primary vpn server is started
+  service: name=openvpn state=started
+  when: inventory_hostname == primary_vpn
