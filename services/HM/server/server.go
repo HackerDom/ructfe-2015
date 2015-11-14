@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 const (
@@ -127,6 +128,7 @@ func extractUid(idStr string) string {
 	return f[len(f)-1]
 }
 
+//debug
 func handleRequest(w http.ResponseWriter, request *http.Request) {
 	response := "Response from server: "
 	uId, err := getUserId(request)
@@ -149,6 +151,49 @@ func authVerified(auth string, uId string) (bool, error) {
 	} else {
 		return false, errors.New(Unauthorized)
 	}
+}
+
+func loginHandler(w http.ResponseWriter, request *http.Request) {
+	response := ""
+	status := http.StatusTeapot
+	
+	user := parseUser(request)
+	if user == nil {
+		status = http.StatusBadRequest
+		response = "You should specify both login and password"
+	} else {	
+		uid, err := findUser(user)
+		if err != nil {
+			status = http.StatusNotFound
+			response = "There is no such user"
+		} else {
+			status = http.StatusOK
+			expire := time.Now().AddDate(0, 0, 1)
+			auth := md5hash(Key, uid)
+			id := encodeBase64(uid)
+			authCookie := http.Cookie{Name : "auth", Value: auth, Expires: expire}
+			idCookie := http.Cookie{Name : "id", Value: id, Expires: expire}
+			http.SetCookie(w, &authCookie) 
+			http.SetCookie(w, &idCookie) 
+			response = fmt.Sprintf("Welcome, ", user.Login)
+		}
+	}
+	w.WriteHeader(status)
+	io.WriteString(w, response)
+
+}
+
+func logoutHandler(w http.ResponseWriter, request *http.Request) {
+	status := http.StatusOK
+	expire := time.Now().AddDate(-1, 0, 0)
+	authCookie := http.Cookie{Name : "auth", Value: "", Expires: expire}
+	idCookie := http.Cookie{Name : "id", Value: "", Expires: expire}
+	http.SetCookie(w, &authCookie) 
+	http.SetCookie(w, &idCookie) 
+	response := "Bye-bye! Seeya!"
+
+	w.WriteHeader(status)
+	io.WriteString(w, response)
 }
 
 var mux map[string]func(http.ResponseWriter, *http.Request)
@@ -185,6 +230,8 @@ func main() {
 	mux["/healthMetrics"] = healthMetricsHandler
 	mux["/addHealthMetrics"] = addHealthMetricsHandler
 	mux["/newUser"] = addUserHandler
+	mux["/login"] = loginHandler
+	mux["/logout"] = logoutHandler
 
 	server.ListenAndServe()
 }

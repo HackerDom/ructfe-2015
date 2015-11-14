@@ -14,6 +14,12 @@ func decodeBase64(s string) string {
 	return res
 }
 
+func encodeBase64(s string) string {
+	bytes := []byte(s)
+	res := base64.StdEncoding.EncodeToString(bytes)
+	return res
+}
+
 func split(c rune) bool {
 	return c == ';' || c == ' ' //todo!
 }

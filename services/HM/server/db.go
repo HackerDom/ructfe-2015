@@ -7,18 +7,21 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
+	"errors"
 )
 const (
 	DbName = "./health.db" 
 	CreateIndicesTable = "CREATE TABLE healthIndices(id integer not null primary key AUTOINCREMENT, userId integer, weight integer, bp integer, pulse integer, walking_distance integer, comment text); DELETE FROM healthIndices;"
 	InsertValues = "INSERT INTO healthIndices(userId, weight, bp, pulse, walking_distance, comment) VALUES (?, ?, ?, ?, ?, ?)"
 	SelectRows = "SELECT id, comment FROM healthIndices WHERE userId = ?"
+	SelectTopRows = "SELECT id, comment FROM healthIndices LIMIT 10"
 	
 )
 
 const (
 	CreateUsersTable = "CREATE TABLE users(id integer not null primary key AUTOINCREMENT, login text, pass text); DELETE FROM users;"
-	FindUser = "SELECT id, login FROM users WHERE login = ?"
+	FindUserByLogin = "SELECT id, login FROM users WHERE login = ?"
+	FindUser = "SELECT id FROM users WHERE login = ? AND pass = ?" //todo
 	AddUser = "INSERT INTO users (login, pass) VALUES (?, ?)"
 )
 
@@ -59,7 +62,6 @@ func tryAddMetrics(uId int, m *HealthMetrics) (bool, int64) {
 
 func tryGetUserMetrics(uId string) (bool, []HealthMetrics) {
 
-	//todo: uId
 	var res []HealthMetrics
 	
 	db, err := sql.Open("sqlite3", DbName)
@@ -103,7 +105,7 @@ func tryAddUser(user *User) (int, string){
 	}
 	defer db.Close()
 	
-	rows, err := db.Query(FindUser, user.Login)
+	rows, err := db.Query(FindUserByLogin, user.Login)
 	if err != nil {
 		log.Fatal(err)
 		return Error, ""
@@ -131,7 +133,41 @@ func tryAddUser(user *User) (int, string){
 		return Error, ""
 	}
 	
-	return Success, "u_" + strconv.FormatInt(id, 10)
+	return Success, createUId(id)
+}
+
+func findUser(user *User) (string, error) {	
+	db, err := sql.Open("sqlite3", DbName)
+	if err != nil {
+		log.Fatal("Error while connecting to db: ", err)
+		return "", errors.New("Can't connect to DB")
+	}
+	defer db.Close()
+	
+	 stmt, err := db.Prepare(FindUser)
+	 if err != nil {
+		log.Fatal(err)
+		return "", errors.New("Can't find user")
+	 }
+	 defer stmt.Close()
+	 
+	 rows, err := stmt.Query(user.Login, user.Pass)
+	 if err != nil {
+		log.Fatal(err)
+		return "", errors.New("Can't find user")
+	 }
+	 defer rows.Close()
+	 
+	 if rows.Next() {
+		var id int64
+		rows.Scan(&id)
+		return createUId(id), nil
+	 }
+	 return "", errors.New("")
+}
+
+func createUId(id int64) string {
+	return "u_" + strconv.FormatInt(id, 10)
 }
 
 func prepareDb() {
@@ -154,8 +190,34 @@ func prepareDb() {
 		log.Printf("%q: %s\n", err, CreateUsersTable)
 		return
 	}
+	
+	uid := addTestUser(db)
+	addTestMetrics(db, uid) //debug
+}
 
-	 tx, err := db.Begin()
+func addTestUser(db *sql.DB) string{
+	stmt, err := db.Prepare(AddUser)
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+	defer stmt.Close()
+	
+	res, err := stmt.Exec("testUser", "somePass") 
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+	return createUId(id)
+}
+
+func addTestMetrics(db *sql.DB, uid string) {
+	tx, err := db.Begin()
 	 if err != nil {
 		log.Fatal(err)
 	 }
@@ -166,14 +228,14 @@ func prepareDb() {
 	 defer stmt.Close()
 	 
 	 for i := 0; i < 5; i++ {
-	 _, err = stmt.Exec(i, i*3, i+3, (i-1)*4, fmt.Sprintf("Comment number %03d", i))
+	 _, err = stmt.Exec(uid, i, i*3, i+3, (i-1)*4, fmt.Sprintf("Comment number %03d", i))
 	 if err != nil {
 		 log.Fatal(err)
 	 }
 	 }
 	 tx.Commit()
 
-	 rows, err := db.Query(SelectRows)
+	 rows, err := db.Query(SelectTopRows)
 	 if err != nil {
 		log.Fatal(err)
 	 }
@@ -185,40 +247,6 @@ func prepareDb() {
 		rows.Scan(&id, &comment)
 		fmt.Println(id, comment)
 	 }
-
-	// stmt, err = db.Prepare("select name from foo where id = ?")
-	// if err != nil {
-		// log.Fatal(err)
-	// }
-	// defer stmt.Close()
-	// var name string
-	// err = stmt.QueryRow("3").Scan(&name)
-	// if err != nil {
-		// log.Fatal(err)
-	// }
-	// fmt.Println(name)
-
-	// _, err = db.Exec("delete from foo")
-	// if err != nil {
-		// log.Fatal(err)
-	// }
-
-	// _, err = db.Exec("insert into foo(id, name) values(1, 'foo'), (2, 'bar'), (3, 'baz')")
-	// if err != nil {
-		// log.Fatal(err)
-	// }
-
-	// rows, err = db.Query("select id, name from foo")
-	// if err != nil {
-		// log.Fatal(err)
-	// }
-	// defer rows.Close()
-	// for rows.Next() {
-		// var id int
-		// var name string
-		// rows.Scan(&id, &name)
-		// fmt.Println(id, name)
-	// }
 }
 
 func checkErr(err error) {
