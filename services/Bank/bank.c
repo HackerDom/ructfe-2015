@@ -13,15 +13,17 @@
 #define MAX_KEY_LEN		        (64)
 #define BUFF_ADDR 		        ((char *) 0x000000dead000000)
 
+// long get_hash(unsigned char *buf);
 long get_hash(unsigned char *buf);
+
 // num requests to win = 16
 
 // usernames(64 chars max) * 256, tree nodes * (2 ** 12), functions(1K)
 
 struct tree_node {
-	long hash;
-    char* keys[MAX_ITEMS_IN_BUCKET];
-    long values[MAX_ITEMS_IN_BUCKET];
+	unsigned long hash;
+    unsigned short key_offsets[MAX_ITEMS_IN_BUCKET];
+    unsigned long values[MAX_ITEMS_IN_BUCKET];
 };
 
 struct tree {
@@ -34,34 +36,21 @@ void* set(unsigned char* key, int value)
 // __attribute__((optnone)) 
 {
   	unsigned char* mem_start;
-  	int i;
-	
-  	// Get tree start address
-  	asm volatile("callq 1f;"
-  		"1: popq %0;"
-  		"andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
-	);
+    long hash;
+    int i;
+
+    long (*volatile get_hash_ptr)(unsigned char * key) = get_hash;
+    hash = get_hash_ptr(key);
+
+    // Get tree start address
+    asm volatile("callq 1f;"
+        "1: popq %0;"
+        "andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
+    );
 
   	// mem_start = 0xdead000000;
 
-	long hash;
-
-
-	// Call get_hash by far address 
-	asm volatile("mov %1, %%rdi;"
-		"leaq get_hash, %%rax;"
-		"callq *%%rax;"
-		"movq %%rax, %0;"
-		:"=m" (hash): "m" (key) : 
-		"%rax", "%rbx", "%rcx", "%rdx", "%rsi", "%rdi",
-		"%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", 
-		"memory", "cc");
-
-
-	// return hash;
-	// get_hash(key);
-
-	const unsigned char* TREE_NODES_ADDR = mem_start + MAX_KEY_LEN * MAX_KEYS;
+    const unsigned char* TREE_NODES_ADDR = mem_start + MAX_KEY_LEN * MAX_KEYS;
 
 	struct tree_node* curr_node = (struct tree_node*) TREE_NODES_ADDR;
 	long curr_node_offset = 0;
@@ -76,77 +65,63 @@ void* set(unsigned char* key, int value)
 			break;
 		}
 		curr_node = (struct tree_node*) TREE_NODES_ADDR + curr_node_offset;
-		// printf("%d %ld %p\n", curr_node_offset, curr_node->hash, curr_node);
 	}
 
-	curr_node->hash = hash;
-
-	// asm volatile("int $3;");
-
-	// return bucket_ptr;
-
 	for (i = 0; i < MAX_ITEMS_IN_BUCKET; i+=1) {
-		if(!curr_node->keys[i]) {
+        unsigned char* key_ptr = mem_start + curr_node->key_offsets[i];
+
+		if(!curr_node->key_offsets[i]) {
 			break;
 		}
 
 		int j;
-		for (j = 0; key[j] && curr_node->keys[i][j] && key[j] == curr_node->keys[i][j]; j++) {}
-		if(key[j] == curr_node->keys[i][j] == 0) {
+		for (j = 0; key[j] && key_ptr[j] && key[j] == key_ptr[j]; j++) {}
+		if(key[j] == 0 && key_ptr[j] == 0) {
 			break;  // equals
 		}
 	}
 
-	curr_node->values[i] = value;
-
 	// place the key
-	if(!curr_node->keys[i]) {
+	if(!curr_node->key_offsets[i]) {
 		// find a place for the key
-		unsigned char *key_offset = 0;
+		unsigned char *key_offset;
+        for (key_offset = mem_start + MAX_KEY_LEN; *key_offset; key_offset += MAX_KEY_LEN) {
+            if (key_offset >= mem_start + MAX_KEYS * MAX_KEY_LEN) {
+                return 0;  // too much items
+            }
+        }
+
+        // copy new key to founded place
 		int j;
-		for (j = 0; j < MAX_KEYS * MAX_KEY_LEN; j += MAX_KEY_LEN) {
-			key_offset = mem_start + j;
-			if(*key_offset == 0) {
-				break;
-			}
-		}
-		// copy new key to founded place
 		for (j = 0; j < MAX_KEY_LEN - 1 && key[j]; j++) {
 			key_offset[j] = key[j];
 		}
-		key_offset[j] = 0;
 
-		curr_node->keys[i] = key_offset;
+		curr_node->key_offsets[i] = key_offset - mem_start;
 	}
+    
+    curr_node->hash = hash;
+    curr_node->values[i] = value;
 
 	return curr_node;
 }
 
 void* get(unsigned char* key) {
   	unsigned char* mem_start;
-	int i;
-  	
-
-  	// Get tree start address
-  	asm volatile("callq 1f;"
-  		"1: popq %0;"
-  		"andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
-	);
-
-  	// mem_start = 0xdead000000;
-
 	long hash;
+    int i;
 
-	// Call get_hash by far address 
-	asm volatile("mov %1, %%rdi;"
-		"leaq get_hash, %%rax;"
-		"callq *%%rax;"
-		"movq %%rax, %0;"
-		:"=m" (hash): "m" (key) : 
-		"%rax", "%rbx", "%rcx", "%rdx", "%rsi", "%rdi",
-		"%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", 
-		"memory", "cc");
-	// hash = 0x657d4c8881d0869f;
+    // Call get_hash by far address 
+    long (*volatile get_hash_ptr)(unsigned char * key) = get_hash;
+    hash = get_hash_ptr(key);
+
+    // Get tree start address
+    asm volatile("callq 1f;"
+        "1: popq %0;"
+        "andq $0xffffffffff000000, %0;" : "=r" (mem_start) :: "cc"
+    );
+
+    // mem_start = 0xdead000000;
 
 	const unsigned char* TREE_NODES_ADDR = mem_start + MAX_KEY_LEN * MAX_KEYS;
 
@@ -163,23 +138,21 @@ void* get(unsigned char* key) {
 			break;
 		}
 		curr_node = (struct tree_node*) TREE_NODES_ADDR + curr_node_offset;
-		// printf("%d %ld %p\n", curr_node_offset, curr_node->hash, curr_node);
 	}
-
-	// return curr_node; // debug
 
 	if(curr_node->hash == 0) {
 		return 0;
 	}
 
-	for (i = 0; i < MAX_ITEMS_IN_BUCKET; i+=1) {
-		if(!curr_node->keys[i]) {
+	for (i = 0; i < MAX_ITEMS_IN_BUCKET; i += 1) {
+        unsigned char* key_ptr = mem_start + curr_node->key_offsets[i];
+		if(!curr_node->key_offsets[i]) {
 			return 0;
 		}
 
 		int j;
-		for (j = 0; key[j] && curr_node->keys[i][j] && key[j] == curr_node->keys[i][j]; j++) {}
-		if(key[j] == 0 && curr_node->keys[i][j] == 0) {
+		for (j = 0; key[j] && key_ptr[j] && key[j] == key_ptr[j]; j++) {}
+		if(key[j] == 0 && key_ptr[j] == 0) {
 			return curr_node->values[i];
 		}
 	}
@@ -196,13 +169,14 @@ void init_structs() {
 
 	const char* TREE_NODES_ADDR = BUFF_ADDR + MAX_KEY_LEN * MAX_KEYS;
 	const char* FUNCTION_SET_ADDR = TREE_NODES_ADDR + TREE_MAX_NODES * sizeof(struct tree_node);
-	const char* FUNCTION_GET_ADDR = FUNCTION_SET_ADDR + 0x2000;
+	const char* FUNCTION_GET_ADDR = FUNCTION_SET_ADDR + 0x1000;
 
 	memcpy((void *)FUNCTION_SET_ADDR,  (void*) set, (void *)get - (void *)set);
 	memcpy((void *)FUNCTION_GET_ADDR,  (void*) get, (void *)end - (void *)get);
 
 
-	printf("%p %p %p %p\n", BUFF_ADDR, TREE_NODES_ADDR, FUNCTION_SET_ADDR, FUNCTION_GET_ADDR);
+    printf("%p %p %p %p\n", BUFF_ADDR, TREE_NODES_ADDR, FUNCTION_SET_ADDR, FUNCTION_GET_ADDR);
+	printf("set = %d get = %d\n", (void *)get - (void *)set, (void *)end - (void *)get);
 	
 	void* a = ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)("test", 1000);
 	// void* a = set("test", 1000);
@@ -217,12 +191,19 @@ void init_structs() {
 	printf("%p\n", ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)("testt", 2000));
 	printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
 	printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("testt"));
-	printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
+    printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
+    printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
+	printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("testt"));
+
+    ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)("test", 2000);
+    printf("%p\n", ((void *(*)(char* key))FUNCTION_GET_ADDR)("test"));
+
+
 
 }
 
 
-long get_hash(unsigned char *buf)
+long __attribute__ ((noinline)) get_hash(unsigned char *buf)
 // __attribute__((optnone)) 
 {
 	int len = strlen((char *) buf);

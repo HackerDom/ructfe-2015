@@ -1,6 +1,6 @@
 # make is smart, it knows how to make *.o from *.c
 
-CFLAGS+=-O0
+CFLAGS+=-O3
 CFLAGS+=-g 
 # CFLAGS+=--std c11
 
