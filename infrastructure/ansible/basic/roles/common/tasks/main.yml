@@ -1,13 +1,19 @@
-- name: Copy apt sources.list
+- name: copy apt sources.list
   template: src=sources.list.j2 dest=/etc/apt/sources.list
 
-- name: Add PostgreSQL APT key
+- name: add PostgreSQL apt key
   apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
 
-- name: Update apt cache
+- name: update apt cache
   apt: update_cache=yes cache_valid_time=79800
 
-- name: Install common network packages
+- name: copy aliases
+  template: src=aliases.j2 dest=/etc/aliases
+
+- name: apply aliases
+  shell: newaliases
+
+- name: install common network packages
   apt: name={{item}} state=latest
   with_items:
     - conntrack
@@ -16,7 +22,10 @@
     - telnet
     - tcpdump
 
-- name: Copy sshd_config
+- name: copy sshd_config
   template: src=sshd_config.j2 dest=/etc/ssh/sshd_config
   notify: restart ssh
+
+- name: set default locale
+  template: src=locale.j2 dest=/etc/default/locale
 
