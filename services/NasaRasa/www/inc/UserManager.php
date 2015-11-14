@@ -6,7 +6,8 @@
         public static function create_user($login, $password)
         {
             $user = new User(['login' => $login, 'password' => $password]);
-            return $user->save();
+            $user->save();
+            return $user;
         }
 
         public static function get_user_by_login($login)
