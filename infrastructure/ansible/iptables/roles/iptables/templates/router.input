@@ -1,0 +1,1 @@
+-A INPUT -p udp --dport 30001:30512 -j ACCEPT
