@@ -1,0 +1,8 @@
+
+- name: upload zone
+  template: src=e.ructf.org dest=/var/cache/bind/e.ructf.org
+  notify: restart bind9
+
+- name: upload named config
+  template: src=named.conf.local dest=/etc/bind/named.conf.local
+  notify: restart bind9

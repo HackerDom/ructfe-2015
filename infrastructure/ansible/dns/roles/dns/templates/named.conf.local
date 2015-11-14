@@ -1,0 +1,4 @@
+zone "e.ructf.org" {
+        type master;
+        file "e.ructf.org";
+};
