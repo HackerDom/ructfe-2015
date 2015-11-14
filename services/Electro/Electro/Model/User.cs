@@ -7,7 +7,7 @@ namespace Electro.Model
 	class User
 	{
 		[DataMember] public Guid Id { get; set; }
-		[DataMember] public string Name { get; set; }
+		[DataMember] public string Login { get; set; }
 		[DataMember] public string Hash { get; set; }
 
 		[DataMember] public string PublicMessage { get; set; }

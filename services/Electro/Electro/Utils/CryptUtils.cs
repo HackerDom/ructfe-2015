@@ -7,13 +7,15 @@ using System.Threading.Tasks;
 
 namespace Electro.Utils
 {
-	class CryptoUtils
+	class CryptUtils
 	{
 		public static string CalcHash(string str)
 		{
-			var sha1 = SHA1.Create();
-			var buff = Encoding.UTF8.GetBytes(str);
-			return sha1.TransformFinalBlock(buff, 0, buff.Length).ToHex();
+			using(var sha1 = SHA1.Create())
+			{
+				var buff = Encoding.UTF8.GetBytes(str);
+				return sha1.TransformFinalBlock(buff, 0, buff.Length).ToHex();
+			}
 		}
 	}
 }

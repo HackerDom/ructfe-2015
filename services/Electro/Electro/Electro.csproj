@@ -42,6 +42,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
@@ -51,8 +52,14 @@
   <ItemGroup>
     <Compile Include="Crypto\HomoCrypto.cs" />
     <Compile Include="ElectroController.cs" />
+    <Compile Include="Handlers\AuthorizedBaseHandler.cs" />
     <Compile Include="Handlers\BaseHttpHandler.cs" />
     <Compile Include="Handlers\HttpException.cs" />
+    <Compile Include="Handlers\HttpListenerUtils.cs" />
+    <Compile Include="Handlers\ListElectionsHandler.cs" />
+    <Compile Include="Handlers\LoginHandler.cs" />
+    <Compile Include="Handlers\RegisterHandler.cs" />
+    <Compile Include="Handlers\StartElectionHandler.cs" />
     <Compile Include="Handlers\StaticHandler.cs" />
     <Compile Include="Crypto\HomoKeyPair.cs" />
     <Compile Include="Model\Election.cs" />
@@ -63,9 +70,14 @@
     <Compile Include="AuthController.cs" />
     <Compile Include="Utils\ByteArrayUtils.cs" />
     <Compile Include="Utils\CommonUtils.cs" />
-    <Compile Include="Utils\CryptoUtils.cs" />
+    <Compile Include="Utils\CookieHelper.cs" />
+    <Compile Include="Utils\CryptUtils.cs" />
+    <Compile Include="Utils\EnumerableUtils.cs" />
+    <Compile Include="Utils\JsonHelper.cs" />
     <Compile Include="Utils\DateTimeUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
+    <Compile Include="Utils\Token.cs" />
+    <Compile Include="Utils\TokenCrypt.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

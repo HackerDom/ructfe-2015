@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using Electro.Utils;
 
 namespace Electro.Model
 {
@@ -14,8 +15,27 @@ namespace Electro.Model
 		[DataMember] public string Name { get; set; }
 		[DataMember] public Dictionary<Guid, User> Candidates { get; set; }
 		[DataMember] public bool IsPublic { get; set; }
-		[DataMember] public bool IsFinished { get; set; }
+
+		[DataMember] private string till { get; set; }
+		[IgnoreDataMember] public DateTime Till { get { return DateTimeUtils.TryParseSortable(till); } set {till = value.ToSortable();} }
 
 		[DataMember] public Dictionary<Guid, Vote> Votes { get; set; }
+
+		[IgnoreDataMember] public bool IsFinished  { get { return Till < DateTime.UtcNow; } }
+	}
+
+	[DataContract]
+	class ElectionPulicCore
+	{
+		public static ElectionPulicCore Create(Election election)
+		{
+			return new ElectionPulicCore {Id = election.Id, Name = election.Name, Till = election.Till};
+		}
+
+		[DataMember] public Guid Id { get; set; }
+		[DataMember] public string Name { get; set; }
+
+		[DataMember] private string till { get; set; }
+		[IgnoreDataMember] public DateTime Till { get { return DateTimeUtils.TryParseSortable(till); } set {till = value.ToSortable();} }
 	}
 }

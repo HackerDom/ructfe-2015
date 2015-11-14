@@ -1,0 +1,41 @@
+##############################################################################
+*nat
+##############################################################################
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+
+{% include iptables_template + ".nat" ignore missing %}
+
+COMMIT
+
+##############################################################################
+*filter
+##############################################################################
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~ INPUT ~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+-A INPUT -p tcp --dport 22 -j ACCEPT
+
+{% include iptables_template + ".input" ignore missing %}
+
+-A INPUT -j DROP
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~ FORWARD ~~~~~~~~~~~~~~~~~~~~~~~~~ #
+
+-A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+{% include iptables_template + ".forward" ignore missing %}
+
+-A FORWARD -j DROP
+
+COMMIT
+

@@ -1,0 +1,6 @@
+-A INPUT -p tcp -s {{net_dev_vpn}}  --dport 80              -j ACCEPT -m comment --comment "virtualbox web admin"
+-A INPUT -p tcp -s {{net_dev_vpn}}  --dport 10000:10100     -j ACCEPT -m comment --comment "virtualbox rdp"
+
+-A INPUT -p udp                     --dport 53              -j ACCEPT
+-A INPUT -p udp                     --dport 1194            -j ACCEPT -m comment --comment "dev vpn server"
+

@@ -1,0 +1,5 @@
+{
+    "require": {
+        "fenom/fenom": "2.*"
+    }
+}

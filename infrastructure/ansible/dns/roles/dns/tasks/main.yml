@@ -1,0 +1,10 @@
+- name: upload zone files
+  template: src={{item}} dest=/var/cache/bind/{{item}}
+  notify: restart bind9
+  with_items:
+    - e.ructf.org
+    - teams
+
+- name: upload config
+  template: src=named.conf.local dest=/etc/bind/named.conf.local
+  notify: restart bind9

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Electro.Handlers;
+using Electro.Utils;
 using log4net;
 using log4net.Config;
 
@@ -18,10 +19,25 @@ namespace Electro
 			XmlConfigurator.Configure();
 			try
 			{
-				var staticHandler = new StaticHandler(GetPrefix(null), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "static"));
+				AuthController authController = new AuthController();
+				ElectroController electroController = new ElectroController();
+
+				var staticHandler = new StaticHandler(GetPrefix("static"), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "static"));
 				staticHandler.Start();
 
-				Thread.Sleep(Int32.MaxValue);
+				var registerHandler = new RegisterHandler(authController, GetPrefix("register"));
+				registerHandler.Start();
+
+				var loginHandler = new LoginHandler(authController, GetPrefix("login"));
+				loginHandler.Start();
+
+				var startElectionHandler = new StartElectionHandler(electroController, authController, GetPrefix("startElection"));
+				startElectionHandler.Start();
+
+				var listElectionHandler = new ListElectionsHandler(electroController, GetPrefix("listElections"));
+				listElectionHandler.Start();
+
+				Thread.Sleep(Timeout.Infinite);
 			}
 			catch(Exception e)
 			{
@@ -31,7 +47,7 @@ namespace Electro
 
 		private static string GetPrefix(string suffix)
 		{
-			return string.Format("http://+:{0}/{1}", Port, suffix == null ? null : suffix + '/');
+			return string.Format("http://+:{0}/{1}", Port, suffix == null ? null : suffix.TrimEnd('/') + '/');
 		}
 
 		private const int Port = 3130;

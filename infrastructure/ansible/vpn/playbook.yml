@@ -1,0 +1,5 @@
+- hosts: router
+  roles: [vpn]
+  gather_facts: no
+  vars:
+    primary_vpn: ructf-srv08g.ructf.yandex.net
