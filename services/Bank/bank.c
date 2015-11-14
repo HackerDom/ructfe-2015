@@ -65,14 +65,7 @@ void* set(unsigned char* key, int value)
 			break;
 		}
 		curr_node = (struct tree_node*) TREE_NODES_ADDR + curr_node_offset;
-		// printf("%d %ld %p\n", curr_node_offset, curr_node->hash, curr_node);
 	}
-
-	curr_node->hash = hash;
-
-	// asm volatile("int $3;");
-
-	// return bucket_ptr;
 
 	for (i = 0; i < MAX_ITEMS_IN_BUCKET; i+=1) {
         unsigned char* key_ptr = mem_start + curr_node->key_offsets[i];
@@ -88,28 +81,27 @@ void* set(unsigned char* key, int value)
 		}
 	}
 
-	curr_node->values[i] = value;
-
 	// place the key
 	if(!curr_node->key_offsets[i]) {
 		// find a place for the key
-		unsigned char *key_offset = 0;
+		unsigned char *key_offset;
+        for (key_offset = mem_start + MAX_KEY_LEN; *key_offset; key_offset += MAX_KEY_LEN) {
+            if (key_offset >= mem_start + MAX_KEYS * MAX_KEY_LEN) {
+                return 0;  // too much items
+            }
+        }
+
+        // copy new key to founded place
 		int j;
-		for (j = MAX_KEY_LEN; j < MAX_KEYS * MAX_KEY_LEN; j += MAX_KEY_LEN) {
-			key_offset = mem_start + j;
-			if(*key_offset == 0) {
-				break;
-			}
-		}
-		// copy new key to founded place
 		for (j = 0; j < MAX_KEY_LEN - 1 && key[j]; j++) {
 			key_offset[j] = key[j];
 		}
-		key_offset[j] = 0;
 
 		curr_node->key_offsets[i] = key_offset - mem_start;
-        // return *(mem_start + curr_node->key_offsets[i]);
 	}
+    
+    curr_node->hash = hash;
+    curr_node->values[i] = value;
 
 	return curr_node;
 }
@@ -177,13 +169,14 @@ void init_structs() {
 
 	const char* TREE_NODES_ADDR = BUFF_ADDR + MAX_KEY_LEN * MAX_KEYS;
 	const char* FUNCTION_SET_ADDR = TREE_NODES_ADDR + TREE_MAX_NODES * sizeof(struct tree_node);
-	const char* FUNCTION_GET_ADDR = FUNCTION_SET_ADDR + 0x2000;
+	const char* FUNCTION_GET_ADDR = FUNCTION_SET_ADDR + 0x1000;
 
 	memcpy((void *)FUNCTION_SET_ADDR,  (void*) set, (void *)get - (void *)set);
 	memcpy((void *)FUNCTION_GET_ADDR,  (void*) get, (void *)end - (void *)get);
 
 
-	printf("%p %p %p %p\n", BUFF_ADDR, TREE_NODES_ADDR, FUNCTION_SET_ADDR, FUNCTION_GET_ADDR);
+    printf("%p %p %p %p\n", BUFF_ADDR, TREE_NODES_ADDR, FUNCTION_SET_ADDR, FUNCTION_GET_ADDR);
+	printf("set = %d get = %d\n", (void *)get - (void *)set, (void *)end - (void *)get);
 	
 	void* a = ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)("test", 1000);
 	// void* a = set("test", 1000);
