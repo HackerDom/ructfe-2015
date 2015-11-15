@@ -8,12 +8,14 @@
 
 int check_args(char* login) {
     if (!login) {
-        printf("%s\n", "Error: No login");
+        printf("<p class='error'>Error: No login</p>\n");
+        print_bank_redirect();
         return -1;
     }
 
     if (!login_good(login)) {
-        printf("%s\n", "Error: Bad login");
+        printf("<p class='error'>Error: Bad login</p>\n");
+        print_bank_redirect();
         return -1;
     }
 }
@@ -35,7 +37,7 @@ int gen_page() {
 
     long accounts_num = t.size();
     if (accounts_num == 0) {
-        printf("You have no accounts yet<br>\n");
+        printf("<h6>You don't have any accounts yet</h6>\n");
         printf("<br>\n");
     } else {
         printf("  <table class='table table-striped'>\n");
@@ -102,10 +104,10 @@ int gen_page() {
         printf("  </table>\n");
 
     }
-    printf("              <div class='extra-space-l'></div>\n");
+    printf("         <div class='extra-space-l'></div>\n");
     printf("         <form class='sparser-form form-inline' action='add_money.cgi'>\n");
     printf("         <input type='hidden' value='%s' name='login'><br>\n", login);
-    printf("         <legend><h5>Add money to account (this is free and always will be):</h5></legend>\n");
+    printf("         <legend><h5>Add money to the account (this is free and always will be):</h5></legend>\n");
     printf("         <div class='form-group'>\n");
     printf("         <label for='account'>Account:</label>\n");
     printf("         <input class='form-control' id='account' value='' name='account' placeholder='Enter account'>\n");
@@ -116,6 +118,7 @@ int gen_page() {
     printf("         </div>\n");
     printf("         <button type='submit' class='btn btn-success'>Add</button>\n");
     printf("         </form>\n");
+    printf("         <div class='extra-space-l'></div>\n");
 }
 
 int main() {

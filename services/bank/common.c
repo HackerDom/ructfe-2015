@@ -96,3 +96,34 @@ void print_footer() {
 	printf("    </body>\n");
 	printf("</html>\n");
 }
+
+void print_bank_redirect() {
+	printf("<script type='text/javascript'>\n");
+	printf("(function(){\n");
+	printf(   "setTimeout(function(){\n");
+	printf("     window.location='bank.cgi';\n");
+	printf("   },2000); \n");
+	printf("})();\n");
+	printf("</script>\n");
+}
+
+void print_accounts_redirect() {
+	printf("<script type='text/javascript'>\n\n");
+	printf("var getUrlParameter = function getUrlParameter(sParam) {\n");
+	printf("    var sPageURL = decodeURIComponent(window.location.search.substring(1)),\n");
+	printf("        sURLVariables = sPageURL.split('&'),\n");
+	printf("        sParameterName, i;\n");
+	printf("    for (i = 0; i < sURLVariables.length; i++) {\n");
+	printf("        sParameterName = sURLVariables[i].split('=');\n");
+	printf("        if (sParameterName[0] === sParam) {\n");
+	printf("            return sParameterName[1] === undefined ? true : sParameterName[1];\n");
+	printf("        }\n");
+	printf("    }\n");
+	printf("};\n");
+	printf("(function(){\n");
+	printf(   "setTimeout(function(){\n");
+	printf("     window.location='account.cgi?login=' + getUrlParameter('login');\n");
+	printf("   },2000); \n");
+	printf("})();\n");
+	printf("</script>\n");
+}
