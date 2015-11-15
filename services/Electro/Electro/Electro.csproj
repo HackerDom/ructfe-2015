@@ -59,7 +59,7 @@
     <Compile Include="Handlers\HttpListenerUtils.cs" />
     <Compile Include="Handlers\ListElectionsHandler.cs" />
     <Compile Include="Handlers\LoginHandler.cs" />
-    <Compile Include="Handlers\RegisterCandidateHandler.cs" />
+    <Compile Include="Handlers\NominateHandler.cs" />
     <Compile Include="Handlers\RegisterHandler.cs" />
     <Compile Include="Handlers\StartElectionHandler.cs" />
     <Compile Include="Handlers\StaticHandler.cs" />

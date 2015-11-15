@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Electro.Model;
 using Electro.Utils;
 
 namespace Electro.Handlers
 {
-	class RegisterCandidateHandler : AuthorizedBaseHandler
+	class NominateHandler : AuthorizedBaseHandler
 	{
 		private readonly ElectroController electroController;
 
-		public RegisterCandidateHandler(ElectroController electroController, AuthController authController, string prefix) : base(authController, prefix)
+		public NominateHandler(ElectroController electroController, AuthController authController, string prefix) : base(authController, prefix)
 		{
 			this.electroController = electroController;
 		}
@@ -27,8 +23,11 @@ namespace Electro.Handlers
 			if(!form.TryGetValue("electionId", out electionIdString) || !Guid.TryParse(electionIdString, out electionId))
 				throw new HttpException(HttpStatusCode.BadRequest, "Invalid request params");
 
-			var success = electroController.RegisterCandidate(electionId, user);
-			WriteData(context, success.ToJson());
+			var privateKey = electroController.RegisterCandidate(electionId, user);
+			if(privateKey == null)
+				throw new HttpException(HttpStatusCode.BadRequest, "Nominate FAILED");
+
+			WriteData(context, privateKey.ToJson());
 		}
 	}
 }

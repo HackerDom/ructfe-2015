@@ -31,7 +31,10 @@ namespace Electro.Handlers
 				throw new HttpException(HttpStatusCode.BadRequest, "Invalid request params");
 
 			var success = electroController.Vote(electionId, user, voteArray);
-			WriteData(context, success.ToJson());
+			if(!success)
+				throw new HttpException(HttpStatusCode.BadRequest, "Vote FAILED");
+
+			WriteString(context, "Vote OK");
 		}
 
 		private BigInteger[] ParseVoteArray(string[] votesStringArray)

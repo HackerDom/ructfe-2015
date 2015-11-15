@@ -27,7 +27,7 @@ namespace Electro.Handlers
 			context.Response.SetCookie("login", login);
 			context.Response.SetCookie("token", TokenCrypt.Encrypt(new Token { Login = login, DateTime = DateTime.UtcNow }.ToJsonString()), true);
 
-			WriteString(context, "Login OK");
+			WriteString(context, "Name OK");
 		}
 	}
 }
