@@ -7,9 +7,8 @@
 - hosts: dns
   roles: [dns]
 
-- hosts: checksystem-app
+- hosts: checksystem-main:checksystem-checkers
   roles: [checksystem-app]
 
 - hosts: checksystem-db
   roles: [checksystem-db]
-
