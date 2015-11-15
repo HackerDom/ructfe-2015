@@ -10,7 +10,7 @@
     round_length   => 30,
     flag_life_time => 1,
     flags          => {port => 31337, timeout => 5 * 60},
-    admin          => {auth => 'root:LjdjkmysqCbybqRhjkbr'}
+    admin          => {auth => 'root:LjdjkmysqCbybqRhjkbr'},
     checkers       => {
       hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}" }
     }
