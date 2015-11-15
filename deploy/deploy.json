@@ -1,4 +1,8 @@
 {
+    "TaX" : {
+        "username" : "tax"
+    }
+    ,
     "MoL" : {
         "username" : "mol",
         "precopy" : "deploy/MoL/precopy.sh",
@@ -34,7 +38,7 @@
 		],
 		"files" : [
 			["deploy/nasarasa/files/nasarasa", "/etc/nginx/sites-available/nasarasa"],
-			["services/NasaRasa/www/", "/home/nasarasa/www/"],
+			["services/NasaRasa/www", "/home/nasarasa/www"]
 		]
 	}
 }

@@ -45,11 +45,15 @@ class Service:
         machine.run('useradd -m {0}'.format(username))
 
     def __install_build_deps(self, machine):
+        if "build_deps" not in self.config[self.name]:
+            return
         build_deps = " ".join(self.config[self.name]["build_deps"])
         machine.run('apt-get update', True)
         machine.run('DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes {0}'.format(build_deps), True)
 
     def __install_run_deps(self, machine):
+        if "run_deps" not in self.config[self.name]:
+            return
         run_deps = " ".join(self.config[self.name]["run_deps"])
         machine.run('apt-get update', True)
         machine.run('DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes {0}'.format(run_deps), True)
@@ -64,6 +68,8 @@ class Service:
             to_machine.put('{0}/{1}'.format(tmp_directory, frm), to)
 
     def __pre_copy(self, machine):
+        if "precopy" not in self.config[self.name]:
+            return
         script = self.config[self.name]["precopy"]
         machine.run('bash -x /root/ructfe-2015/{0}'.format(script), True)
 
@@ -219,7 +225,7 @@ def main(argv):
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
     with DirtyMachine() as dirty_machine, TeamMachine("team01", "10.70.0.100") as team_machine:
-        services = [MoL(config)]
+        services = [NasaRasa(config), MoL(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
 
