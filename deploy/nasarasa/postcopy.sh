@@ -19,8 +19,8 @@ popd
 
 gpasswd -a nasarasa www-data
 
-chown nasarasa:www-data -R /home/nasarasa/www
-chmod 660 -R /home/nasarasa/www
+chown nasarasa:www-data -R /home/nasarasa/
+chmod 660 -R /home/nasarasa/
 find /home/nasarasa -type d -exec chmod 770 {} +
 
 service php5-fpm start
