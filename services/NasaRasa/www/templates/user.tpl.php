@@ -15,6 +15,12 @@
                 <div><b>Brightness</b>: {$planet->brightness}%</div>
                 <div><b>Size</b>: {$planet->size}%</div>
                 <div><b>Color</b>: {$planet->color}</div>
+                {if $self}
+                    <div>
+                        <b>Message</b>:
+                        <pre>{$planet->message}</pre>
+                    </div>
+                {/if}
             </div>
         {foreachelse}
             <div class="well">

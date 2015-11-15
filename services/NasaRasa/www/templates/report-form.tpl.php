@@ -31,5 +31,9 @@
         <label>Color</label>
         <input type="text" class="form-control" name="color" />
     </div>
+    <div class="form-group">
+        <label>Message</label>
+        <textarea class="form-control" placeholder="Any message which will be visible only for you and site administrators" name="message"></textarea>
+    </div>
     <button class="btn btn-default">Report</button>
 </form>

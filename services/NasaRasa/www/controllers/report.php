@@ -6,15 +6,16 @@
     require_once 'models/SessionManager.php';
 
     $result = null;
-    if (SessionManager::is_authenticated() && ($options = is_form_submitted(['declination', 'hour_angle', 'brightness', 'size', 'color'])))
+    if (SessionManager::is_authenticated() && ($form = is_form_submitted(['declination', 'hour_angle', 'brightness', 'size', 'color', 'message'])))
     {
         try
         {   
-            $planet = new Planet(['declination' => (int) $options['declination'],
-                                  'hour_angle' => (int) $options['hour_angle'],
-                                  'brightness' => (int) $options['brightness'],
-                                  'size' => (int) $options['size'],
-                                  'color' => $options['color'],
+            $planet = new Planet(['declination' => (int) $form['declination'],
+                                  'hour_angle' => (int) $form['hour_angle'],
+                                  'brightness' => (int) $form['brightness'],
+                                  'size' => (int) $form['size'],
+                                  'color' => $form['color'],
+                                  'message' => $form['message'],
                                   'added_by' => SessionManager::current_user()]);
             $planet->save();
             redirect('/?planet_added=1');
