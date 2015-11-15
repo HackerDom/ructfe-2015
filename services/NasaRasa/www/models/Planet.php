@@ -1,5 +1,6 @@
 <?php
     require_once 'inc/db.php';
+    require_once 'models/User.php';
 
     class Planet extends DbModel
     {
@@ -14,6 +15,7 @@
                                        'size' => new DbIntField(['min_value' => 0, 'max_field' => 100]),
                                        'color' => new DbCharField(['max_length' => 200]),
                                        'added_by' => new DbForeignField(['to' => 'User']),
+                                       'added_at' => new DbTimeField(['init_with_current_timestamp' => true]),
                                        ]);
         }
     }

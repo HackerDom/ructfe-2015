@@ -6,19 +6,18 @@ server{
     
     root /home/nasarasa/www;
         
-    location ~ \.php$ {
-        try_files $uri =404;
+    location / {
+        index  index.php index.html index.htm;
+
         include fastcgi_params;
         fastcgi_pass  unix:/var/run/php5-fpm.sock;
         fastcgi_index index.php;
 
-        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        fastcgi_param  SCRIPT_FILENAME  $document_root/index.php;
     }
     
-    # порядок индексов    
-    location /
-    {
-        index  index.php index.html index.htm;
-    }
-    
+    location /static/ {
+        root /;
+        try_files /home/nasarasa/www$uri /home$uri;
+    }    
 }

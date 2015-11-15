@@ -3,22 +3,17 @@
 {block 'title'}NASA RASA{/block}
 
 {block 'content'}
-    <h1>
-        Welcome to NASA RASA
-    </h1>
+    <div class="well">
+        {if $authenticated}
+            <div>You're logged in as <b><a href="/users/{$current_user->id}">{$current_user->login}</a></b> (<a href="/logout">logout</a>)</div>
+        {/if}
+        <div>Report us information about unknown planet and it'll be named after you.</div>
+    </div>
 
     {if $authenticated}
-        {include 'user.tpl.php' user=$current_user}
+        {include 'report-form.tpl.php'}
     {else}
-        {include 'signin.tpl.php'}
+        <a class="btn btn-default" href="/signup" role="button">Sign up</a>
+        <a class="btn btn-default" href="/signin" role="button">Sign in</a>
     {/if}
-
-    <div class="last-users">
-        <h3>Last registered users</h3>
-        {foreach $last_users as $user}
-            <div class="user">
-                <a href="/users/{$user->id}">{$user->login}</a>
-            </div>
-        {/foreach}
-    </div>
 {/block}
