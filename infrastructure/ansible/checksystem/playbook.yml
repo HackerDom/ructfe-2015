@@ -1,3 +1,3 @@
-- hosts: checksystem-app
+- hosts: checksystem-main:checksystem-checkers
   roles: [checksystem-app]
 
