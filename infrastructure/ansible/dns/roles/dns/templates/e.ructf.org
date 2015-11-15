@@ -1,6 +1,6 @@
 $TTL    10M
 @               IN      SOA     {{inventory_hostname}}. network.ructf.org. (
-                                2015111501      ; Serial
+                                2015111504      ; Serial
                                 5M              ; Refresh
                                 2M              ; Retry
                                 10M             ; Expire
@@ -12,6 +12,7 @@ $TTL    10M
 
 vpn1            IN      A       84.201.188.136
 vpn2            IN      A       130.193.60.216
+vpn-dev         IN      A       84.201.188.129
 
 $INCLUDE teams
 $INCLUDE dev
