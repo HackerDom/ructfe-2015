@@ -2,12 +2,12 @@
 set -e
 
 cd ructfe-mol
-rm -rf ructfe/mol/*
-mkdir -p ructfe/mol
-cp -r ../../service/* ructfe/mol/
-rm -f ructfe/mol/static/ws.js
+rm -rf home/mol/*
+mkdir -p home/mol
+cp -r ../../service/* home/mol/
+rm -f home/mol/static/ws.js
 
-md5deep -l -r lib ructfe > DEBIAN/md5sums
+md5deep -l -r lib home > DEBIAN/md5sums
 
 cd ..
 fakeroot dpkg-deb --build ructfe-mol

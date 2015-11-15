@@ -1,12 +1,20 @@
 {
     "TaX" : {
-        "username" : "tax"
+        "username" : "tax",
+        "postcopy" : ["deploy/tax/postcopy.sh", "/root/tax/postcopy.sh"],
+        "run_deps" : [
+            "curl"
+         ],
+        "files" : [
+             ["services/tax", "/home/"],
+             ["deploy/tax/tax.service", "/etc/systemd/system/tax.service"]
+        ]
     }
     ,
     "MoL" : {
         "username" : "mol",
-        "precopy" : "deploy/MoL/precopy.sh",
-        "postcopy" : ["deploy/MoL/postcopy.sh", "/root/mol/postcopy.sh"],
+        "precopy" : "deploy/mol/precopy.sh",
+        "postcopy" : ["deploy/mol/postcopy.sh", "/root/mol/postcopy.sh"],
         "build_deps" : [
             "md5deep",
             "python3-pip",
@@ -21,7 +29,7 @@
             "dh-systemd"
          ],
          "files" : [
-             ["services/MoL/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"]
+             ["services/mol/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"]
         ]
     }
     ,

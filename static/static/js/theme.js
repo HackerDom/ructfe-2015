@@ -83,33 +83,17 @@ $('body').scrollspy({
 ////////////////////////////////////////////////////
 
 // Intro text carousel
-$("#owl-intro-text").owlCarousel({
-    singleItem : true,
-    autoPlay : 6000,
-    stopOnHover : true,
-    navigation : false,
-    navigationText : false,
-    pagination : true
-})
-
-
-// Partner carousel
-$("#owl-partners").owlCarousel({
-    items : 4,
-    itemsDesktop : [1199,3],
-    itemsDesktopSmall : [980,2],
-    itemsTablet: [768,2],
-    autoPlay : 5000,
-    stopOnHover : true,
-    pagination : false
-})
-
-// Testimonials carousel
-$("#owl-testimonial").owlCarousel({
-    singleItem : true,
-    pagination : true,
-    autoHeight : true
-})
+if ($.fn.owlCarousel)
+{
+    $("#owl-intro-text").owlCarousel({
+        singleItem : true,
+        autoPlay : 6000,
+        stopOnHover : true,
+        navigation : false,
+        navigationText : false,
+        pagination : true
+    })
+}
 
 
 ////////////////////////////////////////////////////////////////////
