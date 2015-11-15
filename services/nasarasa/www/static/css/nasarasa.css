@@ -1,0 +1,7 @@
+.last-users .user > div {
+    display: inline-block;
+}
+
+div {
+    line-height: 140%;
+}

@@ -42,10 +42,11 @@ func addHealthMetrics(request *http.Request) (int, string) {
 	return status, response
 }
 
-func getHealthMetrics(request *http.Request) (int, string) {
+func getHealthMetrics(request *http.Request) (int, string, []HealthMetrics) {
 
 	response := ""
-	status := http.StatusTeapot
+	status := http.StatusTeapot 
+	var metrics []HealthMetrics
 	
 	uId, err := getUserId(request)
 	if err != nil {
@@ -53,19 +54,16 @@ func getHealthMetrics(request *http.Request) (int, string) {
 		response = err.Error() 
 	} else {
 		response += uId // debug
-		success, metrics := tryGetUserMetrics(uId)
+		var success bool
+		success, metrics = tryGetUserMetrics(uId)
 		if success {
 			status = http.StatusOK
-			response += "; " + strconv.Itoa(len(metrics))
-			for _,m := range metrics {
-				response += m.toString()
-			}
 		} else {
 			status = http.StatusInternalServerError
 			response = "Can't get user's metrics"
 		}
 	}
-	return status, response
+	return status, response, metrics
 }
 
 func addUser(request *http.Request) (int, string) {
@@ -116,6 +114,11 @@ func getUserId(request *http.Request) (string, error) {
 	} else {
 		return "", errors.New(Unauthorized)
 	}
+}
+
+func loggedin(request *http.Request) bool {
+	_, err := getUserId(request)
+	return err == nil
 }
 
 func extractUid(idStr string) string {
