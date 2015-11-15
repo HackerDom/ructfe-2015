@@ -1,11 +1,11 @@
 server{
-    server_name nasarasa.*;
-    
+    server_name ~^nasarasa\.(?P<main_host>.+)$;
+
     access_log /home/nasarasa/access.log;
     error_log  /home/nasarasa/error.log;
-    
+
     root /home/nasarasa/www;
-        
+
     location / {
         index  index.php index.html index.htm;
 
@@ -15,9 +15,16 @@ server{
 
         fastcgi_param  SCRIPT_FILENAME  $document_root/index.php;
     }
-    
+
     location /static/ {
-        root /;
-        try_files /home/nasarasa/www$uri /home$uri;
-    }    
+        try_files $uri @static;
+    }
+
+    location @static {
+        root /home;
+    }
+
+    location = /home {
+        rewrite .* http://$main_host/;
+    }
 }
