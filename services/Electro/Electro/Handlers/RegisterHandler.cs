@@ -38,7 +38,7 @@ namespace Electro.Handlers
 				throw new HttpException(HttpStatusCode.Conflict, string.Format("User '{0}' already exists", login));
 
 			context.Response.SetCookie(LoginCookieName, login);
-			context.Response.SetCookie(TokenCookieName, TokenCrypt.Encrypt(new Token { Login = login, DateTime = DateTime.UtcNow }.ToJsonString()), true);
+			context.Response.SetCookie(TokenCookieName, TokenCrypt.Encrypt(new Token { Login = login }.ToJsonString()), true);
 
 			WriteString(context, "Register OK");
 		}

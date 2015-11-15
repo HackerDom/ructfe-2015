@@ -58,8 +58,8 @@
     {name => 'team240', network => '10.70.0.240/32', host => 'dev240.e.ructf.org'},
   ],
   services => [
-    {name => 'MoL',    path => '../checkers/MoL/mol.checker.py',    timeout => 10},
-    {name => 'TaX',    path => '../checkers/TaX/TaX.checker.pl',    timeout => 10},
+    {name => 'mol',    path => '../checkers/mol/mol.checker.py',    timeout => 10, tcp_port => 80 },
+    {name => 'tax',    path => '../checkers/tax/tax.checker.pl',    timeout => 10, tcp_port => 80 },
   ]
 }
 

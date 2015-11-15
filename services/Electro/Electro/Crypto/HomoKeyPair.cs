@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.Serialization;
 
@@ -28,7 +29,33 @@ namespace Electro.Crypto
 	[DataContract]
 	public class PublicKey
 	{
-		[DataMember] public BigInteger[] KeyParts;
+		[DataMember] public string[] keyParts;
+		[IgnoreDataMember] public BigInteger[] KeyParts;
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			if(KeyParts != null)
+				keyParts = KeyParts.Select(b => b.ToString()).ToArray();
+		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			bool failed = false;
+			if(keyParts != null)
+			{
+				var result = keyParts.Select(s =>
+				{
+					BigInteger b;
+					if(!BigInteger.TryParse(s, out b))
+						failed = true;
+					return b;
+				}).ToArray();
+				if(!failed)
+					KeyParts = result;
+			}
+		}
 
 		public static PublicKey GenPublicKey(PrivateKey privateKey, int bitsCount = DefaultBitsCount)
 		{
@@ -52,8 +79,24 @@ namespace Electro.Crypto
 	[DataContract]
 	public class PrivateKey
 	{
-		[DataMember] public BigInteger Key { get; set; }
+		[DataMember] public string key { get; set; }
+		[IgnoreDataMember] public BigInteger Key { get; set; }
+
 		[DataMember] public int MaxNum { get; set; }
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			key = Key.ToString();
+		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			BigInteger b;
+			if(BigInteger.TryParse(key, out b))
+				Key = b;
+		}
 
 		public static PrivateKey GenPrivateKey(int maxNum, int bitsCount = DefaultBitsCount)
 		{
