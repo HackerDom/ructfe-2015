@@ -1,5 +1,5 @@
 - hosts: checksystem-main:checksystem-checkers
-  roles: [checksystem-app]
+  roles: [checksystem]
   vars:
     cs_user: cs
     cs_dir: /home/cs
