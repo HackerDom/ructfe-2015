@@ -28,9 +28,10 @@
 			"nginx",
 			"php5-fpm",
 			"php5-cgi",
+            "php5-cli",
 			"php5-mysql",
 			"mysql-server",
-            "composer"
+            "curl"
 		],
 		"files" : [
 			["deploy/nasarasa/files/nasarasa", "/etc/nginx/sites-available/nasarasa"],
