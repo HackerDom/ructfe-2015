@@ -19,7 +19,7 @@ type Link struct {
 }
 
 type Context struct {
-    Links []Link
+    LoggedIn bool
 	Action string
 	Text string
 }
@@ -29,14 +29,12 @@ func addHealthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 	status, response := addHealthMetrics(request)
 	w.WriteHeader(status)
 
-	linksToDisplay := []Link {links["mymetrics"], links["addmetrics"], links["logout"]}
-	context := Context{Links: linksToDisplay, Action: "", Text: response}
+	context := Context{LoggedIn: loggedin(request), Action: "", Text: response}
 	render(w, "text", context)
 }
 
 func addHealthMetricsFormHandler(w http.ResponseWriter, request *http.Request) {
-	linksToDisplay := []Link {links["mymetrics"], links["addmetrics"], links["logout"]}
-	context := Context{Links: linksToDisplay, Action: "/addhealthmetrics", Text: ""}
+	context := Context{LoggedIn: loggedin(request), Action: "/addhealthmetrics", Text: ""}
 	render(w, "metrics", context)
 }
 
@@ -52,8 +50,7 @@ func addUserHandler(w http.ResponseWriter, request *http.Request) {
 	status, response := addUser(request)
 	w.WriteHeader(status)
 	
-	linksToDisplay := []Link {links["login"], links["signup"]}
-	context := Context{Links: linksToDisplay, Action: "", Text: response}
+	context := Context{LoggedIn: loggedin(request), Action: "", Text: response}
 	render(w, "text", context)
 }
 
@@ -64,13 +61,9 @@ func loginHandler(w http.ResponseWriter, request *http.Request) {
 	http.SetCookie(w, &c2) 
 	w.WriteHeader(status)
 	
-	var linksToDisplay []Link
-	if status == http.StatusOK {
-		linksToDisplay = []Link {links["mymetrics"], links["addmetrics"], links["logout"]}
-	} else {
-		linksToDisplay = []Link {links["login"], links["signup"]}
-	}
-	context := Context{Links: linksToDisplay, Action: "", Text: response}
+	loggedIn := status == http.StatusOK 
+
+	context := Context{LoggedIn: loggedIn, Action: "", Text: response}
 	render(w, "text", context)
 }
 
@@ -81,34 +74,23 @@ func logoutHandler(w http.ResponseWriter, request *http.Request) {
 	http.SetCookie(w, &c2) 
 	w.WriteHeader(status)
 
-	linksToDisplay := []Link {links["login"], links["signup"]}
-	context := Context{Links: linksToDisplay, Action: "", Text: response}
+	context := Context{LoggedIn: loggedin(request), Action: "", Text: response}
 	render(w, "text", context)
 }
 
 func signupFormHandler(w http.ResponseWriter, request *http.Request) {
-	context := Context{Links: []Link{}, Action: "/newuser"}
+	context := Context{LoggedIn: loggedin(request), Action: "/newuser"}
 	render(w, "login", context)
 }
 
 func loginformHandler(w http.ResponseWriter, request *http.Request) {
-	context := Context{Links: []Link{}, Action: "/login"}
+	context := Context{LoggedIn: loggedin(request), Action: "/login"}
 	render(w, "login", context)
 }
 
 func homeHandler(w http.ResponseWriter, request *http.Request) {
-	context := Context{Links: getLinks(request)}
+	context := Context{LoggedIn: loggedin(request)}
 	render(w, "index", context)
-}
-
-func getLinks(request *http.Request) []Link {
-	var linksToDisplay []Link
-	if loggedin(request) {
-		linksToDisplay = []Link {links["mymetrics"], links["addmetrics"], links["logout"]}
-	} else {
-		linksToDisplay = []Link {links["login"], links["signup"]}
-	}
-	return linksToDisplay
 }
 
 func render(w http.ResponseWriter, tmpl string, context Context) {
@@ -156,13 +138,6 @@ var links map[string]Link
 
 func initService(){
 	prepareDb()
-	
-	links = make(map[string]Link)
-	links["login"] = Link{"/loginform", "Login"}
-	links["signup"] = Link{"/signupform", "Sign Up"}
-	links["logout"] = Link{"/logout", "Log Out"}
-	links["mymetrics"] = Link{"/healthmetrics", "My Metrics"}
-	links["addmetrics"] = Link{"/addhealthmetricsform", "Add Metrics"}
 }
 
 func main() {
