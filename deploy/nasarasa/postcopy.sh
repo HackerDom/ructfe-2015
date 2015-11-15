@@ -9,6 +9,10 @@ service nginx stop
 
 ln -s /etc/nginx/sites-available/nasarasa /etc/nginx/sites-enabled/nasarasa
 
+cd /usr/src
+curl -sS https://getcomposer.org/installer | php
+mv composer.phar /usr/bin/composer
+
 pushd /home/nasarasa/www
 composer update
 popd
