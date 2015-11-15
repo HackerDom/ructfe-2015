@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "dict/dict.h"
+#include "cgi.h"
 
 int login_good(char* login) {
     int i;
@@ -61,16 +62,15 @@ int main() {
 
     printf("<body>%s</body>", body);
 
-    char login[256];
-    char account[256];
-    char amount[256];
+    char* login = cgigetval("login");
+    char* account = cgigetval("account");
+    char* amount = cgigetval("amount");
     long amount_long;
 
-    char login_to[256];
-    char account_to[256];
+    char* login_to = cgigetval("login_to");
+    char* account_to = cgigetval("account_to");
 
-
-    if (get_param("login", login, 256) == -1) {
+    if (!login) {
         printf("%s\n", "Error: No login");
         return 1;
     }
@@ -80,7 +80,7 @@ int main() {
         return 1;
     }
 
-    if (get_param("account", account, 256) == -1) {
+    if (!account) {
         printf("%s\n", "Error: No account");
         return 1;
     }
@@ -90,12 +90,12 @@ int main() {
         return 1;
     }
 
-    if (get_param("amount", amount, 256) == -1) {
+    if (!amount) {
         printf("%s\n", "Error: No amount");
         return 1;
     }
 
-    if (get_param("login_to", login_to, 256) == -1) {
+    if (!login_to) {
         printf("%s\n", "Error: No dest login");
         return 1;
     }
@@ -105,7 +105,7 @@ int main() {
         return 1;
     }
 
-    if (get_param("account_to", login_to, 256) == -1) {
+    if (!account_to) {
         printf("%s\n", "Error: No dest account");
         return 1;
     }

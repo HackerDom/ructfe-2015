@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "dict/dict.h"
+#include "cgi.h"
 
 int login_good(char* login) {
     int i;
@@ -37,14 +38,13 @@ int main() {
     printf("Content-type: text/html;charset=UTF-8\n\n");
     printf("<head><title>Account</title><head>\n");
 
-    char *body = ""
+    char* body = ""
     "</form>";
 
     printf("<body>%s</body>", body);
 
-    char login[256];
-    ret = get_param("login", login, 256);
-    if (ret == -1) {
+    char* login = cgigetval("login");
+    if (!login) {
         printf("%s\n", "Error: No login");
         return 1;
     }
@@ -90,8 +90,8 @@ int main() {
     printf("Add money on account (account will be created):<br>\n");
 
     printf("<form action='add_money.cgi'>\n");
-    printf("Account: <input value='123' name='account'><br>\n");
-    printf("Amount: <input value='123.45' name='amount'><br>\n");
+    printf("Account: <input value='' name='account'><br>\n");
+    printf("Amount: <input value='' name='amount'><br>\n");
     printf("<input type='hidden' value='%s' name='login'><br>\n", login);
     printf("<input type='submit'>\n");
     printf("</form>\n");
