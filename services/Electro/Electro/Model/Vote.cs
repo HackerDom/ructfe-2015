@@ -13,7 +13,7 @@ namespace Electro.Model
 	[DataContract]
 	class Vote
 	{
-		[DataMember] public Guid UserId { get; set; }
+		[DataMember(EmitDefaultValue = false)] public Guid UserId { get; set; }
 		[DataMember] public BigInteger[] EncryptedVector { get; set; }
 	}
 

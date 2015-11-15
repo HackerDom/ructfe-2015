@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.Serialization;
 
 namespace Electro.Crypto
 {
@@ -24,9 +25,10 @@ namespace Electro.Crypto
 		}
 	}
 
+	[DataContract]
 	public class PublicKey
 	{
-		public BigInteger[] KeyParts;
+		[DataMember] public BigInteger[] KeyParts;
 
 		public static PublicKey GenPublicKey(PrivateKey privateKey, int bitsCount = DefaultBitsCount)
 		{
@@ -47,10 +49,11 @@ namespace Electro.Crypto
 		public const int DefaultSetSize = 16;
 	}
 
+	[DataContract]
 	public class PrivateKey
 	{
-		public BigInteger Key { get; set; }
-		public int MaxNum { get; set; }
+		[DataMember] public BigInteger Key { get; set; }
+		[DataMember] public int MaxNum { get; set; }
 
 		public static PrivateKey GenPrivateKey(int maxNum, int bitsCount = DefaultBitsCount)
 		{

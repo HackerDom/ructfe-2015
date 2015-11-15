@@ -7,7 +7,7 @@
     - git
 
 - name: create checksystem user
-  user: name=checksystem state=present
+  user: name=cs state=present
 
 - name: cpanm installdeps
   cpanm: name={{item}}

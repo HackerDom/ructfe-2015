@@ -1,0 +1,3 @@
+- name: upload sysctl.conf
+  template: src=sysctl.conf dest=/etc/sysctl.conf
+  notify: reload sysctl

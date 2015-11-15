@@ -4,20 +4,28 @@
     - postgresql-9.4
     - python-psycopg2
 
+- name: ensure PostgreSQL is running
+  service: name=postgresql state=started
+
 - name: create PostgreSQL user
   sudo: yes
   sudo_user: postgres
   postgresql_user: name=cs password=jrCiW2c9268x state=present
 
-- name: create test PostgreSQL database
+- name: create dev PostgreSQL database
   sudo: yes
   sudo_user: postgres
-  postgresql_db: name=cs_test owner=cs state=present
+  postgresql_db: name=cs_dev owner=cs state=present
 
 - name: create production PostgreSQL database
   sudo: yes
   sudo_user: postgres
   postgresql_db: name=cs_prod owner=cs state=present
+
+- name: create bigtest PostgreSQL database
+  sudo: yes
+  sudo_user: postgres
+  postgresql_db: name=cs_bigtest owner=cs state=present
 
 - name: copy pg_hba.conf
   template: src=pg_hba.conf.j2 dest=/etc/postgresql/9.4/main/pg_hba.conf

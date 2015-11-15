@@ -19,5 +19,14 @@ namespace Electro.Utils
 			foreach(var item in enumerable)
 				action(item);
 		}
+
+		public static IEnumerable<T> With<T>(this IEnumerable<T> enumerable, Action<T> action)
+		{
+			foreach(var item in enumerable)
+			{
+				action.Invoke(item);
+				yield return item;
+			}
+		}
 	}
 }

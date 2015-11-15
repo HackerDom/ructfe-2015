@@ -13,7 +13,7 @@ namespace Electro
 			{
 				Id = Guid.NewGuid(),
 				Login = login,
-				Hash = CryptUtils.CalcHash(pass)
+				PasswordHash = CryptUtils.CalcHash(pass)
 			};
 			return users.TryAdd(login, user) ? user : null;
 		}
@@ -21,7 +21,7 @@ namespace Electro
 		public User FindUser(string login, string pass = null)
 		{
 			User user;
-			return users.TryGetValue(login, out user) && (pass == null || user.Hash == CryptUtils.CalcHash(pass)) ? user : null;
+			return users.TryGetValue(login, out user) && (pass == null || user.PasswordHash == CryptUtils.CalcHash(pass)) ? user : null;
 		}
 
 		ConcurrentDictionary<string, User> users = new ConcurrentDictionary<string, User>();
