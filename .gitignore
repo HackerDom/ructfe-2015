@@ -1,10 +1,10 @@
 .idea
 *.py[co]
-services/Electro/packages
-services/Electro/HomomorphicTests/bin
-services/Electro/HomomorphicTests/obj
-services/Electro/Electro/bin
-services/Electro/Electro/obj
+services/electro/packages
+services/electro/HomomorphicTests/bin
+services/electro/HomomorphicTests/obj
+services/electro/Electro/bin
+services/electro/Electro/obj
 
-services/HM/server/*.exe
-services/HM/server/*.db
+services/hm/server/*.exe
+services/hm/server/*.db
