@@ -1,36 +1,64 @@
-/* For disabling logo.png in brand replace this */
-.navbar-default .navbar-brand {
+.service-page {
+    color: #555;
+}
+
+/* Navigation */
+.home-page .navbar-default .navbar-brand {
     background-image: url(../img/turio.png);
     width: 250px;
 }
-/* to this
-.navbar-brand {background: none !important; width: auto !important; text-indent: 0 !important; letter-spacing: 2px !important;margin-left:0px !important;}
-.navbar-default .navbar-brand {background-image: none !important;}
-*/
 
+.service-page .navbar-brand {
+    background: none !important;
+    width: auto !important;
+    text-indent: 0 !important;
+    letter-spacing: 2px !important;
+    margin-left:0px !important;
+}
 
-/* This is for carousel background */
+.service-page .navbar-default .navbar-brand {
+    background-image: none !important;
+}
+
+.navbar .container {
+    padding: 0px;
+}
+
+/* Main block */
 .main-block {
-    position:relative;
+    position: relative;
+    height: 100%;
+}
+
+.home-page .main-block {
     background-position:0 0;
     background-attachment:fixed;
     -webkit-background-size:cover;
     background-size:cover;
     background-image: url(../img/background.jpg);
-    height: 100%;
 }
 
+/* Container */
 .container {
     height: 100%;
 }
 
 .container .caption {
+    margin-top: 100px;    
+}
+
+.home-page .container .caption {
     position: relative;
     top: 50%;
     margin-top: -70px;
 }
 
+/* Content block */
+.content-block {
+    padding-left: 70px;
+}
 
 .center-block img.logo {
-    display:block; margin:auto;
+    display: block;
+    margin: auto;
 }

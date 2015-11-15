@@ -1,0 +1,65 @@
+{ pg => {uri => 'postgresql://cs:jrCiW2c9268x@10.10.10.2/cs_dev'},
+  cs => {
+    time => {
+      start => '2013-01-01 00:00:00',
+      end   => '2018-03-08 23:59:59',
+      break => ['2014-01-01 00:00:00', '2015-01-01 00:00:00']
+    },
+    score_method   => 'v2',
+    ctf            => {name => 'RuCTFE 2015 test mode'},
+    round_length   => 30,
+    flag_life_time => 1,
+    flags          => {port => 31337, timeout => 5 * 60},
+    admin          => {auth => 'root:LjdjkmysqCbybqRhjkbr'}
+    checkers       => {
+      hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}" }
+    }
+  },
+  teams => [
+    {name => 'team201', network => '10.70.0.201/32', host => '10.70.0.201'},
+    {name => 'team202', network => '10.70.0.202/32', host => '10.70.0.202'},
+    {name => 'team203', network => '10.70.0.203/32', host => '10.70.0.203'},
+    {name => 'team204', network => '10.70.0.204/32', host => '10.70.0.204'},
+    {name => 'team205', network => '10.70.0.205/32', host => '10.70.0.205'},
+    {name => 'team206', network => '10.70.0.206/32', host => '10.70.0.206'},
+    {name => 'team207', network => '10.70.0.207/32', host => '10.70.0.207'},
+    {name => 'team208', network => '10.70.0.208/32', host => '10.70.0.208'},
+    {name => 'team209', network => '10.70.0.209/32', host => '10.70.0.209'},
+    {name => 'team210', network => '10.70.0.210/32', host => '10.70.0.210'},
+    {name => 'team211', network => '10.70.0.211/32', host => '10.70.0.211'},
+    {name => 'team212', network => '10.70.0.212/32', host => '10.70.0.212'},
+    {name => 'team213', network => '10.70.0.213/32', host => '10.70.0.213'},
+    {name => 'team214', network => '10.70.0.214/32', host => '10.70.0.214'},
+    {name => 'team215', network => '10.70.0.215/32', host => '10.70.0.215'},
+    {name => 'team216', network => '10.70.0.216/32', host => '10.70.0.216'},
+    {name => 'team217', network => '10.70.0.217/32', host => '10.70.0.217'},
+    {name => 'team218', network => '10.70.0.218/32', host => '10.70.0.218'},
+    {name => 'team219', network => '10.70.0.219/32', host => '10.70.0.219'},
+    {name => 'team220', network => '10.70.0.220/32', host => '10.70.0.220'},
+    {name => 'team221', network => '10.70.0.221/32', host => '10.70.0.221'},
+    {name => 'team222', network => '10.70.0.222/32', host => '10.70.0.222'},
+    {name => 'team223', network => '10.70.0.223/32', host => '10.70.0.223'},
+    {name => 'team224', network => '10.70.0.224/32', host => '10.70.0.224'},
+    {name => 'team225', network => '10.70.0.225/32', host => '10.70.0.225'},
+    {name => 'team226', network => '10.70.0.226/32', host => '10.70.0.226'},
+    {name => 'team227', network => '10.70.0.227/32', host => '10.70.0.227'},
+    {name => 'team228', network => '10.70.0.228/32', host => '10.70.0.228'},
+    {name => 'team229', network => '10.70.0.229/32', host => '10.70.0.229'},
+    {name => 'team230', network => '10.70.0.230/32', host => '10.70.0.230'},
+    {name => 'team231', network => '10.70.0.231/32', host => '10.70.0.231'},
+    {name => 'team232', network => '10.70.0.232/32', host => '10.70.0.232'},
+    {name => 'team233', network => '10.70.0.233/32', host => '10.70.0.233'},
+    {name => 'team234', network => '10.70.0.234/32', host => '10.70.0.234'},
+    {name => 'team235', network => '10.70.0.235/32', host => '10.70.0.235'},
+    {name => 'team236', network => '10.70.0.236/32', host => '10.70.0.236'},
+    {name => 'team237', network => '10.70.0.237/32', host => '10.70.0.237'},
+    {name => 'team238', network => '10.70.0.238/32', host => '10.70.0.238'},
+    {name => 'team239', network => '10.70.0.239/32', host => '10.70.0.239'},
+    {name => 'team240', network => '10.70.0.240/32', host => '10.70.0.240'},
+  ],
+  services => [
+    {name => 'MoL',    path => '../checkers/MoL/mol.checker.py',    timeout => 10},
+    {name => 'TaX',    path => '../checkers/TaX/TaX.checker.pl',    timeout => 10},
+  ]
+}
+
