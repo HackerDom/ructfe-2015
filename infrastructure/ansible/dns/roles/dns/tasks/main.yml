@@ -4,7 +4,12 @@
   with_items:
     - e.ructf.org
     - teams
+    - dev
 
 - name: upload config
   template: src=named.conf.local dest=/etc/bind/named.conf.local
   notify: restart bind9
+
+- name: check zone
+  shell: named-checkzone e.ructf.org e.ructf.org chdir=/var/cache/bind/
+  always_run: true

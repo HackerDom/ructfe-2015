@@ -64,6 +64,7 @@
     <Compile Include="Handlers\StartElectionHandler.cs" />
     <Compile Include="Handlers\StaticHandler.cs" />
     <Compile Include="Crypto\HomoKeyPair.cs" />
+    <Compile Include="Handlers\VoteHandler.cs" />
     <Compile Include="Model\Election.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Model\Vote.cs" />
