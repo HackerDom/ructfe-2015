@@ -6,14 +6,15 @@ external_pid_file = '/var/run/postgresql/9.4-main.pid'
 listen_addresses = '{{ ansible_eth0_1.ipv4.address }}'
 port = 5432
 
-max_connections = 100
+max_connections = 3000
 unix_socket_directories = '/var/run/postgresql'
 
 ssl = true
 ssl_cert_file = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
 ssl_key_file = '/etc/ssl/private/ssl-cert-snakeoil.key'
 
-shared_buffers = 128MB
+work_mem = 128MB
+shared_buffers = 4096MB
 dynamic_shared_memory_type = posix
 
 log_line_prefix = '%t [%p-%l] %q%u@%d '
