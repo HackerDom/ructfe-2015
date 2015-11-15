@@ -1,11 +1,11 @@
-{ pg => {uri => 'postgresql://cs:jrCiW2c9268x@10.10.10.2/cs_test'},
+{ pg => {uri => 'postgresql://cs:jrCiW2c9268x@10.10.10.2/cs_nettest'},
   cs => {
     time => {
       start => '2013-01-01 00:00:00',
       end   => '2018-03-08 23:59:59',
       break => ['2014-01-01 00:00:00', '2015-01-01 00:00:00']
     },
-    ctf            => {name => 'RuCTFE 2015 test mode'},
+    ctf            => {name => 'RuCTFE 2015'},
     round_length   => 30,
     flag_life_time => 1,
     flags => {port => 31337, timeout => 5 * 60},
@@ -23,8 +23,8 @@
     {name => 'team209', network => '10.70.0.209/32', host => '10.70.0.209'}
   ],
   services => [
-    {name => 'MoL',    path => '../checkers/MoL/mol.checker.py',    timeout => 10},
-    {name => 'TaX',    path => '../checkers/TaX/TaX.checker.pl',    timeout => 10},
+    {name => 'MoL',    path => 'python3 ../checkers/MoL/mol.checker.py',    timeout => 10},
+    {name => 'TaX',    path => 'perl    ../checkers/TaX/TaX.checker.pl',    timeout => 10},
   ]
 }
 
