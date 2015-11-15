@@ -1,8 +1,8 @@
 server{
     server_name hm.*;
     
-    access_log /home/tax/access.log;
-    error_log  /home/tax/error.log;
+    access_log /home/hm/access.log;
+    error_log  /home/hm/error.log;
     
     location / {
         proxy_pass http://localhost:8000;

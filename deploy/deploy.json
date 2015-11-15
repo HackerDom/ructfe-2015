@@ -3,7 +3,8 @@
         "username" : "hm",
         "run_deps" : [
             "golang",
-            "gcc-multilib"
+            "gcc-multilib",
+            "nginx"
         ],
         "files" : [
             ["services/hm/server", "/home/hm/server"],
