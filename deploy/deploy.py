@@ -121,29 +121,30 @@ class Machine:
 
 
     def start(self):
-        if self.__already_exists():
-            raise Exception("Machine {0} is already exists".format(self.name))
+        # if self.__already_exists():
+        #     raise Exception("Machine {0} is already exists".format(self.name))
 
-        run("VBoxManage clonevm {0} --mode all --name {1} --register".format(self.clean_name, self.name), True)
-        sleep(1)
-        run("VBoxManage modifyvm {0} --nic1 hostonly ".format(self.name), True)
-        run("VBoxManage modifyvm {0} --hostonlyadapter1 vboxnet0".format(self.name), True)
-        run("VBoxManage modifyvm {0} --macaddress1 auto".format(self.name), True)
-        run("VBoxManage startvm {0} --type headless".format(self.name), True)
+        # run("VBoxManage clonevm {0} --mode all --name {1} --register".format(self.clean_name, self.name), True)
+        # sleep(1)
+        # run("VBoxManage modifyvm {0} --nic1 hostonly ".format(self.name), True)
+        # run("VBoxManage modifyvm {0} --hostonlyadapter1 vboxnet0".format(self.name), True)
+        # run("VBoxManage modifyvm {0} --macaddress1 auto".format(self.name), True)
+        # run("VBoxManage startvm {0} --type headless".format(self.name), True)
 
-        self.__wait_for_ssh(self.clean_ip)
+        # self.__wait_for_ssh(self.clean_ip)
 
-        self.run("sed -i 's/{0}/{1}/' /etc/network/interfaces".format(self.clean_ip, self.ip))
-        self.run("sync")
-        sleep(1)
-        run('VBoxManage controlvm {0} reset'.format(self.name), True)
+        # self.run("sed -i 's/{0}/{1}/' /etc/network/interfaces".format(self.clean_ip, self.ip))
+        # self.run("sync")
+        # sleep(1)
+        # run('VBoxManage controlvm {0} reset'.format(self.name), True)
 
         self.__wait_for_ssh(self.ip)
 
     def stop(self):
-        run("VBoxManage controlvm {0} poweroff".format(self.name), True)
-        sleep(1)
-        run("VBoxManage unregistervm {0} --delete".format(self.name), True)
+        # run("VBoxManage controlvm {0} poweroff".format(self.name), True)
+        # sleep(1)
+        # run("VBoxManage unregistervm {0} --delete".format(self.name), True)
+        pass
 
     def put(self, path_from, path_to):
         print("[+] remote-put\t{0}\t{1}\t{2}".format(self.ssh_client.hostname, path_from, path_to))
@@ -211,6 +212,11 @@ class MoL(Service):
 
     def __init__(self, config):
         Service.__init__(self, "MoL", config)
+
+class TaX(Service):
+
+    def __init__(self, config):
+        Service.__init__(self, "TaX", config)
   
 def read_config(filename):
     with open(filename) as f:
@@ -224,8 +230,8 @@ def main(argv):
     config = read_config(argv[1])
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
-    with DirtyMachine() as dirty_machine, TeamMachine("team01", "10.70.0.100") as team_machine:
-        services = [NasaRasa(config), MoL(config)]
+    with DirtyMachine() as dirty_machine, TeamMachine("team220", "10.70.0.220") as team_machine:
+        services = [TaX(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
 
