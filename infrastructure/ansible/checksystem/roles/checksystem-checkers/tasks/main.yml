@@ -34,6 +34,19 @@
   with_items:
     - libwww-perl
 
+- name: checker requirements - Electro - apt key
+  apt_key: keyserver=keyserver.ubuntu.com id=3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+
+- name: checker requirements - Electro - apt repository
+  apt_repository: repo="{{item}}" state=present
+  notify: update apt
+  with_items:
+    - "deb http://download.mono-project.com/repo/debian wheezy main"
+    - "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main"
+
+- name: checker requirements - Electro - mono
+  apt: name=mono-runtime state=latest
+
 ################################ End of checkers requirements ################################
 
 - name: ensure checkers are stopped

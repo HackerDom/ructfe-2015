@@ -2,55 +2,28 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <sys/mman.h>
-
-#include "dict/dict.h"
+#include "common.h"
 
 int main() {
-    int ret;
+    print_header();
 
-    struct dict t;
-    ret = new_dict("mydict", &t);
-    if(ret == -1) {
-        return 1;
-    }
+    char *body = "              <h1>The Bank</h1>\n"
+                 "              <div class='well'>\n"
+                 "                   We love opensource and safety. We do not take any responsibility if you login is stolen, please keep it safe.\n"
+                 "               </div>\n"
+                 "               <div class='extra-space-l'></div>\n"
+                 "               <form class='sparser-form' action='account.cgi'>"
+                 "               <div class='input-group input-group-lg'>\n"
+                 "                  <input class='form-control' id='name' value='' name='login' placeholder='Name'>\n"
+                 "                  <span class='input-group-btn'>\n"
+                 "                  <input class='btn btn-default btn-lg' value='Login!' role='button' type='submit'>\n"
+                 "                  </span>\n"
+                 "               </div>\n"
+                 "               </form>\n";
 
-    printf("set = %p\n", t.set);
+    printf("%s", body);
 
-    unsigned char buf[128] = {0};
-
-    void* max_addr = 0;
-
-    int i;
-    for (i = 0; i < 32000; i += 1) {
-        sprintf(buf, "testttq16%d", i);
-        // t.set(buf, i * 2 + 1);
-    }
-
-    printf("SUCESSFULL\n");
-
-    for (i = 0; i < 32000; i += 1) {
-        sprintf(buf, "testttq16%d", i);
-        long a = t.get(buf);
-        if(a || i == 0) {
-            printf("%lu ", a);
-            fflush(stdout);
-        }
-    }
-
-    printf("\n%lu\n", t.size());
-
-    for (i = 0; i < (t.size() + 1); i ++) {
-        unsigned char *c = t.key_at(i);
-        if(c) {
-            printf("i = %d key = %s\n", i, c);
-        } else {
-            printf("i = %d key = <nil>\n", i);
-        }
-    }
-    printf("%lu\n", t.validate());
-
-    printf("Bank service is started. Ready for clients\n"); 
+    print_footer();
 
     return 0;
 }

@@ -1,10 +1,35 @@
 {
+    "static" : {
+        "username" : ["www-data", "static"],
+         "run_deps" : [
+             "nginx"
+         ],
+         "files" : [
+             ["static/static", "/home/"]
+         ]
+    }
+    ,
+    "HM" : {
+        "username" : ["hm", "hm"],
+        "run_deps" : [
+            "golang",
+            "gcc-multilib",
+            "nginx"
+        ],
+        "files" : [
+            ["services/hm/server", "/home/hm/server"],
+            ["deploy/hm/files/hm", "/etc/nginx/sites-available/hm"],
+            ["deploy/hm/hm.service", "/etc/systemd/system/hm.service"] 
+        ],
+        "postcopy" : ["deploy/hm/postcopy.sh", "/root/hm/postcopy.sh"]
+    }
+    ,
     "Mig" : {
         "username" : "mig"
     }
     ,
     "TaX" : {
-        "username" : "tax",
+        "username" : ["tax", "tax"],
         "postcopy" : ["deploy/tax/postcopy.sh", "/root/tax/postcopy.sh"],
         "run_deps" : [
             "curl",
@@ -18,7 +43,7 @@
     }
     ,
     "MoL" : {
-        "username" : "mol",
+        "username" : ["mol", "mol"],
         "precopy" : "deploy/mol/precopy.sh",
         "postcopy" : ["deploy/mol/postcopy.sh", "/root/mol/postcopy.sh"],
         "build_deps" : [
@@ -36,12 +61,13 @@
             "nginx"
          ],
          "files" : [
-             ["services/mol/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"]
+             ["services/mol/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"],
+             ["deploy/mol/files/mol", "/etc/nginx/sites-available/mol"]
         ]
     }
     ,
 	"NasaRasa" : {
-		"username" : "nasarasa",
+		"username" : ["nasarasa", "nasarasa"],
 		"postcopy" : ["deploy/nasarasa/postcopy.sh", "/root/nasarasa/postcopy.sh"],
 		"run_deps" : [
 			"nginx",
