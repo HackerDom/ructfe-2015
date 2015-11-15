@@ -38,11 +38,16 @@ class Service:
         self.__add_user(team_machine)
         self.__install_run_deps(team_machine)
         self.__copy_files(dirty_machine, team_machine)
+        self.__chmod_user(team_machine)
         self.__post_copy(dirty_machine, team_machine)
 
     def __add_user(self, machine):
         username = self.config[self.name]["username"]
         machine.run('useradd -m {0}'.format(username))
+
+    def __chmod_user(self, machine):
+        username = self.config[self.name]["username"]
+        machine.run('chmod {0}:{0} -R /home/{0}'.format(username))
 
     def __install_build_deps(self, machine):
         if "build_deps" not in self.config[self.name]:
@@ -217,6 +222,11 @@ class TaX(Service):
 
     def __init__(self, config):
         Service.__init__(self, "TaX", config)
+
+class HM(Service):
+
+    def __init__(self, config):
+        Service.__init__(self, "HM", config)
   
 def read_config(filename):
     with open(filename) as f:
@@ -231,7 +241,7 @@ def main(argv):
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
     with DirtyMachine() as dirty_machine, TeamMachine("team220", "10.70.0.220") as team_machine:
-        services = [TaX(config)]
+        services = [HM(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
 

@@ -9,12 +9,12 @@ apt-get install -y nodejs
 
 npm install
 
-chown -R root:root .
-chown -R tax:tax ./data
-chown tax *.db
-
 popd
 
 systemctl daemon-reload
 systemctl enable tax
 systemctl start tax
+
+ln -s /etc/nginx/sites-available/tax /etc/nginx/sites-enabled/tax
+
+service nginx restart
