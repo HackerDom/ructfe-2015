@@ -71,6 +71,9 @@ class Client(object):
                                   "city, country, crimedate, public "
                                   "from crimes LIMIT 10 --"}}))
         answer = loads(self.ws.recv())
+        while 'text' in answer and 'New crime' in answer['text']:
+            answer = loads(self.ws.recv())
+
         if ("rows" in answer and
                 "data" in answer['rows'][0]):
             crimes = answer['rows'][0]['data']
@@ -88,6 +91,9 @@ class Client(object):
             self.ws.send(dumps({'action': 'show_crimes',
                                 'params': {'offset': offset}}))
             answer = loads(self.ws.recv())
+            while 'text' in answer and 'New crime' in answer['text']:
+                answer = loads(self.ws.recv())
+
             if "rows" not in answer or "data" not in answer["rows"][0]:
                 return
 
@@ -98,6 +104,9 @@ class Client(object):
                     'action': 'show_crime',
                     'params': {'crimeid': crime["crimeid"]}}))
                 answer = loads(self.ws.recv())
+                while 'text' in answer and 'New crime' in answer['text']:
+                    answer = loads(self.ws.recv())
+
                 last_participant = answer['text'].split(" or ")[-1].strip()
                 if not last_participant:
                     continue
@@ -109,6 +118,9 @@ class Client(object):
                     }
                 }))
                 answer = loads(self.ws.recv())
+                while 'text' in answer and 'New crime' in answer['text']:
+                    answer = loads(self.ws.recv())
+
                 if ('rows' not in answer or "data" not in answer['rows'][0] or
                         'profileid' not in answer['rows'][0]['data'][0]):
                     continue
@@ -119,6 +131,9 @@ class Client(object):
                     self.auth()
                     self.ws.send(dumps({'action': 'show_my_profile'}))
                     answer = loads(self.ws.recv())
+                    while 'text' in answer and 'New crime' in answer['text']:
+                        answer = loads(self.ws.recv())
+
                     if ('rows' in answer and 'cols' in answer['rows'][0] and
                             'rows' in answer['rows'][0]['cols'][1] and
                             len(answer['rows'][0]['cols'][1]['rows'])):
