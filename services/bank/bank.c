@@ -6,7 +6,7 @@ int main() {
     int ret;
 
     char *body = "<form action=account.cgi>"
-    "Username: <input value='name' name='login'>"
+    "Username: <input value='' name='login'>"
     "<input type='submit'>"
     "</form>";
 

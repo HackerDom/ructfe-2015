@@ -19,8 +19,6 @@ int check_args(char* login) {
 }
 
 int main() {
-    int ret;
-
     printf("Content-type: text/html;charset=UTF-8\n\n");
     printf("<head><title>Account</title><head>\n");
 
@@ -51,9 +49,9 @@ int main() {
                 continue;
             }
 
-            long value = t.get(key);
+            unsigned long value = t.get(key);
 
-            printf("%s: %ld.%02ld₽ ", key, value / 100, value % 100);
+            printf("%s: %lu₽ ", key, value);
             printf("Transfer to: <form action='transfer_money.cgi'>\n");
             printf("login: <input value='' name='login_to'>\n");
             printf("account: <input value='' name='account_to'>\n");

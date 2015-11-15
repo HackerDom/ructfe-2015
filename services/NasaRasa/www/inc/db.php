@@ -8,7 +8,6 @@
 
         function __construct()
         {
-            /* TODO */
             $DB_HOST = '127.0.0.1';
             $DB_USER = 'nasarasa';
             $DB_PASS = '2ueOVgi6CCRJh8hbA5PR';
@@ -372,7 +371,6 @@
                 return $this->fields[$field];
 
             throw new DbException('Database model ' . get_called_class() . ': can\'t find field `' . $field . '` in the schema');
-            return NULL;
         }
 
         public function __set($field, $value)

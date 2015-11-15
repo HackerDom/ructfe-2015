@@ -3,7 +3,9 @@
 
     $TEMPLATES_DIR = 'templates';
     $COMPILED_TEMPLATES_DIR = 'templates/compiled';
-    /* TODO: Create $COMPILED_TEMPLATES_DIR if not exists */
+
+    if (! file_exists($COMPILED_TEMPLATES_DIR))
+        mkdir($COMPILED_TEMPLATES_DIR, 0777, true);
     $fenom = Fenom::factory($TEMPLATES_DIR, $COMPILED_TEMPLATES_DIR, Fenom::FORCE_COMPILE | Fenom::AUTO_ESCAPE);
 
     function render($template, $vars)
@@ -22,4 +24,27 @@
         exit;
     }
 
+    function is_form_submitted($options)
+    {
+        $all = true;
+        foreach ($options as $option)
+            $all &= array_key_exists($option, $_POST);
+
+        if (! $all)
+            return false;
+
+        $result = [];
+
+        foreach ($options as $option)
+            $result[$option] = $_POST[$option];
+
+        return $result;
+    }
+
+    function error($code)
+    {
+        http_response_code($code);
+        echo '<h1>Error ' . $code . '</h1>';
+        exit;
+    }
 ?>

@@ -1,12 +1,21 @@
 <?php
+    require_once 'inc/routing.php';
     require_once 'inc/shortcuts.php';
-    require_once 'models/SessionManager.php';
-    require_once 'models/User.php';
 
-    $last_users = User::find(['__order_by__' => '-id'], 10);
+    $url = $_SERVER['REQUEST_URI'];
 
-    render('index', ['authenticated' => SessionManager::is_authenticated(),
-                     'result' => false,
-                     'current_user' => SessionMAnager::current_user(),
-                     'last_users' => $last_users]);
+    $controllers = ['/' => 'index',
+                    '/users' => 'users',
+                    '/users/:id' => 'users',
+                    '/report' => 'report',
+                    '/signin' => 'signin',
+                    '/signup' => 'signup',
+                    '/logout' => 'logout',
+                    ];
+
+    $routing = new Routing($controllers);
+    $controller = $routing->find($url);
+    if (! $controller)
+        error(404);
+    $controller->run();
 ?>
