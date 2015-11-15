@@ -11,16 +11,17 @@ namespace Electro.Model
 	[DataContract]
 	class Election
 	{
-		[DataMember] public Guid Id { get; set; }
-		[DataMember] public string Name { get; set; }
-		[DataMember] public Dictionary<Guid, User> Candidates { get; set; }
-		[DataMember] public bool IsPublic { get; set; }
+		[DataMember(Order = 1)] public Guid Id { get; set; }
+		[DataMember(Order = 2)] public string Name { get; set; }
+		[DataMember(Order = 3)] public Dictionary<Guid, UserPublic> Candidates { get; set; }
+		[DataMember(Order = 4)] public bool IsPublic { get; set; }
 
-		[DataMember] private string till { get; set; }
+		[DataMember(Order = 5)] private string till { get; set; }
 		[IgnoreDataMember] public DateTime Till { get { return DateTimeUtils.TryParseSortable(till); } set {till = value.ToSortable();} }
 
-		[DataMember] public Dictionary<Guid, Vote> Votes { get; set; }
+		[DataMember(Order = 6)] public Dictionary<Guid, Vote> Votes { get; set; }
 
+		//TODO add HasStartedAttribute and check it when voting and registering candidates
 		[IgnoreDataMember] public bool IsFinished  { get { return Till < DateTime.UtcNow; } }
 	}
 

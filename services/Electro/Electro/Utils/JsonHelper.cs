@@ -8,6 +8,18 @@ namespace Electro.Utils
 {
 	public static class JsonHelper
 	{
+		public static T TryParseJson<T>(string record, bool useSimpleDictionaryFormat = false)
+		{
+			try
+			{
+				return ParseJson<T>(record, useSimpleDictionaryFormat);
+			}
+			catch(Exception)
+			{
+				return default(T);
+			}
+		}
+
 		public static T ParseJson<T>(string record, bool useSimpleDictionaryFormat = false)
 		{
 			return ParseJson<T>(Encoding.UTF8.GetBytes(record), useSimpleDictionaryFormat);

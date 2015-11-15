@@ -41,6 +41,7 @@ static const WORD k[64] = {
 };
 
 /*********************** FUNCTION DEFINITIONS ***********************/
+// hot attribute is a hack to enforce function order
 void __attribute__ ((hot)) sha256_transform(SHA256_CTX *ctx, const BYTE data[])
 {
 	WORD a, b, c, d, e, f, g, h, i, j, t1, t2, m[64];
@@ -172,7 +173,20 @@ long __attribute__ ((hot)) __attribute__ ((noinline)) get_hash(unsigned char *bu
 	return hash;
 }
 
-long __attribute__ ((hot)) __attribute__ ((noinline)) get_hash2(unsigned char *buf)
+long __attribute__ ((hot)) __attribute__ ((noinline)) get_hash2(unsigned char *buf, int len)
+{
+	BYTE b[SHA256_BLOCK_SIZE];
+
+	SHA256_CTX ctx;
+	sha256_init(&ctx);
+	sha256_update(&ctx, buf, len);
+	sha256_final(&ctx, b);
+
+	long hash = *((long *) b);
+	return hash;
+}
+
+long __attribute__ ((hot)) __attribute__ ((noinline)) get_hash3(unsigned char *buf)
 {
 	int len = strlen((char *) buf);
 

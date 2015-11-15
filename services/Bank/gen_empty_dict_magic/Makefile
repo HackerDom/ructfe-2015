@@ -7,8 +7,8 @@ CFLAGS+=-fPIC
 
 CC=gcc
 
-bank: bank.o
-	$(CC) $(CFLAGS) $^ -o bank 
+gen_empty_dict: gen_empty_dict.o
+	$(CC) $(CFLAGS) $^ -o gen_empty_dict
 
 clean:
-	rm -f bank.o sha256.o
+	rm -f gen_empty_dict.o sha256.o
