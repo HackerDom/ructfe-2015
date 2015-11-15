@@ -7,7 +7,7 @@ ABOUT = {
         {'template': """
         <div class="row about">
             <div class="col-sm-4 center-block">
-                <img src="/mol.png" class="img-responsive">
+                <img src="/static/logos/mol.png" class="img-responsive">
             </div>
             <div class="col-sm-8">
                 <h1>Ministry of Love</h1>

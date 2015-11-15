@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+deb-systemd-helper stop ructfe-mol.service >/dev/null
 userdel -rf mol
 # Automatically added by dh_systemd_enable
 if [ "$1" = "remove" ]; then
