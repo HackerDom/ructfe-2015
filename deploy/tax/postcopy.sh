@@ -9,10 +9,6 @@ apt-get install -y nodejs
 
 npm install
 
-chown -R root:root .
-chown -R tax:tax ./data
-chown tax *.db
-
 popd
 
 systemctl daemon-reload

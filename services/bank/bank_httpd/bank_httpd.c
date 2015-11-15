@@ -23,6 +23,7 @@ int main(void) {
   mg_set_protocol_http_websocket(nc);
   s_http_server_opts.document_root = ".";  // Serve current directory
   s_http_server_opts.enable_directory_listing = "no";
+  s_http_server_opts.index_files = "bank.cgi";
 
   printf("Starting web server on port %s\n", s_http_port);
   for (;;) {

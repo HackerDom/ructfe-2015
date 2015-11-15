@@ -4094,7 +4094,7 @@ static void send_http_error(struct mg_connection *nc, int code,
   if (reason == NULL) {
     reason = "";
   }
-  mg_printf(nc, "HTTP/1.1 %d %s\r\nContent-Length: 0\r\n\r\n", code, reason);
+  mg_printf(nc, "HTTP/1.1 %d %s\r\nContent-Length: 3\r\n\r\n%d", code, reason);
 }
 
 #ifndef MG_DISABLE_SSI
@@ -5624,7 +5624,7 @@ void mg_send_http_file(struct mg_connection *nc, char *path,
               "Content-Length: 0\r\n\r\n",
               opts->auth_domain, (unsigned long) time(NULL));
   } else if ((stat_result != 0 || is_file_hidden(path, opts)) && !is_dav) {
-    mg_printf(nc, "%s", "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n");
+    mg_printf(nc, "%s", "HTTP/1.1 404 Not Found\r\nContent-Length: 3\r\n\r\n404");
   } else if (is_directory && path[strlen(path) - 1] != '/' && !is_dav) {
     mg_printf(nc,
               "HTTP/1.1 301 Moved\r\nLocation: %.*s/\r\n"
