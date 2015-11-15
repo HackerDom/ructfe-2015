@@ -3,34 +3,8 @@
 #include <string.h>
 
 #include "dict/dict.h"
+#include "common.h"
 #include "cgi.h"
-
-int login_good(char* login) {
-    int i;
-    for (i = 0; login[i]; i += 1) {
-        if (login[i] == ' ' || login[i] == '_' || login[i] == '=')
-            continue;
-
-        if (login[i] >= '0' && login[i] <= '9') {
-            continue;
-        }
-
-        if (login[i] >= 'a' && login[i] <= 'z') {
-            continue;
-        }
-
-        if (login[i] >= 'A' && login[i] <= 'Z') {
-            continue;
-        } 
-        return 0;
-    }
-
-    return 1;
-}
-
-int account_good(char* account) {
-    return login_good(account);
-}
 
 int main() {
     int ret;
@@ -81,7 +55,7 @@ int main() {
 
             long value = t.get(key);
 
-            printf("%s: %ld.%ld₽ ", key, value / 100, value % 100);
+            printf("%s: %ld.%02ld₽ ", key, value / 100, value % 100);
             printf("Transfer to: <form action='transfer.cgi'>\n");
             printf("</form>\n");
         }
