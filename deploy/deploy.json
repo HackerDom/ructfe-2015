@@ -1,4 +1,14 @@
 {
+    "HM" : {
+        "username" : "hm",
+        "run_deps" : [
+            "golang"
+        ],
+        "build_deps" : [
+            "golang"
+        ]
+    }
+    ,
     "Mig" : {
         "username" : "mig"
     }
@@ -36,7 +46,8 @@
             "nginx"
          ],
          "files" : [
-             ["services/mol/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"]
+             ["services/mol/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"],
+             ["deploy/mol/files/mol", "/etc/nginx/sites-available/mol"]
         ]
     }
     ,
