@@ -10,8 +10,8 @@
                 Information about planet #{$index + 1}, added at <b>{$planet->added_at}</b>:
             </div>
             <div class="well well-success">
-                <div><b>Declination</b>: {$planet->declination} degress</div>
-                <div><b>Hour angle</b>: {$planet->hour_angle} degress</div>
+                <div><b>Declination</b>: {$planet->declination} degrees</div>
+                <div><b>Hour angle</b>: {$planet->hour_angle} degrees</div>
                 <div><b>Brightness</b>: {$planet->brightness}%</div>
                 <div><b>Size</b>: {$planet->size}%</div>
                 <div><b>Color</b>: {$planet->color}</div>
