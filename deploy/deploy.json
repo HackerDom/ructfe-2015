@@ -1,13 +1,29 @@
 {
+    "HM" : {
+        "username" : "hm",
+        "run_deps" : [
+            "golang"
+        ],
+        "build_deps" : [
+            "golang"
+        ]
+    }
+    ,
+    "Mig" : {
+        "username" : "mig"
+    }
+    ,
     "TaX" : {
         "username" : "tax",
         "postcopy" : ["deploy/tax/postcopy.sh", "/root/tax/postcopy.sh"],
         "run_deps" : [
-            "curl"
+            "curl",
+            "nginx"
          ],
         "files" : [
              ["services/tax", "/home/"],
-             ["deploy/tax/tax.service", "/etc/systemd/system/tax.service"]
+             ["deploy/tax/tax.service", "/etc/systemd/system/tax.service"],
+             ["deploy/tax/files/tax", "/etc/nginx/sites-available/tax"]
         ]
     }
     ,
@@ -26,10 +42,12 @@
             "libpq-dev",
             "python3",
             "python3-pip",
-            "dh-systemd"
+            "dh-systemd",
+            "nginx"
          ],
          "files" : [
-             ["services/mol/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"]
+             ["services/mol/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"],
+             ["deploy/mol/files/mol", "/etc/nginx/sites-available/mol"]
         ]
     }
     ,
