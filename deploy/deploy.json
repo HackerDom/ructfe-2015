@@ -1,6 +1,16 @@
 {
+    "static" : {
+        "username" : ["www-data", "static"],
+         "run_deps" : [
+             "nginx"
+         ],
+         "files" : [
+             ["static/static", "/home/"]
+         ]
+    }
+    ,
     "HM" : {
-        "username" : "hm",
+        "username" : ["hm", "hm"],
         "run_deps" : [
             "golang",
             "gcc-multilib",
@@ -19,7 +29,7 @@
     }
     ,
     "TaX" : {
-        "username" : "tax",
+        "username" : ["tax", "tax"],
         "postcopy" : ["deploy/tax/postcopy.sh", "/root/tax/postcopy.sh"],
         "run_deps" : [
             "curl",
@@ -33,7 +43,7 @@
     }
     ,
     "MoL" : {
-        "username" : "mol",
+        "username" : ["mol", "mol"],
         "precopy" : "deploy/mol/precopy.sh",
         "postcopy" : ["deploy/mol/postcopy.sh", "/root/mol/postcopy.sh"],
         "build_deps" : [
@@ -57,7 +67,7 @@
     }
     ,
 	"NasaRasa" : {
-		"username" : "nasarasa",
+		"username" : ["nasarasa", "nasarasa"],
 		"postcopy" : ["deploy/nasarasa/postcopy.sh", "/root/nasarasa/postcopy.sh"],
 		"run_deps" : [
 			"nginx",
