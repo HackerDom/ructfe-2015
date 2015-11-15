@@ -222,6 +222,11 @@ class TaX(Service):
 
     def __init__(self, config):
         Service.__init__(self, "TaX", config)
+
+class HM(Service):
+
+    def __init__(self, config):
+        Service.__init__(self, "HM", config)
   
 def read_config(filename):
     with open(filename) as f:
@@ -235,8 +240,8 @@ def main(argv):
     config = read_config(argv[1])
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
-    with DirtyMachine() as dirty_machine, TeamMachine("team222", "10.70.0.222") as team_machine:
-        services = [TaX(config), MoL(config), NasaRasa(config)]
+    with DirtyMachine() as dirty_machine, TeamMachine("team220", "10.70.0.220") as team_machine:
+        services = [NasaRasa(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
 

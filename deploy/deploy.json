@@ -4,9 +4,12 @@
         "run_deps" : [
             "golang"
         ],
-        "build_deps" : [
-            "golang"
-        ]
+        "files" : [
+            ["services/hm/server", "/home/hm/server"],
+            ["deploy/hm/files/hm", "/etc/nginx/sites-available/hm"],
+            ["deploy/hm/hm.service", "/etc/systemd/system/hm.service"] 
+        ],
+        "postcopy" : ["deploy/hm/postcopy.sh", "/root/tax/postcopy.sh"]
     }
     ,
     "Mig" : {
