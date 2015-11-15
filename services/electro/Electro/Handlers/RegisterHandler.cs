@@ -6,7 +6,7 @@ using Electro.Utils;
 
 namespace Electro.Handlers
 {
-	internal class RegisterHandler : BaseHttpHandler
+	public class RegisterHandler : BaseHttpHandler
 	{
 		private readonly AuthController authController;
 
@@ -44,7 +44,7 @@ namespace Electro.Handlers
 		}
 
 		public const string TokenCookieName = "authtoken";
-		private const string LoginCookieName = "login";
+		public const string LoginCookieName = "login";
 
 		private const int MaxLength = 64;
 	}

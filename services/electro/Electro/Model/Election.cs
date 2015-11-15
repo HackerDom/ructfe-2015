@@ -9,7 +9,7 @@ using Electro.Utils;
 namespace Electro.Model
 {
 	[DataContract]
-	class Election
+	public class Election
 	{
 		[DataMember(Order = 1)] public Guid Id { get; set; }
 		[DataMember(Order = 2)] public string Name { get; set; }

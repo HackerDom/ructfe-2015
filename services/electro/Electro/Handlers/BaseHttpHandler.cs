@@ -7,7 +7,7 @@ using log4net;
 
 namespace Electro.Handlers
 {
-	internal abstract class BaseHttpHandler
+	public abstract class BaseHttpHandler
 	{
 		protected BaseHttpHandler(string prefix)
 		{

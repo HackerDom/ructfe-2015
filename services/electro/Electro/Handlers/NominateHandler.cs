@@ -23,7 +23,7 @@ namespace Electro.Handlers
 			if(!form.TryGetValue("electionId", out electionIdString) || !Guid.TryParse(electionIdString, out electionId))
 				throw new HttpException(HttpStatusCode.BadRequest, "Invalid request params");
 
-			var privateKey = electroController.RegisterCandidate(electionId, user);
+			var privateKey = electroController.NominateCandidate(electionId, user);
 			if(privateKey == null)
 				throw new HttpException(HttpStatusCode.BadRequest, "Nominate FAILED");
 
