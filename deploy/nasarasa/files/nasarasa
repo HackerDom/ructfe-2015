@@ -1,23 +1,30 @@
 server{
-    server_name nasarasa.*;
-    
+    server_name ~^nasarasa\.(?P<main_host>.+)$;
+
     access_log /home/nasarasa/access.log;
     error_log  /home/nasarasa/error.log;
-    
+
     root /home/nasarasa/www;
-        
+
     location / {
         index  index.php index.html index.htm;
 
-        try_files $uri =404;
         include fastcgi_params;
         fastcgi_pass  unix:/var/run/php5-fpm.sock;
         fastcgi_index index.php;
 
         fastcgi_param  SCRIPT_FILENAME  $document_root/index.php;
     }
-    
+
     location /static/ {
-        try_files /home/nasarasa$uri /home$uri;
-    }    
+        try_files $uri @static;
+    }
+
+    location @static {
+        root /home;
+    }
+
+    location = /home {
+        rewrite .* http://$main_host/;
+    }
 }
