@@ -3,6 +3,7 @@
 #include <fcntl.h>
 
 #include <string.h>
+#include <stdio.h>
 
 #include <sys/mman.h>
 
@@ -94,15 +95,26 @@ static void init_buf(void* dict_virt_addr) {
 int new_dict(char* dict_name, struct dict* t) {
     int init_needed = 0;
 
-    unsigned char hash[SHA1_BLOCK_SIZE];
+    unsigned char hash[SHA1_BLOCK_SIZE + 1];
     SHA1_CTX ctx;
     sha1_init(&ctx);
     sha1_update(&ctx, dict_name, strlen(dict_name));
     sha1_final(&ctx, hash);
 
-    int fd = open(dict_name, O_RDWR, 0660);
+    char file_name[SHA1_BLOCK_SIZE * 2 + 1 + 1] = {0};
+
+    snprintf(file_name, 2 + 1, "%02x", hash[0]);
+    mkdir(file_name, 0770);  // don't care if failed
+    snprintf(file_name, 3 + 1, "%02x/", hash[0]);
+
+    int i;
+    for(i = 1; i < SHA1_BLOCK_SIZE; i += 1) {
+        snprintf(&file_name[3 + (i - 1) * 2], 2 + 1, "%02x", hash[i]);
+    }
+
+    int fd = open(file_name, O_RDWR, 0770);
     if (fd == -1) {
-        fd = open(dict_name, O_RDWR | O_CREAT, 0660);
+        fd = open(file_name, O_RDWR | O_CREAT, 0770);
         init_needed = 1;
 
         if (fd == -1) {

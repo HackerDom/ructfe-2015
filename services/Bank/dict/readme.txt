@@ -1,1 +1,1 @@
-Fast dict implementation with open source
+Dict implementation. Fast and opensource.
