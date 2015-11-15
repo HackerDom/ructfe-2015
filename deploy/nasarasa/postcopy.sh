@@ -19,8 +19,8 @@ popd
 
 gpasswd -a nasarasa www-data
 
-chown -R nasarasa:www-data /home/nasarasa/www
-chmod -R 660 /home/nasarasa/www
+chown nasarasa:www-data -R /home/nasarasa/www
+chmod 660 -R /home/nasarasa/www
 
 service php5-fpm start
 service nginx start
