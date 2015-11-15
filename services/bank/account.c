@@ -119,6 +119,7 @@ int gen_page() {
     printf("         <button type='submit' class='btn btn-success'>Add</button>\n");
     printf("         </form>\n");
     printf("         <div class='extra-space-l'></div>\n");
+    printf("         <?--JuryValidator:%lu-->\n", t.validate());
 }
 
 int main() {
