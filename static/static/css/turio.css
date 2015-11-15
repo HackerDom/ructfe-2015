@@ -10,6 +10,27 @@
 
 
 /* This is for carousel background */
-.parallax {
+.main-block {
+    position:relative;
+    background-position:0 0;
+    background-attachment:fixed;
+    -webkit-background-size:cover;
+    background-size:cover;
     background-image: url(../img/background.jpg);
+    height: 100%;
+}
+
+.container {
+    height: 100%;
+}
+
+.container .caption {
+    position: relative;
+    top: 50%;
+    margin-top: -70px;
+}
+
+
+.center-block img.logo {
+    display:block; margin:auto;
 }
