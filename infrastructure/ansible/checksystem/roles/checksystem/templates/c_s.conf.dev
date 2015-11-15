@@ -5,11 +5,15 @@
       end   => '2018-03-08 23:59:59',
       break => ['2014-01-01 00:00:00', '2015-01-01 00:00:00']
     },
+    score_method   => 'v2',
     ctf            => {name => 'RuCTFE 2015 test mode'},
     round_length   => 30,
     flag_life_time => 1,
-    flags => {port => 31337, timeout => 5 * 60},
-    admin => {auth => 'root:LjdjkmysqCbybqRhjkbr'}
+    flags          => {port => 31337, timeout => 5 * 60},
+    admin          => {auth => 'root:LjdjkmysqCbybqRhjkbr'}
+    checkers       => {
+      hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}" }
+    }
   },
   teams => [
     {name => 'team201', network => '10.70.0.201/32', host => '10.70.0.201'},
@@ -51,7 +55,7 @@
     {name => 'team237', network => '10.70.0.237/32', host => '10.70.0.237'},
     {name => 'team238', network => '10.70.0.238/32', host => '10.70.0.238'},
     {name => 'team239', network => '10.70.0.239/32', host => '10.70.0.239'},
-    {name => 'team240', network => '10.70.0.240/32', host => '10.70.0.240'}
+    {name => 'team240', network => '10.70.0.240/32', host => '10.70.0.240'},
   ],
   services => [
     {name => 'MoL',    path => '../checkers/MoL/mol.checker.py',    timeout => 10},
