@@ -9,7 +9,7 @@ service nginx stop
 
 ln -s /etc/nginx/sites-available/nasarasa /etc/nginx/sites-enabled/nasarasa
 
-pushd /home/nasarasa
+pushd /home/nasarasa/www
 composer update
 popd
 
