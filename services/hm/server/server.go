@@ -22,6 +22,7 @@ type Context struct {
     LoggedIn bool
 	Action string
 	Text string
+	Metrics []HealthMetrics
 }
 
 func addHealthMetricsHandler(w http.ResponseWriter, request *http.Request) {
@@ -40,9 +41,16 @@ func addHealthMetricsFormHandler(w http.ResponseWriter, request *http.Request) {
 
 func healthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 
-	status, response := getHealthMetrics(request)
+	status, response, metrics := getHealthMetrics(request)
 	w.WriteHeader(status)
-	io.WriteString(w, response)
+	
+	if status == http.StatusOK {
+		context := Context{LoggedIn: loggedin(request), Metrics: metrics}
+		render(w, "table", context)
+	} else {
+		context := Context{LoggedIn: loggedin(request), Text: response}
+		render(w, "text", context)
+	}
 }
 
 func addUserHandler(w http.ResponseWriter, request *http.Request) {
