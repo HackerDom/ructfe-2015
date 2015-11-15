@@ -1,0 +1,13 @@
+[Unit]
+    Description=HM
+    After=network.target
+
+[Service]
+    ExecStart=/home/hm/server/server
+    WorkingDirectory=/home/hm/server
+    User=hm
+    Group=hm
+
+[Install]
+    WantedBy=multi-user.target
+

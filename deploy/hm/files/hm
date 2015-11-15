@@ -1,0 +1,12 @@
+server{
+    server_name hm.*;
+    
+    access_log /home/tax/access.log;
+    error_log  /home/tax/error.log;
+    
+    location / {
+        proxy_pass http://localhost:8000;
+    }   
+}
+
+
