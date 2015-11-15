@@ -14,3 +14,6 @@ chown -R tax:tax ./data
 chown tax *.db
 
 popd
+
+service enable tax
+service start tax

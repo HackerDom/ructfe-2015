@@ -1,0 +1,12 @@
+[Unit]
+    Description=TaX
+    After=network.target
+
+[Service]
+    ExecStart=/usr/bin/node /home/tax/app.js
+    WorkingDirectory=/home/tax
+    User=mol
+    Group=mol
+
+[Install]
+    WantedBy=multi-user.target

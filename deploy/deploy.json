@@ -6,7 +6,8 @@
             "curl"
          ],
         "files" : [
-             ["services/tax", "/home/"]
+             ["services/tax", "/home/"],
+             ["deploy/tax/tax.service", "/lib/systemd/system/tax.service"]
         ]
     }
     ,
