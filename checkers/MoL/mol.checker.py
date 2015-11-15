@@ -209,7 +209,7 @@ def check(*args):
     if not addr:
         close(INTERNAL_ERROR, None, "Check without ADDR")
     try:
-        ws = create_connection("ws://%s:1984/websocket" % addr)
+        ws = create_connection("ws://%s/websocket" % addr)
         ws.send(dumps({"action": "hello"}))
         answer = loads(ws.recv())
         if answer['rows'][0]['view'] != "form":
@@ -242,7 +242,7 @@ def put(*args):
     if not addr or not flag_id or not flag:
         close(INTERNAL_ERROR, None, "Incorrect parameters")
     try:
-        ws = create_connection("ws://%s:1984/websocket" % addr)
+        ws = create_connection("ws://%s/websocket" % addr)
         ws.send(dumps({"action": "hello"}))
         answer = loads(ws.recv())
         if answer['rows'][0]['view'] != "form":
@@ -279,7 +279,7 @@ def get(*args):
     if not addr or not checker_flag_id or not flag:
         close(INTERNAL_ERROR, None, "Incorrect parameters")
     try:
-        ws = create_connection("ws://%s:1984/websocket" % addr)
+        ws = create_connection("ws://%s/websocket" % addr)
         ws.send(dumps({"action": "hello"}))
         answer = loads(ws.recv())
         if answer['rows'][0]['view'] != "form":
