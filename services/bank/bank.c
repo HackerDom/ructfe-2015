@@ -5,7 +5,7 @@
 #include "common.h"
 
 int main() {
-    print_header();
+    print_header(0);
 
     char *body = "              <h1>The Bank</h1>\n"
                  "              <div class='well'>\n"

@@ -30,7 +30,7 @@ int account_good(char* account) {
     return login_good(account);
 }
 
-void print_header() {
+void print_header(int show_logout) {
     printf("Content-type: text/html;charset=UTF-8\r\n\r\n");
 
 	printf("<!DOCTYPE html>\n");
@@ -63,6 +63,9 @@ void print_header() {
     printf("                    <div class='collapse navbar-collapse' id='bs-navbar-collapse'>\n");
     printf("                        <ul class='nav navbar-nav navbar-right'>\n");
     printf("                            <li><a href='/'>Home</a></li>\n");
+    if(show_logout) {
+    printf("                            <li><a href='/'>Logout</a></li>\n");
+	}
     printf("                        </ul>\n");
     printf("                    </div>\n");
 	printf("				</div>\n");
