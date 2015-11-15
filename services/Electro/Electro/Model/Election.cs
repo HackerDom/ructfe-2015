@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Electro.Crypto;
 using Electro.Utils;
 
@@ -19,10 +17,10 @@ namespace Electro.Model
 		[DataMember(Order = 4)] public bool IsPublic { get; set; }
 
 		[DataMember(Order = 5)] private string nominateTill { get; set; }
-		[IgnoreDataMember] public DateTime NominateTill { get { return DateTimeUtils.TryParseSortable(nominateTill); } set { nominateTill = value.ToSortable();} }
+		[IgnoreDataMember] public DateTime NominateTill;
 
-		[DataMember(Order = 6)] private string till { get; set; }
-		[IgnoreDataMember] public DateTime VoteTill { get { return DateTimeUtils.TryParseSortable(till); } set {till = value.ToSortable();} }
+		[DataMember(Order = 6)] private string voteTill { get; set; }
+		[IgnoreDataMember] public DateTime VoteTill;
 
 		[DataMember(Order = 7)] public PublicKey PublicKey { get; set; }
 		[DataMember(Order = 8)] public List<Vote> Votes { get; set; }
@@ -56,6 +54,20 @@ namespace Electro.Model
 					});
 				return winner;
 			}
+		}
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			nominateTill = NominateTill.ToSortable();
+			voteTill = VoteTill.ToSortable();
+		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			NominateTill = DateTimeUtils.TryParseSortable(nominateTill);
+			VoteTill = DateTimeUtils.TryParseSortable(voteTill);
 		}
 	}
 

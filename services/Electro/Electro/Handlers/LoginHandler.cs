@@ -25,7 +25,7 @@ namespace Electro.Handlers
 				throw new HttpException(HttpStatusCode.Forbidden, "Invalid credentials");
 
 			context.Response.SetCookie("login", login);
-			context.Response.SetCookie("token", TokenCrypt.Encrypt(new Token { Login = login, DateTime = DateTime.UtcNow }.ToJsonString()), true);
+			context.Response.SetCookie("token", TokenCrypt.Encrypt(new Token { Login = login }.ToJsonString()), true);
 
 			WriteString(context, "Name OK");
 		}

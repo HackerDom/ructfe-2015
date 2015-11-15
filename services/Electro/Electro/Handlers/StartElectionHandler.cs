@@ -25,16 +25,16 @@ namespace Electro.Handlers
 			string electionName;
 			string isPublicString; bool isPublic;
 			string nominateTillString; DateTime nominateTill;
-			string tillString; DateTime till;
+			string voteTillString; DateTime voteTill;
 			if(!form.TryGetValue("name", out electionName) ||
 			   !form.TryGetValue("isPublic", out isPublicString) || !bool.TryParse(isPublicString, out isPublic) ||
 			   !form.TryGetValue("nominateTill", out nominateTillString) || !DateTime.TryParse(nominateTillString, out nominateTill) || nominateTill < DateTime.UtcNow ||
-			   !form.TryGetValue("till", out tillString) || !DateTime.TryParse(tillString, out till) || till < nominateTill)
+			   !form.TryGetValue("voteTill", out voteTillString) || !DateTime.TryParse(voteTillString, out voteTill) || voteTill < nominateTill)
 			{
 				throw new HttpException(HttpStatusCode.BadRequest, "Invalid request params");
 			}
 
-			var election = electroController.StartElection(electionName, user, isPublic, nominateTill, till);
+			var election = electroController.StartElection(electionName, user, isPublic, nominateTill, voteTill);
 			WriteData(context, election.ToJson(useSimpleDictionaryFormat:true));
 		}
 	}
