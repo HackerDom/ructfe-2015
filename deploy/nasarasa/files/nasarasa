@@ -9,7 +9,6 @@ server{
     location / {
         index  index.php index.html index.htm;
 
-        try_files $uri =404;
         include fastcgi_params;
         fastcgi_pass  unix:/var/run/php5-fpm.sock;
         fastcgi_index index.php;
@@ -18,6 +17,7 @@ server{
     }
     
     location /static/ {
-        try_files /home/nasarasa$uri /home$uri;
+        root /;
+        try_files /home/nasarasa/www$uri /home$uri;
     }    
 }

@@ -42,7 +42,7 @@ class Service:
         self.__post_copy(dirty_machine, team_machine)
 
     def __add_user(self, machine):
-        username = self.config[self.name]["username"]
+        username, folder = self.config[self.name]["username"]
         machine.run('useradd -m {0}'.format(username))
 
     def __chmod_user(self, machine):
@@ -79,6 +79,8 @@ class Service:
         machine.run('bash -x /root/ructfe-2015/{0}'.format(script), True)
 
     def __post_copy(self, from_machine, to_machine):
+        if "postcopy" not in self.config[self.name]:
+            return
         frm, to = self.config[self.name]["postcopy"]
         tmp_directory = mkdtemp()
         run('mkdir -p {0}/{1}'.format(tmp_directory, dirname(frm)))
@@ -227,6 +229,11 @@ class HM(Service):
 
     def __init__(self, config):
         Service.__init__(self, "HM", config)
+
+class Static(Service):
+
+    def __init__(self, config):
+        Service.__init__(self, "static", config)
   
 def read_config(filename):
     with open(filename) as f:
@@ -241,7 +248,7 @@ def main(argv):
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
     with DirtyMachine() as dirty_machine, TeamMachine("team220", "10.70.0.220") as team_machine:
-        services = [HM(config)]
+        services = [NasaRasa(config), Static(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
 
