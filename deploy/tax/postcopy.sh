@@ -15,5 +15,6 @@ chown tax *.db
 
 popd
 
-service enable tax
-service start tax
+systemctl daemon-reload
+systemctl enable tax
+systemctl start tax

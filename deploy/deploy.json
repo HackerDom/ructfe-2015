@@ -7,7 +7,7 @@
          ],
         "files" : [
              ["services/tax", "/home/"],
-             ["deploy/tax/tax.service", "/lib/systemd/system/tax.service"]
+             ["deploy/tax/tax.service", "/etc/systemd/system/tax.service"]
         ]
     }
     ,
