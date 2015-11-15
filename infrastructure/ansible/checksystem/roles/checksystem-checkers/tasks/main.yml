@@ -1,0 +1,50 @@
+- name: upload upstart scripts
+  template: src={{item}} dest=/etc/init/
+  with_items:
+    - cs-worker-checker.conf
+
+- name: upload checkers
+  synchronize: src=../../../../../../checkers/ dest={{cs_dir}}/checkers
+
+- name: chown checkers
+  file: path={{cs_dir}}/checkers owner={{cs_user}} group={{cs_user}} recurse=yes
+
+#################################### Checkers requirements ###################################
+
+- name: checker requirements - MoL - python3
+  apt: name={{item}} state=present
+  with_items:
+    - python3
+    - python3-setuptools
+    - unicode
+
+- name: checker requirements - MoL - pip
+  easy_install: executable=easy_install3 name=pip
+
+- name: checker requirements - MoL - websocket-client
+  pip: executable=pip3 name=websocket-client state=present
+
+# commented, because it fails when package is already uninstalled
+#- name: checker requirements - MoL - remove websocket
+#  pip: executable=pip3 name=websocket state=absent
+#  ignore_errors: yes
+
+- name: checker requirements - TaX
+  apt: name={{item}} state=latest
+  with_items:
+    - libwww-perl
+
+################################ End of checkers requirements ################################
+
+- name: ensure checkers are stopped
+  service: name={{item}} state=stopped
+  when: mode=="restart" or mode=="stop"
+  with_items:
+    - cs-worker-checker
+
+- name: ensure checkers are started
+  service: name={{item}} state=started
+  when: mode=="restart" or mode=="start"
+  with_items:
+    - cs-worker-checker
+
