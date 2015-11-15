@@ -6,7 +6,9 @@ server{
     
     root /home/nasarasa/www;
         
-    location ~ \.php$ {
+    location / {
+        index  index.php index.html index.htm;
+
         try_files $uri =404;
         include fastcgi_params;
         fastcgi_pass  unix:/var/run/php5-fpm.sock;
@@ -15,10 +17,7 @@ server{
         fastcgi_param  SCRIPT_FILENAME  $document_root/index.php;
     }
     
-    # порядок индексов    
-    location /
-    {
-        index  index.php index.html index.htm;
-    }
-    
+    location /static/ {
+        try_files /home/nasarasa$uri /home$uri;
+    }    
 }
