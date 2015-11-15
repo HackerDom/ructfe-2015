@@ -6,18 +6,7 @@
 #include "common.h"
 #include "cgi.h"
 
-int main() {
-    int ret;
-
-    printf("Content-type: text/html;charset=UTF-8\n\n");
-    printf("<head><title>Account</title><head>\n");
-
-    char* body = ""
-    "</form>";
-
-    printf("<body>%s</body>", body);
-
-    char* login = cgigetval("login");
+int check_args(char* login) {
     if (!login) {
         printf("%s\n", "Error: No login");
         return 1;
@@ -27,17 +16,26 @@ int main() {
         printf("%s\n", "Error: Bad login");
         return 1;
     }
+}
+
+int main() {
+    int ret;
+
+    printf("Content-type: text/html;charset=UTF-8\n\n");
+    printf("<head><title>Account</title><head>\n");
+
+    char* login = cgigetval("login");
+    if(check_args(login) == -1) {
+        return 1;
+    }
 
     printf("Logged in as %s (<a href='.'>Log out</a>)<br>\n", login);
 
     struct dict t;
-    ret = new_dict(login, &t);
-
-    if(ret == -1) {
+    if(new_dict(login, &t) == -1) {
         printf("Internal error\n");
         return 1;
     }
-
 
     long accounts_num = t.size();
     if (accounts_num == 0) {
@@ -56,7 +54,13 @@ int main() {
             long value = t.get(key);
 
             printf("%s: %ld.%02ld₽ ", key, value / 100, value % 100);
-            printf("Transfer to: <form action='transfer.cgi'>\n");
+            printf("Transfer to: <form action='transfer_money.cgi'>\n");
+            printf("login: <input value='' name='login_to'>\n");
+            printf("account: <input value='' name='account_to'>\n");
+            printf("amount: <input value='' name='amount'>\n");
+            printf("<input type='hidden' value='%s' name='login'><br>\n", login);
+            printf("<input type='hidden' value='%s' name='account'><br>\n", key);
+            printf("<input type='submit'>\n");
             printf("</form>\n");
         }
     }
