@@ -1,4 +1,8 @@
 {
+    "Mig" : {
+        "username" : "mig"
+    }
+    ,
     "TaX" : {
         "username" : "tax",
         "postcopy" : ["deploy/tax/postcopy.sh", "/root/tax/postcopy.sh"],
@@ -7,7 +11,8 @@
          ],
         "files" : [
              ["services/tax", "/home/"],
-             ["deploy/tax/tax.service", "/etc/systemd/system/tax.service"]
+             ["deploy/tax/tax.service", "/etc/systemd/system/tax.service"],
+             ["deploy/tax/files/tax", "/etc/nginx/sites-available/tax"]
         ]
     }
     ,
