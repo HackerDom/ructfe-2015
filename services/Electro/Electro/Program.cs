@@ -40,8 +40,8 @@ namespace Electro
 				var findElectionHandler = new FindElectionHandler(electroController, GetPrefix("findElection"));
 				findElectionHandler.Start();
 
-				var registerCandidateHandler = new RegisterCandidateHandler(electroController, authController, GetPrefix("registerCandidate"));
-				registerCandidateHandler.Start();
+				var nominateHandler = new NominateHandler(electroController, authController, GetPrefix("nominate"));
+				nominateHandler.Start();
 
 				var voteHandler = new VoteHandler(electroController, authController, GetPrefix("vote"));
 				voteHandler.Start();

@@ -8,29 +8,27 @@ namespace Electro.Model
 	{
 		[DataMember] public Guid Id { get; set; }
 		[DataMember] public string Login { get; set; }
-		[DataMember] public string Hash { get; set; }
-
 		[DataMember] public string PublicMessage { get; set; }
+
+		[DataMember] public string PasswordHash { get; set; }
 		[DataMember] public string PrivateNotes { get; set; }
 	}
 
 	[DataContract]
-	class UserPublic //TODO ugly :/
+	class CandidateInfo
 	{
 		[DataMember] public Guid Id { get; set; }
-		[DataMember] public string Login { get; set; }
-
+		[DataMember] public string Name { get; set; }
 		[DataMember] public string PublicMessage { get; set; }
 
-		public static UserPublic Convert(User user)
+		public static CandidateInfo Create(User user)
 		{
-			return new UserPublic
+			return new CandidateInfo
 			{
 				Id = user.Id,
-				Login = user.Login,
+				Name = user.Login,
 				PublicMessage = user.PublicMessage
 			};
 		}
-		
 	}
 }
