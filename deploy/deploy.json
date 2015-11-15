@@ -2,14 +2,15 @@
     "HM" : {
         "username" : "hm",
         "run_deps" : [
-            "golang"
+            "golang",
+            "gcc-multilib"
         ],
         "files" : [
             ["services/hm/server", "/home/hm/server"],
             ["deploy/hm/files/hm", "/etc/nginx/sites-available/hm"],
             ["deploy/hm/hm.service", "/etc/systemd/system/hm.service"] 
         ],
-        "postcopy" : ["deploy/hm/postcopy.sh", "/root/tax/postcopy.sh"]
+        "postcopy" : ["deploy/hm/postcopy.sh", "/root/hm/postcopy.sh"]
     }
     ,
     "Mig" : {

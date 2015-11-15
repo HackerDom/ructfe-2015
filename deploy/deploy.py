@@ -241,7 +241,7 @@ def main(argv):
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
     with DirtyMachine() as dirty_machine, TeamMachine("team220", "10.70.0.220") as team_machine:
-        services = [NasaRasa(config)]
+        services = [HM(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
 
