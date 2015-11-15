@@ -6,6 +6,7 @@
     {
         private $is_primary_key = false;
         public $is_unique = false;
+        public $need_escape = true;
 
         protected $type_definition = 'UNKNOWN';
         
@@ -64,10 +65,10 @@
         }
 
         public function can_assign_value($value)
-        {
+        {            
             if (! parent::can_assign_value($value))
                 return false;
-                
+
             if (! is_int($value))
                 throw new DbConstraintsException('Value must be integer');
 
@@ -148,5 +149,22 @@
             $class = $this->class;
             return $class::find_one(['__pk__' => $value]);
         }
+    }
+
+    class DbTimeField extends DbField
+    {
+        private $init_with_current_timestamp;
+
+        function __construct($options=[])
+        {
+            parent::__construct($options);
+
+            if (array_key_exists('init_with_current_timestamp', $options))
+                $this->init_with_current_timestamp = (bool) $options['init_with_current_timestamp'];
+
+            $this->type_definition = 'TIMESTAMP';
+            if ($this->init_with_current_timestamp)
+                $this->type_definition .= ' DEFAULT CURRENT_TIMESTAMP';
+        }        
     }
 ?>
