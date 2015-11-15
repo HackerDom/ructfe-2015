@@ -1,4 +1,4 @@
-import os, strutils, sequtils, random, nimAES, base64
+import os, strutils, sequtils, lib/random, lib/nimAES, base64
 
 #type TLock = ref object
 #var lock {.global.} = new TLock

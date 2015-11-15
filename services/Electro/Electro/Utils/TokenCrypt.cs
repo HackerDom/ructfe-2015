@@ -54,11 +54,10 @@ namespace Electro.Utils
 			[DataMember(Name = "k", Order = 1)] private string key;
 			[DataMember(Name = "iv", Order = 2)] private string iv;
 
-			//NOTE: [OnSerializing] and [OnDeserialized] not used in mono
-			[IgnoreDataMember] public byte[] Key { get { return Convert.FromBase64String(key); } set { key = Convert.ToBase64String(value); } }
-			[IgnoreDataMember] public byte[] IV { get { return Convert.FromBase64String(iv); } set { iv = Convert.ToBase64String(value); } }
+			[IgnoreDataMember] public byte[] Key;
+			[IgnoreDataMember] public byte[] IV;
 
-			/*[OnSerializing]
+			[OnSerializing]
 			private void OnSerializing(StreamingContext context)
 			{
 				key = Convert.ToBase64String(Key);
@@ -70,7 +69,7 @@ namespace Electro.Utils
 			{
 				Key = Convert.FromBase64String(key);
 				IV = Convert.FromBase64String(iv);
-			}*/
+			}
 		}
 
 		private static readonly string KeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "key");

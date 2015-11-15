@@ -7,6 +7,5 @@ namespace Electro.Utils
 	internal class Token
 	{
 		[DataMember(Name = "login", Order = 1)] public string Login;
-		[DataMember(Name = "dt", Order = 2)] public DateTime DateTime;
 	}
 }

@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Electro.Handlers;
-using Electro.Utils;
 using log4net;
 using log4net.Config;
 
@@ -40,8 +35,8 @@ namespace Electro
 				var findElectionHandler = new FindElectionHandler(electroController, GetPrefix("findElection"));
 				findElectionHandler.Start();
 
-				var registerCandidateHandler = new RegisterCandidateHandler(electroController, authController, GetPrefix("registerCandidate"));
-				registerCandidateHandler.Start();
+				var nominateHandler = new NominateHandler(electroController, authController, GetPrefix("nominate"));
+				nominateHandler.Start();
 
 				var voteHandler = new VoteHandler(electroController, authController, GetPrefix("vote"));
 				voteHandler.Start();

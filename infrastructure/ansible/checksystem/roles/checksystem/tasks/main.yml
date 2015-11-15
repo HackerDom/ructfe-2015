@@ -1,0 +1,8 @@
+- name: upload checksystem
+  synchronize: src=../../../../../../../checksystem/ dest={{cs_dir}}/app
+
+- name: upload checksystem config
+  template: src=c_s.conf.dev dest={{cs_dir}}/app/c_s.conf
+
+- name: chown checksystem
+  file: path={{cs_dir}}/app owner={{cs_user}} group={{cs_user}} recurse=yes
