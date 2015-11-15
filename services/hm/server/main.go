@@ -118,6 +118,11 @@ func getUserId(request *http.Request) (string, error) {
 	}
 }
 
+func loggedin(request *http.Request) bool {
+	_, err := getUserId(request)
+	return err == nil
+}
+
 func extractUid(idStr string) string {
 	id := decodeBase64(idStr)
 	f := strings.FieldsFunc(id, split)

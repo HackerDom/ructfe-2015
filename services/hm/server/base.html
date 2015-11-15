@@ -30,37 +30,30 @@
                         <div class="collapse navbar-collapse" id="bs-navbar-collapse">
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a href="/">Home</a></li>
-                                <li><a href="/TODO Link">TODO Link name</a></li>
+                                {{range .Links}}
+									<li><a href={{.LinkHref}}>{{.LinkText}}</a></li>
+								{{end}}
                             </ul>
                         </div>
 					</div>
 				</nav>
 			</header>
-    		<section class="main-block" data-stellar-background-ratio="0.5">
+			<section class="main-block" data-stellar-background-ratio="0.5">
 				<div class="container">
 					<div class="caption">
-
-
-                        <div class="row">
-                            <div class="col-sm-2 center-block">
-                                <a href="/">
-                                    <img src="/static/logos/health.png" class="logo img-responsive">
-                                </a>
-                            </div>
-                            <div class="col-sm-8 content-block">
-                                <h1>TODO Service name</h1>
-                                <p>
-                                    TODO Description
-                                </p>
-    							<div class="extra-space-l"></div>
-								<a class="btn btn-default btn-lg" href="/login" role="button">Login!</a>
-                            </div>
-                        </div>
-
-
+						<div class="row">
+							<div class="col-sm-2 center-block">
+								<a href="/">
+									<img src="/static/logos/health.png" class="logo img-responsive">
+								</a>
+							</div>
+							<div class="col-sm-8 content-block">
+								{{ template "content" . }}
+							</div>
+						</div>
 					</div>
 				</div>
-            </section>
+			</section>
 		</div>
 		<script src="/static/inc/jquery/jquery-1.11.1.min.js"></script>
 		<script src="/static/inc/bootstrap/js/bootstrap.min.js"></script>
