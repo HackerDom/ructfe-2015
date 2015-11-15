@@ -47,7 +47,7 @@ int main() {
     }
 
     unsigned long amount_long;
-    amount_long = get_amount(amount);
+    amount_long = strtoul(amount, 0, 10);
     if (amount_long == 0) {
         printf("%s\n", "Error: Bad amount");
         return 1;        

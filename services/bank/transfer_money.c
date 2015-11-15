@@ -69,7 +69,7 @@ int main() {
         return 1;
     }
 
-    amount_long = get_amount(amount);
+    amount_long = strtoul(amount, 0, 10);
     if (amount_long == 0) {
         printf("%s\n", "Error: Bad amount");
         return 1;        
@@ -82,7 +82,7 @@ int main() {
         return 1;
     }
 
-    long curr_balance = t_from.get(account);
+    unsigned long curr_balance = t_from.get(account);
     if(curr_balance < amount_long) {
         printf("%s\n", "Error: No money");
         return 1;
