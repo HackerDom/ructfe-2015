@@ -35,7 +35,7 @@ namespace Electro.Handlers
 			}
 
 			var election = electroController.StartElection(electionName, user, isPublic, nominateTill, voteTill);
-			WriteData(context, election.ToJson(useSimpleDictionaryFormat:true));
+			WriteData(context, election.ToJson());
 		}
 	}
 }
