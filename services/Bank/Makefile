@@ -1,14 +1,18 @@
-# make is smart, it knows how to make *.o from *.c
-
 CFLAGS+=-Os
 CFLAGS+=-g
 CFLAGS+=-fPIC
+CFLAGS+=-Ldict
+CFLAGS+=-ldict
 # CFLAGS+=--std c11
 
 CC=gcc
 
-bank: bank.o
-	$(CC) $(CFLAGS) $^ -o bank 
+bank: bank.o libdict.so
+	$(CC) $(CFLAGS) bank.o -o bank 
+
+libdict.so:
+	$(MAKE) -C dict
 
 clean:
-	rm -f bank.o sha256.o
+	$(MAKE) -C dict clean	
+	rm -f libdict.so bank bank/bank.o sha256.o
