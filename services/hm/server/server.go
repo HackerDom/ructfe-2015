@@ -4,9 +4,14 @@ import (
 	"io"
 	"flag"
 	"fmt"
-	"net/http"
 	"html/template"
+	"net/http"
+	"strings"
+	"time"
 )
+
+const STATIC_URL string = "/static/"
+const STATIC_ROOT string = "static/"
 
 func addHealthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 
@@ -30,7 +35,7 @@ func addUserHandler(w http.ResponseWriter, request *http.Request) {
 }
 
 func handleRequest(w http.ResponseWriter, request *http.Request) {
-	render(w, "static/login.html")
+	render(w, "main.html")
 }
 
 func render(w http.ResponseWriter, tmpl string) {
@@ -63,17 +68,32 @@ func logoutHandler(w http.ResponseWriter, request *http.Request) {
 	io.WriteString(w, response)
 }
 
+func staticHandler(w http.ResponseWriter, req *http.Request) {
+    static_file := req.URL.Path[len(STATIC_URL):]
+    if len(static_file) != 0 {
+        f, err := http.Dir(STATIC_ROOT).Open(static_file)
+        if err == nil {
+            content := io.ReadSeeker(f)
+            http.ServeContent(w, req, static_file, time.Now(), content)
+            return
+        }
+    }
+    http.NotFound(w, req)
+}
+
 var mux map[string]func(http.ResponseWriter, *http.Request)
 
 type myHandler struct{}
 
 func (*myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if h, ok := mux[r.URL.String()]; ok {
+	path := "/" + strings.Split(r.URL.String(), "/")[1]
+	fmt.Println(path)
+	if h, ok := mux[path]; ok {
 		h(w, r)
 		return
 	}
 
-	io.WriteString(w, "My server: "+r.URL.String())
+	io.WriteString(w, "My server: "+path)
 }
 
 func initService(){
@@ -99,6 +119,7 @@ func main() {
 	mux["/newUser"] = addUserHandler
 	mux["/login"] = loginHandler
 	mux["/logout"] = logoutHandler
+	mux["/static"] = staticHandler
 
 	server.ListenAndServe()
 }
