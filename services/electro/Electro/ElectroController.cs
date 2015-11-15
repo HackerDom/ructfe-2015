@@ -11,7 +11,7 @@ namespace Electro
 {
 	class ElectroController
 	{
-		public Election StartElection(string electionName, User firstCandidate, bool isPublic, DateTime nominateTill, DateTime till)
+		public Election StartElection(string electionName, User firstCandidate, bool isPublic, DateTime nominateTill, DateTime till, out PrivateKey privateKey)
 		{
 			var homoKeyPair = HomoKeyPair.GenKeyPair(MaxVotes);
 			var election = new Election
@@ -26,13 +26,13 @@ namespace Electro
 				IsPublic = isPublic
 			};
 
-			electionPrivateKeys[election.Id] = homoKeyPair.PrivateKey;
+			electionPrivateKeys[election.Id] = privateKey = homoKeyPair.PrivateKey;
 			elections[election.Id] = election;
 
 			return election;
 		}
 
-		public PrivateKey RegisterCandidate(Guid electionId, User user)
+		public PrivateKey NominateCandidate(Guid electionId, User user)
 		{
 			Election election;
 			if(!elections.TryGetValue(electionId, out election))

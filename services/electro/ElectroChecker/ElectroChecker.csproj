@@ -4,15 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BEC41D9B-B741-418E-AEDB-D0A6F8506C73}</ProjectGuid>
+    <ProjectGuid>{2D6F52DB-3285-46E6-86D8-1674CF09A2C1}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Electro</RootNamespace>
-    <AssemblyName>Electro</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>ElectroChecker</RootNamespace>
+    <AssemblyName>ElectroChecker</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -25,7 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -34,58 +33,33 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Crypto\HomoCrypto.cs" />
-    <Compile Include="ElectroController.cs" />
-    <Compile Include="Handlers\AuthorizedBaseHandler.cs" />
-    <Compile Include="Handlers\BaseHttpHandler.cs" />
-    <Compile Include="Handlers\FindElectionHandler.cs" />
-    <Compile Include="Handlers\HttpException.cs" />
-    <Compile Include="Handlers\HttpListenerUtils.cs" />
-    <Compile Include="Handlers\ListElectionsHandler.cs" />
-    <Compile Include="Handlers\LoginHandler.cs" />
-    <Compile Include="Handlers\NominateHandler.cs" />
-    <Compile Include="Handlers\RegisterHandler.cs" />
-    <Compile Include="Handlers\StartElectionHandler.cs" />
-    <Compile Include="Handlers\StaticHandler.cs" />
-    <Compile Include="Crypto\HomoKeyPair.cs" />
-    <Compile Include="Handlers\VoteHandler.cs" />
-    <Compile Include="Model\CandidateInfo.cs" />
-    <Compile Include="Model\Election.cs" />
-    <Compile Include="Model\User.cs" />
-    <Compile Include="Model\Vote.cs" />
+    <Compile Include="ElectroClient.cs" />
+    <Compile Include="ExitCode.cs" />
+    <Compile Include="FullNames.cs" />
+    <Compile Include="ServiceException.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AuthController.cs" />
-    <Compile Include="Utils\ByteArrayUtils.cs" />
-    <Compile Include="Utils\CommonUtils.cs" />
-    <Compile Include="Utils\CookieHelper.cs" />
-    <Compile Include="Utils\CryptUtils.cs" />
-    <Compile Include="Utils\EnumerableUtils.cs" />
-    <Compile Include="Utils\JsonHelper.cs" />
-    <Compile Include="Utils\DateTimeUtils.cs" />
-    <Compile Include="Utils\StringUtils.cs" />
-    <Compile Include="Utils\Token.cs" />
-    <Compile Include="Utils\TokenCrypt.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Electro\Electro.csproj">
+      <Project>{bec41d9b-b741-418e-aedb-d0a6f8506c73}</Project>
+      <Name>Electro</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

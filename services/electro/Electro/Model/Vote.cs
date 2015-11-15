@@ -11,7 +11,7 @@ using Electro.Crypto;
 namespace Electro.Model
 {
 	[DataContract]
-	class Vote
+	public class Vote
 	{
 		[DataMember(EmitDefaultValue = false)] public Guid UserId { get; set; }
 		[DataMember] public BigInteger[] EncryptedVector { get; set; }

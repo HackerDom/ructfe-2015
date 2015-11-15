@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using Electro.Handlers;
+using Electro.Utils;
 using log4net;
 using log4net.Config;
 

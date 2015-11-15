@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using Electro.Crypto;
 using Electro.Model;
 using Electro.Utils;
 
@@ -24,18 +21,22 @@ namespace Electro.Handlers
 			var form = context.Request.GetPostData();
 			string electionName;
 			string isPublicString; bool isPublic;
-			string nominateTillString; DateTime nominateTill;
-			string voteTillString; DateTime voteTill;
+			string nominateDurationString; int nominateDuration;
+			string voteDurationString; int voteDuration;
 			if(!form.TryGetValue("name", out electionName) ||
 			   !form.TryGetValue("isPublic", out isPublicString) || !bool.TryParse(isPublicString, out isPublic) ||
-			   !form.TryGetValue("nominateTill", out nominateTillString) || !DateTime.TryParse(nominateTillString, out nominateTill) || nominateTill < DateTime.UtcNow ||
-			   !form.TryGetValue("voteTill", out voteTillString) || !DateTime.TryParse(voteTillString, out voteTill) || voteTill < nominateTill)
+			   !form.TryGetValue("nominateDuration", out nominateDurationString) || !int.TryParse(nominateDurationString, out nominateDuration) || nominateDuration <= 0 ||
+			   !form.TryGetValue("voteDuration", out voteDurationString) || !int.TryParse(voteDurationString, out voteDuration) || voteDuration <= 0)
 			{
 				throw new HttpException(HttpStatusCode.BadRequest, "Invalid request params");
 			}
 
-			var election = electroController.StartElection(electionName, user, isPublic, nominateTill, voteTill);
-			WriteData(context, election.ToJson(useSimpleDictionaryFormat:true));
+			PrivateKey privateKey;
+
+			var now = DateTime.UtcNow;
+			var election = electroController.StartElection(electionName, user, isPublic, now.AddSeconds(nominateDuration), now.AddSeconds(nominateDuration + voteDuration), out privateKey);
+
+			WriteData(context, election.ToJson());
 		}
 	}
 }

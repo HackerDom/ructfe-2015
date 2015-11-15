@@ -5,7 +5,7 @@ using Electro.Utils;
 
 namespace Electro
 {
-	class AuthController
+	public class AuthController
 	{
 		public User AddUser(string login, string pass)
 		{
