@@ -53,6 +53,9 @@ class Handler(WebSocketHandler):
 
     def open(self):
         logging.info("WebSocket opened")
+    
+    def check_origin(self, origin):
+        return True
 
     @gen.coroutine
     def on_message(self, message):
