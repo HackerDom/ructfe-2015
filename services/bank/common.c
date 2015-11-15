@@ -28,23 +28,3 @@ int login_good(char* login) {
 int account_good(char* account) {
     return login_good(account);
 }
-
-unsigned long get_amount(char* amount) {
-    char* dot_pos = strchr(amount, '.');
-
-    unsigned long ret = strtoul(amount, 0, 10) * 100;
-    unsigned long cents = 0;
-    if(dot_pos) {
-        int len = strlen(dot_pos + 1);
-
-        if (len == 0 || len > 2) {
-            return 0;
-        }
-
-        cents = strtoul(dot_pos + 1, 0, 10);
-        if (len == 1) {
-            cents *= 10;
-        }
-    }
-    return ret + cents;
-}

@@ -1,6 +1,6 @@
 CFLAGS+=-Os
 CFLAGS+=-g
-CFLAGS+=-fPIC
+# CFLAGS+=-fPIC
 CFLAGS+=-Ldict
 CFLAGS+=-ldict
 
