@@ -20,6 +20,10 @@
     background-image: none !important;
 }
 
+.navbar .container {
+    padding: 0px;
+}
+
 /* Main block */
 .main-block {
     position: relative;
