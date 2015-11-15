@@ -1,6 +1,13 @@
 {
     "TaX" : {
         "username" : "tax",
+        "postcopy" : ["deploy/TaX/postcopy.sh", "/root/tax/postcopy.sh"],
+        "run_deps" : [
+            "curl"
+         ],
+        "files" : [
+             ["services/TaX", "/home/tax"]
+        ]
     }
     ,
     "MoL" : {
