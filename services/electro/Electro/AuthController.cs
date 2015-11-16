@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Electro.Model;
 using Electro.Utils;
 
@@ -7,6 +8,19 @@ namespace Electro
 {
 	public class AuthController
 	{
+		private readonly StatePersister statePersister;
+
+		public AuthController(IEnumerable<User> users, StatePersister statePersister)
+		{
+			LoadState(users);
+			this.statePersister = statePersister;
+		}
+
+		private void LoadState(IEnumerable<User> users)
+		{
+			users.ForEach(user => AddUser(user));
+		}
+
 		public User AddUser(string login, string pass, string publicMessage, string privateNotes)
 		{
 			var user = new User
@@ -17,7 +31,13 @@ namespace Electro
 				PrivateNotes = privateNotes,
 				PasswordHash = CryptUtils.CalcHash(pass)
 			};
-			return users.TryAdd(login, user) ? user : null;
+			statePersister.SaveUser(user);
+			return AddUser(user);
+		}
+
+		private User AddUser(User user)
+		{
+			return users.TryAdd(user.Login, user) ? user : null;
 		}
 
 		public User FindUserAuthorized(string login)

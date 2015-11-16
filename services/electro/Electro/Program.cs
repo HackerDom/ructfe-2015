@@ -17,8 +17,10 @@ namespace Electro
 			{
 				ThreadPool.SetMinThreads(32, 1024);
 
-				AuthController authController = new AuthController();
-				ElectroController electroController = new ElectroController(authController);
+				var statePersister = new StatePersister();
+
+				AuthController authController = new AuthController(StatePersister.LoadUsers(), statePersister);
+				ElectroController electroController = new ElectroController(StatePersister.LoadElections(), StatePersister.LoadKeys(), authController, statePersister);
 
 				var staticHandler = new StaticHandler(GetPrefix("static"), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "static"));
 				staticHandler.Start();

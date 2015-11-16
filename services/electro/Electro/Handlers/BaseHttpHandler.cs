@@ -33,11 +33,11 @@ namespace Electro.Handlers
 				{
 					context.Response.KeepAlive = true;
 					ProcessRequest(context);
-					//log.InfoFormat("{0} {1}", context.Request.HttpMethod, context.Request.RawUrl);
+					log.InfoFormat("{0} {1}", context.Request.HttpMethod, context.Request.RawUrl);
 				}
 				catch(HttpException exception)
 				{
-					//log.Error(exception);
+					log.Error(exception);
 					Error(context, exception.Status, exception.Message);
 				}
 				catch(Exception exception)
@@ -79,7 +79,7 @@ namespace Electro.Handlers
 		{
 			CommonUtils.Try(() =>
 			{
-				//log.InfoFormat("{0} - {1}: {2}", status, status, msg);
+				log.InfoFormat("{0} - {1}: {2}", status, status, msg);
 				var response = context.Response;
 				response.Headers.Clear();
 				response.StatusCode = (int)status;
