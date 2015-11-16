@@ -15,6 +15,8 @@ namespace Electro
 			XmlConfigurator.Configure();
 			try
 			{
+				ThreadPool.SetMinThreads(32, 1024);
+
 				AuthController authController = new AuthController();
 				ElectroController electroController = new ElectroController(authController);
 
