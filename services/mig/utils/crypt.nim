@@ -1,18 +1,20 @@
-import os, strutils, sequtils, lib/random, lib/nimAES, base64
+import os, strutils, sequtils, ../lib/random, ../lib/nimAES, base64
 
 #type TLock = ref object
 #var lock {.global.} = new TLock
 
-proc randomStr*(len: Natural): string =
+proc rnd*(len: Natural): string =
     let buf = random.urandom(len)
     assert len == buf.len
     join(buf.map(proc(b: uint8): string = $chr(b)))
 
 const IVLen = 16
 const KeyLen = 32
+const BlockSize = 16
+const MinEncryptedLen = IVLen + BlockSize
 
 proc genIV(): string =
-    randomStr(IVLen)
+    rnd(IVLen)
 
 proc genOrReadKey(): string =
     let appDir = getAppDir()
@@ -22,16 +24,16 @@ proc genOrReadKey(): string =
         if result.len != KeyLen:
             raise
     except:
-        result = randomStr(KeyLen)
+        result = rnd(KeyLen)
         writeFile(filepath, result)
 
-let key {.global.} = genOrReadKey()
+let Key* {.global.} = genOrReadKey()
 
 const ZeroPad = '\0'
 const OnePad = '\255'
 
 proc pad(data: string): string =
-    let padlen = 16 - (data.len and 15)
+    let padlen = BlockSize - (data.len mod BlockSize)
     repeat(ZeroPad, padlen - 1) & OnePad & data
 
 proc unpad(data: string): string =
@@ -39,30 +41,31 @@ proc unpad(data: string): string =
 
 proc encrypt(key, data: string): string {.gcsafe.} =
     var aes = initAES()
-    if not aes.setEncodeKey(key):
-        raise
+    doAssert aes.setEncodeKey(key)
     let iv = genIV()
     encode(iv.substr() & aes.encryptCBC(iv, pad(data)), 0x7fffffff)
 
 proc decrypt(key, data: string): string {.gcsafe.} =
-    var aes = initAES()
-    if not aes.setDecodeKey(key):
-        raise
     let raw = decode(data)
-    unpad(aes.decryptCBC(raw.substr(0, IVLen - 1), raw.substr(IVLen)))
+    doAssert raw.len >= MinEncryptedLen
+    var aes = initAES()
+    doAssert aes.setDecodeKey(key)
+    let plain = aes.decryptCBC(raw.substr(0, IVLen - 1), raw.substr(IVLen))
+    doAssert(not isNil(plain))
+    unpad(plain)
 
 proc encrypt*(data: string): string =
-    encrypt(key, data)
+    encrypt(Key, data)
 
 proc decrypt*(data: string): string =
-    decrypt(key, data)
+    decrypt(Key, data)
 
 when isMainModule:
-    assert key.len == KeyLen
+    assert Key.len == KeyLen
     assert genIV().len == IVLen
     assert genIV() != genIV()
 
-    echo "    Key: ", encode(key)
+    echo "    Key: ", encode(Key)
     echo "     IV: ", encode(genIV())
 
     assert "" == unpad(pad(""))
@@ -73,6 +76,9 @@ when isMainModule:
     assert "qwer" == decrypt(encrypt("qwer"))
     assert "0123456789ABCDEF" == decrypt(encrypt("0123456789ABCDEF"))
 
+    assert isNil(try: decrypt("WTF") except AssertionError: nil)
+    assert isNil(try: decrypt("0123456789ABCDEF0123456789ABCDEF") except AssertionError: nil)
+
     import threadpool
 
     const Iterations = 100
@@ -81,9 +87,9 @@ when isMainModule:
     var b: array[0..Iterations, FlowVar[string]]
 
     for i in 0..Iterations:
-        let plain = randomStr(32)
+        let plain = rnd(32)
         a[i] = plain
-        b[i] = spawn decrypt(key, encrypt(key, plain))
+        b[i] = spawn decrypt(Key, encrypt(Key, plain))
 
     for i in 0..Iterations:
         assert a[i] == (^b[i])
