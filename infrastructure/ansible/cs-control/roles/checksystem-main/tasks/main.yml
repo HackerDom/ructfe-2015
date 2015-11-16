@@ -1,0 +1,29 @@
+- name: ensure checksystem is stopped
+  service: name={{item}} state=stopped
+  when: mode=="restart" or mode=="stop"
+  with_items:
+    - cs-flags
+    - cs-watcher
+    - cs-manager
+    - cs-web
+    - cs-worker-default
+
+- name: ensure checksystem is started
+  service: name={{item}} state=started
+  when: mode=="restart" or mode=="start"
+  with_items:
+    - cs-flags
+    - cs-watcher
+    - cs-manager
+    - cs-web
+    - cs-worker-default
+
+- name: reset database
+  sudo: yes
+  sudo_user: "{{cs_user}}"
+  when: mode=="resetdb"
+  shell: "{{item}} chdir={{cs_dir}}/app"
+  with_items:
+    - script/cs reset_db
+    - script/cs ensure_db
+
