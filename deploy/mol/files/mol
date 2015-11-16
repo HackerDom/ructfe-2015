@@ -4,7 +4,7 @@ map $http_upgrade $connection_upgrade {
 }
 
 server {
-    server_name ~^nasarasa\.(?P<main_host>.+)$;
+    server_name ~^mol\.(?P<main_host>.+)$;
     access_log /home/mol/nginx-access.log;
     error_log  /home/mol/nginx-error.log;
 
