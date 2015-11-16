@@ -45,7 +45,7 @@
     - "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main"
 
 - name: checker requirements - Electro - mono
-  apt: name=mono-runtime state=latest
+  apt: name=mono-devel state=latest
 
 ################################ End of checkers requirements ################################
 
