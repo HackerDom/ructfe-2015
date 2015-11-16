@@ -19,7 +19,9 @@
     - unicode
 
 - name: checker requirements - MoL - pip
-  easy_install: executable=easy_install3 name=pip
+  easy_install: executable=easy_install3 name={{item}}
+  with_items:
+    - pip
 
 - name: checker requirements - MoL - websocket-client
   pip: executable=pip3 name=websocket-client state=present
@@ -46,6 +48,12 @@
 
 - name: checker requirements - Electro - mono
   apt: name=mono-devel state=latest
+
+- name: checker requirements - Nasarasa - requests
+  pip: executable=pip3 name={{item}} state=latest
+  with_items:
+    - requests
+    - enum34
 
 ################################ End of checkers requirements ################################
 
