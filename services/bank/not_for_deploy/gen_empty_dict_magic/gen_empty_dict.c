@@ -16,8 +16,8 @@
 #define TREE_MAX_NODES 	        (16384)
 #define MAX_KEY_LEN		        (64)
 #define BUFF_ADDR               ((char *) 0x000000dead000000)
-#define SECRET_OFFSET           ((int) 0x71812)
-#define SECRET_OFFSET2	        ((int) 0x71891)
+#define SECRET_OFFSET           ((int) 0x7181b)
+#define SECRET_OFFSET2	        ((int) 0x7189a)
 
 // long get_hash(unsigned char *buf);
 long get_hash(unsigned char *buf);
@@ -32,13 +32,8 @@ struct tree_node {
     unsigned long values[MAX_ITEMS_IN_BUCKET];
 } __attribute__((packed));
 
-struct tree {
-	void (*set) (unsigned char* key, int value);
-	long (*get) (unsigned char* key);
-};
 
-
-void set(unsigned char* key, int value) 
+void set(unsigned char* key, unsigned long value) 
 // __attribute__((optnone)) 
 {
   	unsigned char* mem_start;
@@ -107,7 +102,7 @@ void set(unsigned char* key, int value)
     curr_node->values[i] = value;
 }
 
-long get(unsigned char* key) {
+unsigned long get(unsigned char* key) {
   	unsigned char* mem_start;
 	long hash;
     int i;
@@ -172,7 +167,7 @@ unsigned char* key_at(int num) {
     return key_ptr;
 }
 
-long size() {
+unsigned long size() {
     unsigned char* mem_start;
 
     // Get tree start address
@@ -184,7 +179,7 @@ long size() {
     return *keys_cnt;
 }
 
-long validate() {
+unsigned long validate() {
     unsigned char* mem_start;
     long hash;
 
