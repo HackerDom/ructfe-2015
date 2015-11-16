@@ -1,5 +1,5 @@
 { pg => {uri => 'postgresql://cs:jrCiW2c9268x@10.10.10.2/cs_dev'},
-  hypnotoad => {listen => ['http://127.0.0.1:8080'], workers => 64},
+  hypnotoad => {listen => ['http://*:8080'], workers => 64},
   cs => {
     time => {
       start => '2013-01-01 00:00:00',
