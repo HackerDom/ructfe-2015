@@ -4,7 +4,7 @@ echo "deb http://download.mono-project.com/repo/debian wheezy main" > /etc/apt/s
 echo "deb http://download.mono-project.com/repo/debian wheezy-libjpeg62-compat main" >> /etc/apt/sources.list.d/mono-xamarin.list
 
 apt-get update
-apt-get install mono-devel
+DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes mono-devel
 
 chown electro:electro -R /home/electro/
 chmod 660 -R /home/electro/
