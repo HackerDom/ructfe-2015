@@ -8,7 +8,8 @@
             ["services/electro/service", "/home/electro/service"],
             ["deploy/electro/files/electro", "/etc/nginx/sites-available/electro"],
             ["deploy/electro/electro.service", "/etc/systemd/system/electro.service"] 
-        ]
+        ],
+        "postcopy" : ["deploy/electro/postcopy.sh", "/root/electro/postcopy.sh"]
     }
     ,
     "static" : {
