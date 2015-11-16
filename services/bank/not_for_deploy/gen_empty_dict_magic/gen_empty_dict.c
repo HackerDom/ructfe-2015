@@ -271,7 +271,7 @@ void init_dict() {
 
     // for (i = 0; i < 32000; i += 1) {
     //     sprintf(buf, "testttq16%d%d", r, i);
-    //     void* a = ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)(buf, i * 2 + 1);
+    //     void* a = ((void *(*)(char* key, unsigned long value))FUNCTION_SET_ADDR)(buf, i * 2 + 1);
     //     if (a > max_addr) {
     //         max_addr = a;
     //     }
@@ -281,7 +281,7 @@ void init_dict() {
 
     for (i = 0; i < 32000; i += 1) {
         sprintf(buf, "testttq16%d%d", r, i);
-        long a = ((long (*)(char* key))FUNCTION_GET_ADDR)(buf);
+        long a = ((unsigned long (*)(char* key))FUNCTION_GET_ADDR)(buf);
         if(a || i == 0) {
             printf("%lu\n", a);
         }
