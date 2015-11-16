@@ -13,7 +13,10 @@ namespace Electro.Model
 	{
 		[DataMember(Order = 1)] public Guid Id { get; set; }
 		[DataMember(Order = 2)] public string Name { get; set; }
-		[DataMember(Order = 3)] public List<CandidateInfo> Candidates { get; set; }
+
+		[DataMember(Order = 3)] private CandidateInfo[] candidates { get; set; }
+		[IgnoreDataMember] public List<CandidateInfo> Candidates { get; set; }
+
 		[DataMember(Order = 4)] public bool IsPublic { get; set; }
 
 		[DataMember(Order = 5)] private string nominateTill { get; set; }
@@ -23,38 +26,86 @@ namespace Electro.Model
 		[IgnoreDataMember] public DateTime VoteTill;
 
 		[DataMember(Order = 7)] public PublicKey PublicKey { get; set; }
-		[DataMember(Order = 8)] public List<Vote> Votes { get; set; }
+		[DataMember(Order = 8)] public PrivateKey PrivateKeyForCandidates { get; set; }
+
+		[DataMember(Order = 9)] private Vote[] votes { get; set; }
+		[IgnoreDataMember] public List<Vote> Votes { get; set; }
 		
-		[DataMember(Order = 9)] public BigInteger[] EncryptedResult { get; set; }
-		[DataMember(Order = 10)] public int[] DecryptedResult { get; set; }
+		[DataMember(Order = 10)] public BigInteger[] EncryptedResult { get; set; }
+		[DataMember(Order = 11)] public int[] DecryptedResult { get; set; }
 
 		[IgnoreDataMember] public bool IsNominationFinished  { get { return NominateTill < DateTime.UtcNow; } }
 		[IgnoreDataMember] public bool IsFinished  { get { return VoteTill < DateTime.UtcNow; } }
 
-		[IgnoreDataMember]
-		public CandidateInfo Winner
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
 		{
-			get
-			{
-				if(DecryptedResult == null)
-					return null;
-
-				int max = int.MinValue;
-				CandidateInfo winner = null;
-
-				Candidates
-					.Zip(DecryptedResult, (c, v) => new {candidate = c, votesCount = v})
-					.ForEach(arg =>
-					{
-						if(arg.votesCount > max)
-						{
-							max = arg.votesCount;
-							winner = arg.candidate;
-						}
-					});
-				return winner;
-			}
+			candidates = Candidates.ToArray();
+			votes = Votes.ToArray();
+			nominateTill = NominateTill.ToSortable();
+			voteTill = VoteTill.ToSortable();
 		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			Candidates = new List<CandidateInfo>(candidates);
+			Votes = new List<Vote>(votes);
+			NominateTill = DateTimeUtils.TryParseSortable(nominateTill);
+			VoteTill = DateTimeUtils.TryParseSortable(voteTill);
+		}
+
+		public CandidateInfo FindWinner()
+		{
+			if(DecryptedResult == null)
+				return null;
+
+			int max = int.MinValue;
+			CandidateInfo winner = null;
+
+			Candidates
+				.Zip(DecryptedResult, (c, v) => new { candidate = c, votesCount = v })
+				.ForEach(arg =>
+				{
+					if(arg.votesCount > max)
+					{
+						max = arg.votesCount;
+						winner = arg.candidate;
+					}
+				});
+			return winner;
+		}
+
+		public Election Clone()
+		{
+			return JsonHelper.ParseJson<Election>(this.ToJsonString());
+		}
+	}
+
+	[DataContract]
+	class ElectionPulicCore
+	{
+		public static ElectionPulicCore Create(Election election)
+		{
+			return new ElectionPulicCore
+			{
+				Id = election.Id,
+				Name = election.Name,
+				NominateTill = election.NominateTill,
+				VoteTill = election.VoteTill,
+				Winner = election.FindWinner()
+			};
+		}
+
+		[DataMember] public Guid Id { get; set; }
+		[DataMember] public string Name { get; set; }
+		[DataMember] public CandidateInfo Winner { get; set; }
+
+		[DataMember] private string nominateTill { get; set; }
+		[IgnoreDataMember] public DateTime NominateTill;
+
+		[DataMember] private string voteTill { get; set; }
+		[IgnoreDataMember] public DateTime VoteTill;
 
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
@@ -69,27 +120,5 @@ namespace Electro.Model
 			NominateTill = DateTimeUtils.TryParseSortable(nominateTill);
 			VoteTill = DateTimeUtils.TryParseSortable(voteTill);
 		}
-	}
-
-	[DataContract]
-	class ElectionPulicCore
-	{
-		public static ElectionPulicCore Create(Election election)
-		{
-			return new ElectionPulicCore
-			{
-				Id = election.Id,
-				Name = election.Name,
-				Till = election.VoteTill,
-				Winner = election.Winner
-			};
-		}
-
-		[DataMember] public Guid Id { get; set; }
-		[DataMember] public string Name { get; set; }
-		[DataMember] public CandidateInfo Winner { get; set; }
-
-		[DataMember] private string till { get; set; }
-		[IgnoreDataMember] public DateTime Till { get { return DateTimeUtils.TryParseSortable(till); } set {till = value.ToSortable();} }
 	}
 }

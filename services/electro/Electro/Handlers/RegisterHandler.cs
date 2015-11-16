@@ -33,8 +33,14 @@ namespace Electro.Handlers
 			if(!Regex.IsMatch(login, @"^\w+$"))
 				throw new HttpException(HttpStatusCode.BadRequest, @"Only \w chars allowed in login");
 
+			string publicMessage;
+			form.TryGetValue("publicMessage", out publicMessage);
+
+			string privateNotes;
+			form.TryGetValue("privateNotes", out privateNotes);
+
 			User user;
-			if((user = authController.AddUser(login, pass)) == null)
+			if((user = authController.AddUser(login, pass, publicMessage.TrimToNull(), privateNotes.TrimToNull())) == null)
 				throw new HttpException(HttpStatusCode.Conflict, string.Format("User '{0}' already exists", login));
 
 			context.Response.SetCookie(LoginCookieName, login);

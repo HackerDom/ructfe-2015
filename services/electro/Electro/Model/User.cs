@@ -10,7 +10,8 @@ namespace Electro.Model
 		[DataMember] public string Login { get; set; }
 		[DataMember] public string PublicMessage { get; set; }
 
-		[DataMember] public string PasswordHash { get; set; }
 		[DataMember] public string PrivateNotes { get; set; }
+
+		[DataMember] public string PasswordHash { get; set; }
 	}
 }

@@ -31,11 +31,10 @@ namespace Electro.Handlers
 				throw new HttpException(HttpStatusCode.BadRequest, "Invalid request params");
 			}
 
-			PrivateKey privateKey;
-
 			var now = DateTime.UtcNow;
-			var election = electroController.StartElection(electionName, user, isPublic, now.AddSeconds(nominateDuration), now.AddSeconds(nominateDuration + voteDuration), out privateKey);
+			var electionId = electroController.StartElection(electionName, user, isPublic, now.AddSeconds(nominateDuration), now.AddSeconds(nominateDuration + voteDuration));
 
+			var election = electroController.FindElectionForUser(electionId, user);
 			WriteData(context, election.ToJson());
 		}
 	}

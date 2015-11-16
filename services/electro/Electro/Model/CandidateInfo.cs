@@ -9,6 +9,7 @@ namespace Electro.Model
 		[DataMember] public Guid Id { get; set; }
 		[DataMember] public string Name { get; set; }
 		[DataMember] public string PublicMessage { get; set; }
+		[DataMember] public string PrivateNotesForWinner { get; set; }
 
 		public static CandidateInfo Create(User user)
 		{
@@ -16,7 +17,7 @@ namespace Electro.Model
 			{
 				Id = user.Id,
 				Name = user.Login,
-				PublicMessage = user.PublicMessage
+				PublicMessage = user.PublicMessage,
 			};
 		}
 	}

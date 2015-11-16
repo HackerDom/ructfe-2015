@@ -16,11 +16,11 @@ namespace ElectroChecker
 {
 	class ElectroClient
 	{
-		public static CookieCollection RegUser(string host, int port, string login, string pass)
+		public static CookieCollection RegUser(string host, int port, string login, string pass, string publicMessage = null, string privateNotes = null)
 		{
 			var request = CreateRequest(string.Format("http://{0}:{1}/register", host, port), WebRequestMethods.Http.Post);
 
-			var data = Encoding.UTF8.GetBytes(string.Format("login={0}&pass={1}", HttpUtility.UrlEncode(login), HttpUtility.UrlEncode(pass)));
+			var data = Encoding.UTF8.GetBytes(string.Format("login={0}&pass={1}&publicMessage={2}&privateNotes={3}", HttpUtility.UrlEncode(login), HttpUtility.UrlEncode(pass), HttpUtility.UrlEncode(publicMessage), HttpUtility.UrlEncode(privateNotes) ));
 			using(var requestStream = request.GetRequestStream())
 				requestStream.Write(data, 0, data.Length);
 
@@ -107,12 +107,32 @@ namespace ElectroChecker
 			}
 		}
 
+		public static Election FindElection(string host, int port, CookieCollection cookieCollection, Guid electionId)
+		{
+			var request = CreateRequest(string.Format("http://{0}:{1}/findElection?id={2}", host, port, electionId), WebRequestMethods.Http.Get, cookieCollection);
+
+			using(var response = (HttpWebResponse)request.GetResponse())
+			{
+				var ms = new MemoryStream();
+				response.GetResponseStream().CopyTo(ms);
+
+				try
+				{
+					ms.Position = 0;
+					return JsonHelper.ParseJson<Election>(ms);
+				}
+				catch(Exception e)
+				{
+					throw new ServiceException(ExitCode.MUMBLE, "Failed to parse 'findElection' response (expected Election)\n" + e);
+				}
+			}
+		}
 
 		private static HttpWebRequest CreateRequest(string url, string method = WebRequestMethods.Http.Get, CookieCollection cookieCollection = null)
 		{
 			var request = (HttpWebRequest)WebRequest.Create(url);
 			request.Method = method;
-			request.Timeout = 3000;
+			request.Timeout = 5000;
 			request.KeepAlive = true;
 			request.Proxy = null;
 			request.ServicePoint.UseNagleAlgorithm = false;

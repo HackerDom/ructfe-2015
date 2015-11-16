@@ -1,4 +1,17 @@
 {
+    "Electro" : {
+        "username" : ["electro", "electro"],
+        "run_deps" : [
+            "nginx"
+        ],
+        "files" : [
+            ["services/electro/service", "/home/electro/service"],
+            ["deploy/electro/files/electro", "/etc/nginx/sites-available/electro"],
+            ["deploy/electro/electro.service", "/etc/systemd/system/electro.service"] 
+        ],
+        "postcopy" : ["deploy/electro/postcopy.sh", "/root/electro/postcopy.sh"]
+    }
+    ,
     "static" : {
         "username" : ["www-data", "static"],
          "run_deps" : [
@@ -80,7 +93,7 @@
 		],
 		"files" : [
 			["deploy/nasarasa/files/nasarasa", "/etc/nginx/sites-available/nasarasa"],
-			["services/NasaRasa/www", "/home/nasarasa/www"]
+			["services/nasarasa/www", "/home/nasarasa/www"]
 		]
 	}
 }

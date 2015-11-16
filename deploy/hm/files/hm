@@ -1,5 +1,5 @@
 server{
-    server_name hm.*;
+    server_name ~^hm\.(?P<main_host>.+)$;
     
     access_log /home/hm/access.log;
     error_log  /home/hm/error.log;
@@ -7,6 +7,18 @@ server{
     location / {
         proxy_pass http://localhost:8000;
     }   
+
+    location /static/ {
+        try_files $uri @static;
+    }
+
+    location @static {
+        root /home;
+    }
+
+    location = /home {
+        rewrite .* http://$main_host/;
+    }
 }
 
 
