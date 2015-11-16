@@ -10,7 +10,6 @@ dev game
 dev-type tun
 remote vpn1.e.ructf.org {0}
 remote vpn2.e.ructf.org {0}
-#remote-random-hostname
 ifconfig 10.{1}.{2}.2 10.{1}.{2}.1
 route 10.60.0.0 255.252.0.0
 route 10.80.0.0 255.252.0.0
