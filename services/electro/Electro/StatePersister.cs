@@ -36,7 +36,13 @@ namespace Electro
 		{
 			if(!File.Exists(electionsFilePath))
 				return new Election[0];
-			return File.ReadLines(electionsFilePath).Select(JsonHelper.ParseJson<Election>);
+			return File.ReadLines(electionsFilePath).Select(s =>
+			{
+				Console.WriteLine("loading from {0}", s);
+				var result = JsonHelper.ParseJson<Election>(s);
+				Console.WriteLine("loaded");
+				return result;
+			});
 		}
 
 		public static IEnumerable<KeyValuePair<Guid, PrivateKey>> LoadKeys()
@@ -53,7 +59,7 @@ namespace Electro
 				lock(usersFilePath)
 				{
 					if(usersWriter == null)
-						usersWriter = new StreamWriter(File.OpenWrite(usersFilePath)) {AutoFlush = true};
+						usersWriter = new StreamWriter(new FileStream(usersFilePath, FileMode.Append)) {AutoFlush = true};
 				}
 			}
 			usersWriter.WriteLine(user.ToJsonString());
@@ -66,7 +72,7 @@ namespace Electro
 				lock(electionsFilePath)
 				{
 					if(electionsWriter == null)
-						electionsWriter = new StreamWriter(File.OpenWrite(electionsFilePath)) { AutoFlush = true };
+						electionsWriter = new StreamWriter(new FileStream(electionsFilePath, FileMode.Append)) { AutoFlush = true };
 				}
 			}
 			electionsWriter.WriteLine(election.ToJsonString());
@@ -79,7 +85,7 @@ namespace Electro
 				lock(keysFilePath)
 				{
 					if(keysWriter == null)
-						keysWriter = new StreamWriter(File.OpenWrite(keysFilePath)) { AutoFlush = true };
+						keysWriter = new StreamWriter(new FileStream(keysFilePath, FileMode.Append)) { AutoFlush = true };
 				}
 			}
 

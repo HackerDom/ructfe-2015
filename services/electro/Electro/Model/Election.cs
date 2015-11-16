@@ -13,7 +13,10 @@ namespace Electro.Model
 	{
 		[DataMember(Order = 1)] public Guid Id { get; set; }
 		[DataMember(Order = 2)] public string Name { get; set; }
-		[DataMember(Order = 3)] public List<CandidateInfo> Candidates { get; set; }
+
+		[DataMember(Order = 3)] private CandidateInfo[] candidates { get; set; }
+		[IgnoreDataMember] public List<CandidateInfo> Candidates { get; set; }
+
 		[DataMember(Order = 4)] public bool IsPublic { get; set; }
 
 		[DataMember(Order = 5)] private string nominateTill { get; set; }
@@ -24,7 +27,9 @@ namespace Electro.Model
 
 		[DataMember(Order = 7)] public PublicKey PublicKey { get; set; }
 		[DataMember(Order = 8)] public PrivateKey PrivateKeyForCandidates { get; set; }
-		[DataMember(Order = 9)] public List<Vote> Votes { get; set; }
+
+		[DataMember(Order = 9)] private Vote[] votes { get; set; }
+		[IgnoreDataMember] public List<Vote> Votes { get; set; }
 		
 		[DataMember(Order = 10)] public BigInteger[] EncryptedResult { get; set; }
 		[DataMember(Order = 11)] public int[] DecryptedResult { get; set; }
@@ -35,6 +40,8 @@ namespace Electro.Model
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
 		{
+			candidates = Candidates.ToArray();
+			votes = Votes.ToArray();
 			nominateTill = NominateTill.ToSortable();
 			voteTill = VoteTill.ToSortable();
 		}
@@ -42,6 +49,8 @@ namespace Electro.Model
 		[OnDeserialized]
 		private void OnDeserialized(StreamingContext context)
 		{
+			Candidates = new List<CandidateInfo>(candidates);
+			Votes = new List<Vote>(votes);
 			NominateTill = DateTimeUtils.TryParseSortable(nominateTill);
 			VoteTill = DateTimeUtils.TryParseSortable(voteTill);
 		}

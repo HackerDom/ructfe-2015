@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Numerics;
 using System.Threading;
 using Electro.Handlers;
+using Electro.Model;
 using Electro.Utils;
 using log4net;
 using log4net.Config;
@@ -12,6 +16,16 @@ namespace Electro
 	{
 		static void Main(string[] args)
 		{
+//			var vote = new Vote {EncryptedVector = new BigInteger[] {1, 2, 3}};
+//			var vote1 = new Vote1 {EncryptedVector = new List<BigInteger> {1, 2, 3}};
+//			var jsonString = vote.ToJsonString();
+//			var jsonString1 = vote1.ToJsonString();
+//			Console.WriteLine(jsonString);
+//			Console.WriteLine(jsonString1);
+//
+//			Console.WriteLine("success");
+//			return;
+
 			XmlConfigurator.Configure();
 			try
 			{
