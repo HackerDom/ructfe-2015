@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 from http.cookiejar import CookieJar
 from sys import argv, stderr
 
-__author__ = 'crassirostris'
+__author__ = 'm_messiah, crassirostris'
 
 OK, GET_ERROR, CORRUPT, FAIL, INTERNAL_ERROR = 101, 102, 103, 104, 110
 
