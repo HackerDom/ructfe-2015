@@ -16,8 +16,8 @@
 #define TREE_MAX_NODES 	        (16384)
 #define MAX_KEY_LEN		        (64)
 #define BUFF_ADDR               ((char *) 0x000000dead000000)
-#define SECRET_OFFSET           ((int) 0x715d5)
-#define SECRET_OFFSET2	        ((int) 0x71654)
+#define SECRET_OFFSET           ((int) 0x71812)
+#define SECRET_OFFSET2	        ((int) 0x71891)
 
 // long get_hash(unsigned char *buf);
 long get_hash(unsigned char *buf);
@@ -267,8 +267,15 @@ void init_dict() {
     long prevhash = 0;
 
     int i;
+
+    struct timeval time; 
+    gettimeofday(&time,NULL);
+
+    srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
+    int r = rand();
+
     // for (i = 0; i < 32000; i += 1) {
-    //     sprintf(buf, "testttq16%d", i);
+    //     sprintf(buf, "testttq16%d%d", r, i);
     //     void* a = ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)(buf, i * 2 + 1);
     //     if (a > max_addr) {
     //         max_addr = a;
@@ -278,7 +285,7 @@ void init_dict() {
     printf("SUCESSFULL\n");
 
     for (i = 0; i < 32000; i += 1) {
-        sprintf(buf, "testttq16%d", i);
+        sprintf(buf, "testttq16%d%d", r, i);
         long a = ((long (*)(char* key))FUNCTION_GET_ADDR)(buf);
         if(a || i == 0) {
             printf("%lu\n", a);
@@ -300,7 +307,6 @@ void init_dict() {
         }
 
     }
-
 
     printf("validate %lu %p %p\n", ((long (*)()) FUNCTION_VALIDATE_ADDR)(), FUNCTION_VALIDATE_ADDR, FUNCTION_SIZE_ADDR);
 }
@@ -334,8 +340,10 @@ int main() {
 	printf("Bank service is started. Ready for clients\n");	
 
 	// BYTE b[SHA256_BLOCK_SIZE];
+    unsigned long (*get_hash_my)(unsigned char*) = (void *)BUFF_ADDR + SECRET_OFFSET;
 
-	printf("hash: %lu\n", get_hash((unsigned char *)"test"));
+    printf("hash: %lx\n", get_hash_my((unsigned char *)"a"));
+	printf("hash: %lx\n", get_hash((unsigned char *)"a"));
 	// int i;
 
 	// for (i = 0; i < 256 / 8; i++) {
