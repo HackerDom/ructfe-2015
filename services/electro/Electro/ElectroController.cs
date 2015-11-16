@@ -12,10 +12,20 @@ namespace Electro
 	class ElectroController
 	{
 		private readonly AuthController authController;
+		private readonly StatePersister statePersister;
 
-		public ElectroController(AuthController authController)
+		public ElectroController(IEnumerable<Election> elections, IEnumerable<KeyValuePair<Guid, PrivateKey>> keys, AuthController authController, StatePersister statePersister)
 		{
 			this.authController = authController;
+			this.statePersister = statePersister;
+
+			LoadState(elections, keys);
+		}
+
+		private void LoadState(IEnumerable<Election> e, IEnumerable<KeyValuePair<Guid, PrivateKey>> k)
+		{
+			e.ForEach(election => elections[election.Id] = election);
+			k.ForEach(kvp => electionPrivateKeys[kvp.Key] = kvp.Value);
 		}
 
 		public Guid StartElection(string electionName, User firstCandidate, bool isPublic, DateTime nominateTill, DateTime till)
@@ -32,6 +42,9 @@ namespace Electro
 				Candidates = new List<CandidateInfo> { CandidateInfo.Create(firstCandidate) },
 				IsPublic = isPublic
 			};
+
+			statePersister.SaveElection(election);
+			statePersister.SaveKey(election.Id, homoKeyPair.PrivateKey);
 
 			electionPrivateKeys[election.Id] = homoKeyPair.PrivateKey;
 			elections[election.Id] = election;
@@ -54,6 +67,8 @@ namespace Electro
 					return null;
 
 				election.Candidates.Add(CandidateInfo.Create(user));
+
+				statePersister.SaveElection(election);
 				return election;
 			}
 		}
@@ -77,12 +92,14 @@ namespace Electro
 				election.EncryptedResult = TryMerge(result, vote);
 
 				election.Votes.Add(vote);
+
+				statePersister.SaveElection(election);
 			}
 
 			return true;
 		}
 
-		public BigInteger[] TryMerge(BigInteger[] voteResults, Vote v)
+		private BigInteger[] TryMerge(BigInteger[] voteResults, Vote v)
 		{
 			if(voteResults == null || v == null || v.EncryptedVector == null || voteResults.Length != v.EncryptedVector.Length)
 				return null;

@@ -4,12 +4,20 @@ map $http_upgrade $connection_upgrade {
 }
 
 server {
-    server_name mol.*;
+    server_name ~^mol\.(?P<main_host>.+)$;
     access_log /home/mol/nginx-access.log;
     error_log  /home/mol/nginx-error.log;
 
     location /static/ {
-       root /home/static;
+        try_files $uri @static;
+    }
+
+    location @static {
+        root /home;
+    }
+
+    location = /home {
+        rewrite .* http://$main_host/;
     }
 
     location / {

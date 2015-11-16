@@ -1,11 +1,11 @@
 server{
-    server_name ~^hm\.(?P<main_host>.+)$;
-    
-    access_log /home/hm/access.log;
-    error_log  /home/hm/error.log;
-    
+    server_name ~^electro\.(?P<main_host>.+)$;
+
+    access_log /home/electro/access.log;
+    error_log  /home/electro/error.log;
+
     location / {
-        proxy_pass http://localhost:8000;
+        proxy_pass http://localhost:3130;
     }   
 
     location /static/ {
@@ -20,5 +20,4 @@ server{
         rewrite .* http://$main_host/;
     }
 }
-
 
