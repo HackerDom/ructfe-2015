@@ -9,25 +9,26 @@ using Electro.Utils;
 
 namespace Electro.Handlers
 {
-	class FindElectionHandler : BaseHttpHandler
+	class FindElectionHandler : AuthorizedBaseHandler
 	{
 		private readonly ElectroController electroController;
 
-		public FindElectionHandler(ElectroController electroController, string prefix) : base(prefix)
+		public FindElectionHandler(ElectroController electroController, AuthController authController, string prefix) : base(authController, prefix)
 		{
 			this.electroController = electroController;
 		}
 
-		protected override void ProcessRequest(HttpListenerContext context)
+		protected override void ProcessAuthorizedRequest(HttpListenerContext context, User user)
 		{
 			var idString = context.Request.QueryString["id"];
 			Guid id;
 			if(!Guid.TryParse(idString, out id))
 				throw new HttpException(HttpStatusCode.BadRequest, "Invalid request params");
 
-			var election = electroController.FindElection(id);
+			var election = electroController.FindElectionForUser(id, user);
 
 			WriteData(context, election.ToJson());
 		}
+
 	}
 }

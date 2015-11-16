@@ -2,6 +2,7 @@
   template: src={{item}} dest=/etc/init/
   with_items:
     - cs-flags.conf
+    - cs-watcher.conf
     - cs-manager.conf
     - cs-web.conf
     - cs-worker-default.conf
@@ -11,6 +12,7 @@
   when: mode=="restart" or mode=="stop"
   with_items:
     - cs-flags
+    - cs-watcher
     - cs-manager
     - cs-web
     - cs-worker-default
@@ -20,6 +22,7 @@
   when: mode=="restart" or mode=="start"
   with_items:
     - cs-flags
+    - cs-watcher
     - cs-manager
     - cs-web
     - cs-worker-default

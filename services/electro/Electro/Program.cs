@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using Electro.Handlers;
+using Electro.Utils;
 using log4net;
 using log4net.Config;
 
@@ -14,8 +15,10 @@ namespace Electro
 			XmlConfigurator.Configure();
 			try
 			{
+				ThreadPool.SetMinThreads(32, 1024);
+
 				AuthController authController = new AuthController();
-				ElectroController electroController = new ElectroController();
+				ElectroController electroController = new ElectroController(authController);
 
 				var staticHandler = new StaticHandler(GetPrefix("static"), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "static"));
 				staticHandler.Start();
@@ -32,7 +35,7 @@ namespace Electro
 				var listElectionsHandler = new ListElectionsHandler(electroController, GetPrefix("listElections"));
 				listElectionsHandler.Start();
 
-				var findElectionHandler = new FindElectionHandler(electroController, GetPrefix("findElection"));
+				var findElectionHandler = new FindElectionHandler(electroController, authController, GetPrefix("findElection"));
 				findElectionHandler.Start();
 
 				var nominateHandler = new NominateHandler(electroController, authController, GetPrefix("nominate"));

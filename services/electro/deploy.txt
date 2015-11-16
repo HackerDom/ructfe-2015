@@ -1,0 +1,5 @@
+# Deploy instructions for Electro service
+1. Install mono 4 (follow instructions for your Linux distro on this page: http://www.mono-project.com/docs/getting-started/install/linux/#older-ubuntu-releases-ubuntu-1210-and-1204)
+2. Create user 'electro' and set desired limits and rights
+3. Copy 'service' directory to /home/electro
+4. Shedule to start electro.sh from user electro

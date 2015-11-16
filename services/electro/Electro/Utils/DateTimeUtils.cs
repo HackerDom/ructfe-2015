@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Electro.Utils
 {
-	internal static class DateTimeUtils
+	public static class DateTimeUtils
 	{
 		public static DateTime TruncSeconds(this DateTime dateTime)
 		{

@@ -8,55 +8,60 @@
 
 int check_args(char* login, char* account, char* amount, char* login_to, char* account_to) {
     if (!login) {
-        printf("%s\n", "Error: No login");
+        printf("<p class='error'>Error: No login</p>\n");
+        print_bank_redirect();
         return -1;
     }
 
     if (!account) {
-        printf("%s\n", "Error: No account");
+        printf("<p class='error'>Error: No account</p>\n");
+        print_accounts_redirect();
         return -1;
     }
 
     if (!amount) {
-        printf("%s\n", "Error: No amount");
+        printf("<p class='error'>Error: No amount</p>\n");
+        print_accounts_redirect();
         return -1;
     }
 
     if (!login_to) {
-        printf("%s\n", "Error: No dest login");
+        printf("<p class='error'>Error: No dest login</p>\n");
+        print_accounts_redirect();
         return -1;
     }
 
     if (!account_to) {
-        printf("%s\n", "Error: No dest account");
+        printf("<p class='error'>Error: No dest account</p>\n");
+        print_accounts_redirect();
         return -1;
     }
 
     if (!login_good(login)) {
-        printf("%s\n", "Error: Bad login");
+        printf("<p class='error'>Error: Bad login</p>\n");
+        print_bank_redirect();
         return -1;
     }
 
     if (!login_good(login_to)) {
-        printf("%s\n", "Error: Bad dest login");
+        printf("<p class='error'>Error: Bad dest login</p>\n");
+        print_accounts_redirect();
         return -1;
     }
 
     if (!account_good(account)) {
-        printf("%s\n", "Error: Bad account");
-        return 1;
+        printf("<p class='error'>Error: Bad account</p>\n");
+        print_accounts_redirect();
+        return -1;
     }
     if (!account_good(account_to)) {
-        printf("%s\n", "Error: Bad dest account");
-        return 1;
+        printf("<p class='error'>Error: Bad dest account</p>\n");
+        print_accounts_redirect();
+        return -1;
     }
-
 }
 
-int main() {
-    printf("Content-type: text/html\n\n");
-    printf("<head><title>add_money</title><head>\n");
-
+int gen_page() {
     char* login = cgigetval("login");
     char* account = cgigetval("account");
     char* amount = cgigetval("amount");
@@ -71,7 +76,8 @@ int main() {
 
     amount_long = strtoul(amount, 0, 10);
     if (amount_long == 0) {
-        printf("%s\n", "Error: Bad amount");
+        printf("<p class='error'>Error: Bad amount</p>\n");
+        print_accounts_redirect();
         return 1;        
     }
 
@@ -84,7 +90,8 @@ int main() {
 
     unsigned long curr_balance = t_from.get(account);
     if(curr_balance < amount_long) {
-        printf("%s\n", "Error: No money");
+        printf("<p class='error'>Error: No money</p>\n");
+        print_accounts_redirect();
         return 1;
     }
 
@@ -97,8 +104,15 @@ int main() {
     t_from.set(account, curr_balance - amount_long);
     t_to.set(account_to, t_to.get(account_to) + amount_long);
 
-    printf("Successful<br>\n");
-    printf("<a href='account.cgi?login=%s'>Go Back</a>\n", login);
+    printf("<p class='success'>Successful!</p>\n");
+    print_accounts_redirect();
+}
 
-    return 0;
+int main() {
+    int ret;
+    print_header(1);
+    ret = gen_page();
+    print_footer();
+
+    return ret;
 }
