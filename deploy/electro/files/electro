@@ -1,0 +1,23 @@
+server{
+    server_name ~^electro\.(?P<main_host>.+)$;
+
+    access_log /home/electro/access.log;
+    error_log  /home/electro/error.log;
+
+    location / {
+        proxy_pass http://localhost:3130;
+    }   
+
+    location /static/ {
+        try_files $uri @static;
+    }
+
+    location @static {
+        root /home;
+    }
+
+    location = /home {
+        rewrite .* http://$main_host/;
+    }
+}
+

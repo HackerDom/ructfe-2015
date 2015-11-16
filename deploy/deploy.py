@@ -234,6 +234,11 @@ class Static(Service):
 
     def __init__(self, config):
         Service.__init__(self, "static", config)
+
+class Electro(Service):
+
+    def __init__(self, config):
+        Service.__init__(self, "Electro", config)
   
 def read_config(filename):
     with open(filename) as f:
@@ -247,8 +252,9 @@ def main(argv):
     config = read_config(argv[1])
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
-    with DirtyMachine() as dirty_machine, TeamMachine("team222", "10.70.0.222") as team_machine:
-        services = [Static(config), NasaRasa(config), MoL(config), TaX(config), HM(config)]
+    with DirtyMachine() as dirty_machine, TeamMachine("team220", "10.70.0.220") as team_machine:
+        # services = [Static(config), NasaRasa(config), MoL(config), TaX(config), HM(config)]
+        services = [Electro(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
 

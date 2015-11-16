@@ -1,0 +1,14 @@
+[Unit]
+    Description=Electro
+    After=network.target
+
+[Service]
+    ExecStart=/usr/bin/mono /home/electro/service/Electro.exe
+    WorkingDirectory=/home/electro/service
+    User=electro
+    Group=electro
+
+[Install]
+    WantedBy=multi-user.target
+
+
