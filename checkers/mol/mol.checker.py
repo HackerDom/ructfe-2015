@@ -4,6 +4,7 @@ from random import randrange, choice, shuffle, randint, sample
 from sys import argv, stderr
 from os import path
 from websocket import create_connection
+from websocket._exceptions import WebSocketException
 from socket import error as net_error
 from json import loads, dumps
 from csv import reader
@@ -222,7 +223,7 @@ def check(*args):
         for checker in checkers:
             checker()
         close(OK)
-    except net_error:
+    except (net_error, WebSocketException):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
@@ -322,7 +323,7 @@ def not_found(*args):
 
 
 if __name__ == '__main__':
-    try:
+    #try:
         COMMANDS.get(argv[1], not_found)(*argv[2:])
-    except Exception as e:
-        close(INTERNAL_ERROR, "Bad-ass checker", "INTERNAL ERROR: %s" % e)
+    #except Exception as e:
+    #    close(INTERNAL_ERROR, "Bad-ass checker", "INTERNAL ERROR: %s" % e)
