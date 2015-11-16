@@ -11,7 +11,14 @@ namespace Electro
 {
 	class ElectroController
 	{
-		public Election StartElection(string electionName, User firstCandidate, bool isPublic, DateTime nominateTill, DateTime till, out PrivateKey privateKey)
+		private readonly AuthController authController;
+
+		public ElectroController(AuthController authController)
+		{
+			this.authController = authController;
+		}
+
+		public Guid StartElection(string electionName, User firstCandidate, bool isPublic, DateTime nominateTill, DateTime till)
 		{
 			var homoKeyPair = HomoKeyPair.GenKeyPair(MaxVotes);
 			var election = new Election
@@ -26,13 +33,13 @@ namespace Electro
 				IsPublic = isPublic
 			};
 
-			electionPrivateKeys[election.Id] = privateKey = homoKeyPair.PrivateKey;
+			electionPrivateKeys[election.Id] = homoKeyPair.PrivateKey;
 			elections[election.Id] = election;
 
-			return election;
+			return election.Id;
 		}
 
-		public PrivateKey NominateCandidate(Guid electionId, User user)
+		public Election NominateCandidate(Guid electionId, User user)
 		{
 			Election election;
 			if(!elections.TryGetValue(electionId, out election))
@@ -47,7 +54,7 @@ namespace Electro
 					return null;
 
 				election.Candidates.Add(CandidateInfo.Create(user));
-				return electionPrivateKeys[electionId];
+				return election;
 			}
 		}
 
@@ -83,12 +90,34 @@ namespace Electro
 			return Enumerable.Range(0, voteResults.Length).Select(i => voteResults[i] + v.EncryptedVector[i]).ToArray();
 		}
 
-		public Election FindElection(Guid electionId)
+		public Election FindElectionForUser(Guid electionId, User user)
 		{
 			Election election;
 			if(!elections.TryGetValue(electionId, out election))
 				return null;
-			TryDecryptElectionResult(election);
+			TryDecryptElectionResultIfFinished(election);
+
+			if(election.Candidates.Any(info => info.Id == user.Id))
+			{
+				lock(election)
+				{
+					election = election.Clone();
+				}
+
+				PrivateKey privateKey;
+				if(electionPrivateKeys.TryGetValue(election.Id, out privateKey))
+					election.PrivateKeyForCandidates = privateKey;
+
+				var winner = election.FindWinner();
+				if(winner != null && winner.Id == user.Id)
+					election.Candidates.ForEach(info =>
+					{
+						var u = authController.FindUserAuthorized(info.Name);
+						if(u != null)
+							info.PrivateNotesForWinner = u.PrivateNotes;
+					} );
+			}
+
 			return election;
 		}
 
@@ -99,10 +128,10 @@ namespace Electro
 
 		public IEnumerable<Election> GetFinishedElections()
 		{
-			return elections.Where(pair => pair.Value.IsFinished).With(pair => TryDecryptElectionResult(pair.Value)).Select(pair => pair.Value);
+			return elections.Where(pair => pair.Value.IsFinished).With(pair => TryDecryptElectionResultIfFinished(pair.Value)).Select(pair => pair.Value);
 		}
 
-		public bool TryDecryptElectionResult(Election election)
+		public bool TryDecryptElectionResultIfFinished(Election election)
 		{
 			if(!election.IsFinished)
 				return false;

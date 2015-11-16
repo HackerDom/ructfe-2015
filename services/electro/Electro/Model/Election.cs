@@ -23,38 +23,14 @@ namespace Electro.Model
 		[IgnoreDataMember] public DateTime VoteTill;
 
 		[DataMember(Order = 7)] public PublicKey PublicKey { get; set; }
-		[DataMember(Order = 8)] public List<Vote> Votes { get; set; }
+		[DataMember(Order = 8)] public PrivateKey PrivateKeyForCandidates { get; set; }
+		[DataMember(Order = 9)] public List<Vote> Votes { get; set; }
 		
-		[DataMember(Order = 9)] public BigInteger[] EncryptedResult { get; set; }
-		[DataMember(Order = 10)] public int[] DecryptedResult { get; set; }
+		[DataMember(Order = 10)] public BigInteger[] EncryptedResult { get; set; }
+		[DataMember(Order = 11)] public int[] DecryptedResult { get; set; }
 
 		[IgnoreDataMember] public bool IsNominationFinished  { get { return NominateTill < DateTime.UtcNow; } }
 		[IgnoreDataMember] public bool IsFinished  { get { return VoteTill < DateTime.UtcNow; } }
-
-		[IgnoreDataMember]
-		public CandidateInfo Winner
-		{
-			get
-			{
-				if(DecryptedResult == null)
-					return null;
-
-				int max = int.MinValue;
-				CandidateInfo winner = null;
-
-				Candidates
-					.Zip(DecryptedResult, (c, v) => new {candidate = c, votesCount = v})
-					.ForEach(arg =>
-					{
-						if(arg.votesCount > max)
-						{
-							max = arg.votesCount;
-							winner = arg.candidate;
-						}
-					});
-				return winner;
-			}
-		}
 
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
@@ -69,6 +45,32 @@ namespace Electro.Model
 			NominateTill = DateTimeUtils.TryParseSortable(nominateTill);
 			VoteTill = DateTimeUtils.TryParseSortable(voteTill);
 		}
+
+		public CandidateInfo FindWinner()
+		{
+			if(DecryptedResult == null)
+				return null;
+
+			int max = int.MinValue;
+			CandidateInfo winner = null;
+
+			Candidates
+				.Zip(DecryptedResult, (c, v) => new { candidate = c, votesCount = v })
+				.ForEach(arg =>
+				{
+					if(arg.votesCount > max)
+					{
+						max = arg.votesCount;
+						winner = arg.candidate;
+					}
+				});
+			return winner;
+		}
+
+		public Election Clone()
+		{
+			return JsonHelper.ParseJson<Election>(this.ToJsonString());
+		}
 	}
 
 	[DataContract]
@@ -80,8 +82,9 @@ namespace Electro.Model
 			{
 				Id = election.Id,
 				Name = election.Name,
-				Till = election.VoteTill,
-				Winner = election.Winner
+				NominateTill = election.NominateTill,
+				VoteTill = election.VoteTill,
+				Winner = election.FindWinner()
 			};
 		}
 
@@ -89,7 +92,24 @@ namespace Electro.Model
 		[DataMember] public string Name { get; set; }
 		[DataMember] public CandidateInfo Winner { get; set; }
 
-		[DataMember] private string till { get; set; }
-		[IgnoreDataMember] public DateTime Till { get { return DateTimeUtils.TryParseSortable(till); } set {till = value.ToSortable();} }
+		[DataMember] private string nominateTill { get; set; }
+		[IgnoreDataMember] public DateTime NominateTill;
+
+		[DataMember] private string voteTill { get; set; }
+		[IgnoreDataMember] public DateTime VoteTill;
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			nominateTill = NominateTill.ToSortable();
+			voteTill = VoteTill.ToSortable();
+		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			NominateTill = DateTimeUtils.TryParseSortable(nominateTill);
+			VoteTill = DateTimeUtils.TryParseSortable(voteTill);
+		}
 	}
 }

@@ -16,20 +16,20 @@ namespace Electro.Handlers
 
 		protected override void ProcessRequest(HttpListenerContext context)
 		{
-			var cookie = context.Request.Cookies[RegisterHandler.TokenCookieName];
-			if(cookie == null || string.IsNullOrEmpty(cookie.Value))
+			var tokenCookie = context.Request.Cookies[RegisterHandler.TokenCookieName];
+			if(tokenCookie == null || string.IsNullOrEmpty(tokenCookie.Value))
 			{
 				ProcessUnauthorizedRequest(context);
 				return;
 			}
 
-			var token = CommonUtils.TryOrDefault(() => JsonHelper.ParseJson<Token>(TokenCrypt.Decrypt(HttpUtility.UrlDecode(cookie.Value))));
+			var token = CommonUtils.TryOrDefault(() => JsonHelper.ParseJson<Token>(TokenCrypt.Decrypt(HttpUtility.UrlDecode(tokenCookie.Value))));
 			if(token == null)
 			{
 				ProcessForbiddenRequest(context);
 				return;
 			}
-			var user = authController.FindUser(token.Login);
+			var user = authController.FindUserAuthorized(token.Login);
 			if(user == null)
 			{
 				ProcessUserNotFoundRequest(context);

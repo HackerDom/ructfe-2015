@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using Electro.Crypto;
+using Electro.Model;
+using Electro.Utils;
 
 namespace ElectroChecker
 {
@@ -64,91 +67,122 @@ namespace ElectroChecker
 			}
 		}
 
-		private const int PORT = 3130;
-
 		private static void ProcessPut(string[] args)
 		{
-			//TODO give more time 
-			int nominateTimeInSec = 2;
-			int voteTimeInSec = 4;
-
-
 			string host, id, flag;
 			int vuln;
 			GetCommonParams(args, out host, out id, out flag, out vuln);
 
-			var firstCandidate = GenRandomUser();
-			var firstCandidateCookie = ElectroClient.RegUser(host, PORT, firstCandidate.Key, firstCandidate.Value);
-
-			var secondCandidate = GenRandomUser();
-			var secondCandidateCookie = ElectroClient.RegUser(host, PORT, secondCandidate.Key, secondCandidate.Value);
-
-			var electionStartDt = DateTime.UtcNow;
-			var election = ElectroClient.StartElection(host, PORT, firstCandidateCookie, "Election " + GenRandomAlphaNumeric(8), true, nominateTimeInSec, voteTimeInSec);
-			ElectroClient.Nominate(host, PORT, secondCandidateCookie, election.Id);
-			
-			Thread.Sleep(nominateTimeInSec * 1000);
-
-			ElectroClient.Vote(host, PORT, firstCandidateCookie, election.Id, HomoCrypto.EncryptVector(new [] {1, 0}, election.PublicKey));
-			ElectroClient.Vote(host, PORT, secondCandidateCookie, election.Id, HomoCrypto.EncryptVector(new [] {0, 1}, election.PublicKey));
-			var result = new[] { 1, 1 };
-
-			int votersCount = 5;
-			for(int i = 0; i < votersCount; i++)
-			{
-				var voter = GenRandomUser();
-				var cookie = ElectroClient.RegUser(host, PORT, voter.Key, voter.Value);
-
-				int[] voteVector = GenRandomVoteVector(2);
-				ElectroClient.Vote(host, PORT, cookie, election.Id, HomoCrypto.EncryptVector(voteVector, election.PublicKey));
-				result = SumVoteVectors(result, voteVector);
-			}
-
-			ExitWithMessage(ExitCode.OK, null);
+			if(vuln == 1)
+				ProcessPut1(host, id, flag);
+			else
+				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
 		}
-
-		private static int[] SumVoteVectors(int[] first, int[] second)
-		{
-			return first.Zip(second, (i, i1) => i + i1).ToArray();
-		}
-
-		private static int[] GenRandomVoteVector(int count)
-		{
-			var result = new int[count];
-			result[random.Next(count)] = 1;
-			return result;
-		}
-
-		
 
 		private static void ProcessGet(string[] args)
 		{
 			string host, id, flag;
 			int vuln;
 			GetCommonParams(args, out host, out id, out flag, out vuln);
-			
-			ExitWithMessage(ExitCode.OK, null);
+
+			if(vuln == 1)
+				ProcessGet1(host, id, flag);
+			else
+				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
 		}
 
-
-
-		private static KeyValuePair<string, string> GenRandomUser()
+		private static void ProcessPut1(string host, string id, string flag)
 		{
-			var login = FullNames.NextFullName();
-			string pass = GenRandomAlphaNumeric();
-			return new KeyValuePair<string, string>(login, pass);
+			//TODO give more time 
+			int nominateTimeInSec = 2;
+			int voteTimeInSec = 4;
+
+			int candidatesCount = 2;
+
+			var votes = Utils.GenRandomVoteVectors(candidatesCount, 3, 5).ToList();
+			var expectedResult = Utils.SumVoteVectors(votes);
+			var winnerNum = Utils.FindWinner(expectedResult);
+
+			var flagSent = false;
+			var candidates = new List<User>();
+			for(int i = 0; i < candidatesCount; i++)
+			{
+				string privateNotes = null;
+				if(!flagSent && i != winnerNum)
+				{
+					privateNotes = flag;
+					flagSent = true;
+				}
+
+				var candidate = UsersManager.GenRandomUser(privateNotes);
+				candidate.Cookies = ElectroClient.RegUser(host, PORT, candidate.Login, candidate.Pass, candidate.PublicMessage, candidate.PrivateMessage);
+				candidates.Add(candidate);
+			}
+
+			var electionStartDt = DateTime.UtcNow;
+
+			var election = ElectroClient.StartElection(host, PORT, candidates[0].Cookies, "Election_" + Utils.GenRandomAlphaNumeric(8, 8), true, nominateTimeInSec, voteTimeInSec);
+			foreach(var candidate in candidates.Skip(1))
+			{
+				ElectroClient.Nominate(host, PORT, candidate.Cookies, election.Id);
+			}
+
+			Thread.Sleep(nominateTimeInSec * 1000);
+
+			for(int i = 0; i < candidates.Count; i++)
+			{
+				var candidate = candidates[i];
+				var vote = Utils.GenVoteVector(candidatesCount, i);
+				ElectroClient.Vote(host, PORT, candidate.Cookies, election.Id, HomoCrypto.EncryptVector(vote, election.PublicKey));
+				expectedResult.AddVoteVector(vote);
+			}
+
+			var voters = new List<User>();
+			foreach(var voteVector in votes)
+			{
+				var voter = UsersManager.GenRandomUser();
+				voter.Cookies = ElectroClient.RegUser(host, PORT, voter.Login, voter.Pass);
+				voters.Add(voter);
+
+				ElectroClient.Vote(host, PORT, voter.Cookies, election.Id, HomoCrypto.EncryptVector(voteVector, election.PublicKey));
+				expectedResult.AddVoteVector(voteVector);
+			}
+
+			var state = new IdState1
+			{
+				ElectionStartDate = electionStartDt,
+				ElectionId = election.Id,
+				Candidates = candidates.ToArray(),
+				Voters = voters.ToArray(),
+				expectedResult = expectedResult
+			};
+
+			ExitWithMessage(ExitCode.OK, Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));
 		}
 
-		private static string GenRandomAlphaNumeric(int minLen = 6)
+		private static void ProcessGet1(string host, string id, string flag)
 		{
-			const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-			var len = minLen + random.Next(3);
-			return string.Join("", Enumerable.Range(0, len).Select(i => chars[random.Next(0, chars.Length)]));
+			var state = JsonHelper.ParseJson<IdState1>(Convert.FromBase64String(id));
+
+			var expectedResult = state.expectedResult;
+			var expectedWinnerNum = Utils.FindWinner(expectedResult);
+
+			var candidates = state.Candidates;
+			var expectedWinner = candidates[expectedWinnerNum];
+
+			var election = ElectroClient.FindElection(host, PORT, expectedWinner.Cookies, state.ElectionId);
+
+			var readlWinner = election.FindWinner();
+			if(readlWinner == null)
+				ExitWithMessage(ExitCode.MUMBLE, string.Format("Can't find winner in election '{0}'", election.Id));
+			if(readlWinner.Name != expectedWinner.Login)
+				ExitWithMessage(ExitCode.MUMBLE, string.Format("Winner in election '{0}' is wrong. Expected '{1}' got '{2}", election.Id, expectedWinner.Login, readlWinner.Name));
+
+			if(election.Candidates.All(info => info.PrivateNotesForWinner != flag))
+				ExitWithMessage(ExitCode.CORRUPT, "Can't find flag", null);
+
+			ExitWithMessage(ExitCode.OK, "Flag found", null);
 		}
-
-
-
-		static Random random = new Random();
 
 		private static void ExitWithMessage(ExitCode exitCode, string stderr, string stdout = null)
 		{
@@ -159,8 +193,7 @@ namespace ElectroChecker
 			Environment.Exit((int) exitCode);
 		}
 
-		private const string namesPath = "static/names";
-		private const string surnamesPath = "static/surnames";
+		private const int PORT = 3130;
 
 		private const string CommandInfo = "info";
 		private const string CommandCheck = "check";

@@ -16,7 +16,7 @@ namespace Electro
 			try
 			{
 				AuthController authController = new AuthController();
-				ElectroController electroController = new ElectroController();
+				ElectroController electroController = new ElectroController(authController);
 
 				var staticHandler = new StaticHandler(GetPrefix("static"), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "static"));
 				staticHandler.Start();
@@ -33,7 +33,7 @@ namespace Electro
 				var listElectionsHandler = new ListElectionsHandler(electroController, GetPrefix("listElections"));
 				listElectionsHandler.Start();
 
-				var findElectionHandler = new FindElectionHandler(electroController, GetPrefix("findElection"));
+				var findElectionHandler = new FindElectionHandler(electroController, authController, GetPrefix("findElection"));
 				findElectionHandler.Start();
 
 				var nominateHandler = new NominateHandler(electroController, authController, GetPrefix("nominate"));
