@@ -80,7 +80,7 @@
 		],
 		"files" : [
 			["deploy/nasarasa/files/nasarasa", "/etc/nginx/sites-available/nasarasa"],
-			["services/NasaRasa/www", "/home/nasarasa/www"]
+			["services/nasarasa/www", "/home/nasarasa/www"]
 		]
 	}
 }
