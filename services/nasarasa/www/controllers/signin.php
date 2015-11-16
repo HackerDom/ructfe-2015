@@ -3,9 +3,9 @@
     require_once 'models/SessionManager.php';
 
     $result = null;
-    if ($options = is_form_submitted(['login', 'password']))
+    if ($form = is_form_submitted(['login', 'password']))
     {
-        if (SessionManager::try_authenticate($options['login'], $options['password']))
+        if (SessionManager::try_authenticate($form['login'], $form['password']))
             redirect('/');
         else
             $result = 'Bad :-(';            

@@ -5,12 +5,12 @@
     require_once 'models/SessionManager.php';
 
     $result = null;
-    if ($options = is_form_submitted(['login', 'password', 'first_name', 'last_name']))
+    if ($form = is_form_submitted(['login', 'password', 'first_name', 'last_name']))
     {
         try
         {
-            if (UserManager::create_user($options['login'], $options['password'], $options['first_name'], $options['last_name']) &&
-                SessionManager::try_authenticate($options['login'], $options['password']))
+            if (UserManager::create_user($form['login'], $form['password'], $form['first_name'], $form['last_name']) &&
+                SessionManager::try_authenticate($form['login'], $form['password']))
                 redirect('/');
             else
                 $result = 'Bad :-(';

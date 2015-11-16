@@ -14,6 +14,7 @@
                                        'brightness' => new DbIntField(['min_value' => 0, 'max_value' => 100]),
                                        'size' => new DbIntField(['min_value' => 0, 'max_field' => 100]),
                                        'color' => new DbCharField(['max_length' => 200]),
+                                       'message' => new DbCharField(['max_length' => 1000]),
                                        'added_by' => new DbForeignField(['to' => 'User']),
                                        'added_at' => new DbTimeField(['init_with_current_timestamp' => true]),
                                        ]);

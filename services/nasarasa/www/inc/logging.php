@@ -33,5 +33,5 @@
         print 'thrown in <b>' . htmlspecialchars($exception->getFile()) . '</b> on line <b>' . $exception->getLine() . '</b><br>';
         print '</div>';
      }
-    set_exception_handler('exception_handler');
+     set_exception_handler('exception_handler');
 ?>

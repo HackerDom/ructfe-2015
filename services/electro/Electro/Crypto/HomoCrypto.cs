@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
 
 namespace Electro.Crypto
 {
-	static class HomoCrypto
+	public static class HomoCrypto
 	{
+		public static BigInteger[] EncryptVector(int[] vector, PublicKey publicKey)
+		{
+			return vector.Select(i => Encrypt(i, publicKey)).ToArray();
+		}
+
 		public static BigInteger Encrypt(int val, PublicKey publicKey)
 		{
 			BigInteger core = 0;
@@ -19,6 +25,11 @@ namespace Electro.Crypto
 			}
 			Console.WriteLine();
 			return core + val;
+		}
+
+		public static int[] DecryptVector(BigInteger[] vector, PrivateKey privateKey)
+		{
+			return vector.Select(bi => Decrypt(bi, privateKey)).ToArray();
 		}
 
 		public static int Decrypt(BigInteger val, PrivateKey privateKey)

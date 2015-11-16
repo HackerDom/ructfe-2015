@@ -6,7 +6,7 @@ using Electro.Utils;
 
 namespace Electro.Handlers
 {
-	internal class RegisterHandler : BaseHttpHandler
+	public class RegisterHandler : BaseHttpHandler
 	{
 		private readonly AuthController authController;
 
@@ -33,8 +33,14 @@ namespace Electro.Handlers
 			if(!Regex.IsMatch(login, @"^\w+$"))
 				throw new HttpException(HttpStatusCode.BadRequest, @"Only \w chars allowed in login");
 
+			string publicMessage;
+			form.TryGetValue("publicMessage", out publicMessage);
+
+			string privateNotes;
+			form.TryGetValue("privateNotes", out privateNotes);
+
 			User user;
-			if((user = authController.AddUser(login, pass)) == null)
+			if((user = authController.AddUser(login, pass, publicMessage.TrimToNull(), privateNotes.TrimToNull())) == null)
 				throw new HttpException(HttpStatusCode.Conflict, string.Format("User '{0}' already exists", login));
 
 			context.Response.SetCookie(LoginCookieName, login);
@@ -44,7 +50,7 @@ namespace Electro.Handlers
 		}
 
 		public const string TokenCookieName = "authtoken";
-		private const string LoginCookieName = "login";
+		public const string LoginCookieName = "login";
 
 		private const int MaxLength = 64;
 	}

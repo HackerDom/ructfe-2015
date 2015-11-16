@@ -10,7 +10,7 @@
         $user = User::find_one(['__pk__' => $user_id]);
         if ($user)
         {
-            $self = $user === SessionManager::current_user();
+            $self = $user->id === SessionManager::current_user()->id;
             $planets = Planet::find(['added_by' => $user]);
 
             render('user', ['user' => $user, 'planets' => $planets, 'self' => $self]);
