@@ -67,13 +67,13 @@ proc handleAuthRequest(req: Request): Future[void] =
 
     let auth = req.tryParseAuthData()
     if auth == NoAuthData:
-        req.send(Http403, "Forbidden")
+        return req.send(Http403, "Forbidden")
     elif auth.login.len < 4 or auth.login.len > 16 or auth.pass.len < 4 or auth.pass.len > 16:
-        req.send(Http400, "Bad login/pass")
+        return req.send(Http400, "Bad login/pass")
     elif addOrGetAuth(auth) != auth.pass:
-        req.send(Http403, "Forbidden")
+        return req.send(Http403, "Forbidden")
     else:
-        req.send(Http200, "OK", {"Set-Cookie": "auth=$#:$#; path=/" % [$hmac_sha3(Key, auth.login).hex(), encodeUrl(auth.login)]})
+        return req.send(Http200, "OK", {"Set-Cookie": "auth=$#:$#; path=/" % [$hmac_sha3(Key, auth.login).hex(), encodeUrl(auth.login)]})
 
 proc tryAuth(req: Request): string =
     let cookies = try: parseCookies(req.headers.getOrDefault("Cookie")) except: newStringTable()
@@ -86,7 +86,7 @@ proc tryAuth(req: Request): string =
     let login = try: decodeUrl(auth.val) except: nil
     if isNil(login) or $hmac_sha3(Key, login).hex() != auth.key:
         return nil
-    login
+    return login
 
 proc handleFormRequest(req: Request): Future[void] =
     if not eqIgnoreCase(req.reqMethod, HttpPost):
@@ -102,9 +102,9 @@ proc handleFormRequest(req: Request): Future[void] =
 
     let data = nextForm(login, json)
     if isNil(data.error):
-        req.send(Http200, data.form)
+        return req.send(Http200, data.form)
     else:
-        req.send(Http400, data.error)
+        return req.send(Http400, data.error)
 
 proc handleLastRequest(req: Request): Future[void] =
     if not eqIgnoreCase(req.reqMethod, HttpGet):
@@ -118,7 +118,7 @@ proc handleLastRequest(req: Request): Future[void] =
         ), ",") & "]"
         except: "error"
 
-    req.send(Http200, last)
+    return req.send(Http200, last)
 
 proc route(req: Request): Future[void] =
     let path = req.url.path
