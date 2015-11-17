@@ -7,6 +7,7 @@ from urllib.error import URLError as http_error
 from urllib.request import urlopen
 from urllib.parse import urlencode
 from sys import argv, stderr
+from subprocess import check_output
 
 __author__ = 'm_messiah, crassirostris'
 
@@ -21,6 +22,10 @@ def close(code, public="", private=""):
     if private:
         print(private, file=stderr)
     exit(code)
+
+def calc_checksum(account_name, amount):
+    return check_output("LD_LIBRARY_PATH=./validator/dict ./validator/validator '%s' %d"
+        % (account_name, amount), shell=True).decode("utf-8").strip()
 
 def create_name():
     with open(NAMES_FILENAME, 'r') as f:
@@ -73,10 +78,17 @@ def check(*args):
         account_name_1, account_name_2 = create_account_name(), create_account_name()
         amount_1, amount_2 = randrange(1, 100500), randrange(1, 100500)
         transfer_amount = randrange(1, amount_1)
-        c.login(name_1)
+
+        page = c.login(name_1)
         c.create_account(name_1, account_name_1, amount_1)
+        if not calc_checksum(account_name_1, amount_1) in c.login(name_1):
+            close(CORRUPT, "Checksum validation failed")
+
         c.login(name_2)
         c.create_account(name_2, account_name_2, amount_2)
+        if not calc_checksum(account_name_2, amount_2) in c.login(name_2):
+            close(CORRUPT, "Checksum validation failed")
+
         c.make_transfer(name_1, account_name_1, name_2, account_name_2, transfer_amount)
         if not str(transfer_amount + amount_2) in c.login(name_2):
             raise CheckerException("Failed to transfer money at '%s'" % addr)

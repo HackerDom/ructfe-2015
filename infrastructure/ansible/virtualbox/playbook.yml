@@ -1,0 +1,2 @@
+- hosts: ructf-srv07g.ructf.yandex.net:ructf-srv07h.ructf.yandex.net
+  roles: [virtualbox]

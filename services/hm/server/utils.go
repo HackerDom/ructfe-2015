@@ -10,7 +10,7 @@ import (
 func decodeBase64(s string) string {
 	bytes, _ := base64.StdEncoding.DecodeString(s)
 	res := string(bytes)
-	fmt.Println("Decoded data: ", res)
+	fmt.Println("Decoded data: ", res) //debug
 	return res
 }
 
@@ -21,7 +21,7 @@ func encodeBase64(s string) string {
 }
 
 func split(c rune) bool {
-	return c == ';' || c == ' ' //todo!
+	return c == ';' || c == ' ' 
 }
 
 func md5hash(params ...string) string {
@@ -30,6 +30,6 @@ func md5hash(params ...string) string {
 		io.WriteString(h, param)
 	}
 	res := fmt.Sprintf("%x", h.Sum(nil))
-    fmt.Println("MD5 sum: ", res)
+    fmt.Println("MD5 sum: ", res) //debug
 	return res
 }
