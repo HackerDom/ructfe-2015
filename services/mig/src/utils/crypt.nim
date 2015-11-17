@@ -1,12 +1,26 @@
 import os, strutils, sequtils, ../lib/random, ../lib/nimAES, base64
+import utils
 
 #type TLock = ref object
 #var lock {.global.} = new TLock
 
-proc rnd*(len: Natural): string =
+#do not call this too often
+proc urnd(len: Natural): string =
     let buf = random.urandom(len)
     assert len == buf.len
     join(buf.map(proc(b: uint8): string = $chr(b)))
+
+proc rnduint(): uint32 =
+    mersenneTwisterInst.randomUint32()
+
+proc rnd*(len: Natural): string =
+    if len == 0:
+        return ""
+    doAssert((len and 3) == 0)
+    var res = ""
+    for i in 0..(len shr 2) - 1:
+        res.add(intToBStr(int(rnduint())))
+    res
 
 const IVLen = 16
 const KeyLen = 32
@@ -24,7 +38,7 @@ proc genOrReadKey(): string =
         if result.len != KeyLen:
             raise
     except:
-        result = rnd(KeyLen)
+        result = urnd(KeyLen)
         writeFile(filepath, result)
 
 let Key* {.global.} = genOrReadKey()
@@ -79,19 +93,19 @@ when isMainModule:
     assert isNil(try: decrypt("WTF") except AssertionError: nil)
     assert isNil(try: decrypt("0123456789ABCDEF0123456789ABCDEF") except AssertionError: nil)
 
-    import threadpool
+    #import threadpool
 
-    const Iterations = 100
+    #const Iterations = 100
 
-    var a: array[0..Iterations, string]
-    var b: array[0..Iterations, FlowVar[string]]
+    #var a: array[0..Iterations, string]
+    #var b: array[0..Iterations, FlowVar[string]]
 
-    for i in 0..Iterations:
-        let plain = rnd(32)
-        a[i] = plain
-        b[i] = spawn decrypt(Key, encrypt(Key, plain))
+    #for i in 0..Iterations:
+    #    let plain = urnd(32)
+    #    a[i] = plain
+    #    b[i] = spawn decrypt(Key, encrypt(Key, plain))
 
-    for i in 0..Iterations:
-        assert a[i] == (^b[i])
+    #for i in 0..Iterations:
+    #    assert a[i] == (^b[i])
 
-    echo "[crypt] OK: compiled ", CompileDate, " ", CompileTime
+    #echo "[crypt] OK: compiled ", CompileDate, " ", CompileTime
