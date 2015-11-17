@@ -6,6 +6,21 @@ systemctl start mig
 
 ln -s /etc/nginx/sites-available/mig /etc/nginx/sites-enabled/mig
 
+sed -i 's/save 60 10000/save 60 1/' /etc/redis/redis.conf
+
+pushd /home/mig
+
+git clone -b master git://github.com/nim-lang/Nim.git
+pushd Nim
+git clone -b master --depth 1 git://github.com/nim-lang/csources
+cd csources && sh build.sh && cd ..
+popd
+
+/home/mig/Nim/bin/nim main.nim
+
+popd
+
+
 chown mig:mig -R /home/mig/
 chmod 660 -R /home/mig/
 find /home/mig -type d -exec chmod 770 {} +

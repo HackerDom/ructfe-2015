@@ -58,7 +58,8 @@
         "postcopy" : ["deploy/mig/postcopy.sh", "/root/mig/postcopy.sh"],
         "run_deps" : [
             "libgmp-dev",
-            "redis-server"
+            "redis-server",
+            "gcc-multilib"
         ],
         "files" : [
             ["services/mig", "/home/"],
