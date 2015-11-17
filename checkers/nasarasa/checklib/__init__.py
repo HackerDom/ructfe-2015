@@ -40,7 +40,7 @@ class exception_wrapper:
 
 class Checker:
     def __init__(self):
-        pass
+        logging.basicConfig(format='%(asctime)-15s [%(levelname)s] %(message)s', level=logging.DEBUG)
 
     def check(self, address):
         raise CheckerException('Not implemented')
@@ -63,6 +63,12 @@ class Checker:
 
         sys.exit(code.value)
 
+    def mumble_if_false(self, statement, public_message='Invalid content', private_message=''):
+        if not statement:
+            if private_message != '':
+                logging.error(private_message)
+            self.exit(StatusCode.MUMBLE, public_message)
+
     @exception_wrapper(StatusCode.DOWN)
     def run_command(self, function, arguments):
         if len(arguments) == 0:
@@ -73,8 +79,6 @@ class Checker:
 
     @exception_wrapper(StatusCode.ERROR)
     def run(self, command='', address='', flag_id='', flag='', vuln_id='1', *args):
-        logging.basicConfig(format='%(asctime)-15s [%(levelname)s] %(message)s', level=logging.DEBUG)
-
         vuln_id = int(vuln_id)
         commands = {'info':  {'method': self.info,  'arguments': []},
                     'check': {'method': self.check, 'arguments': [address]},
