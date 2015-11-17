@@ -81,6 +81,7 @@ void print_header(int show_logout) {
     printf("                            </a>\n");
     printf("                        </div>\n");
     printf("                        <div class='col-sm-8 content-block'>\n");
+    fflush(stdout);
 }
 
 void print_footer() {
@@ -95,6 +96,7 @@ void print_footer() {
     printf("        <script src='/static/js/theme.js'></script>\n");
     printf("    </body>\n");
     printf("</html>\n");
+    fflush(stdout);
 }
 
 void print_bank_redirect() {
@@ -105,6 +107,7 @@ void print_bank_redirect() {
     printf("   },2000); \n");
     printf("})();\n");
     printf("</script>\n");
+    fflush(stdout);
 }
 
 void print_accounts_redirect() {
@@ -126,4 +129,5 @@ void print_accounts_redirect() {
     printf("   },2000); \n");
     printf("})();\n");
     printf("</script>\n");
+    fflush(stdout);
 }
