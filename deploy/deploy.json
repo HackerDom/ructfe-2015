@@ -34,7 +34,9 @@
              "nginx"
          ],
          "files" : [
-             ["static/static", "/home/"]
+             ["static/static", "/home/"],
+             ["static/index.html", "/var/www/html/index.html"],
+             ["deploy/static/files/static", "/etc/nginx/sites-available/default"]
          ]
     }
     ,
@@ -58,7 +60,10 @@
         "postcopy" : ["deploy/mig/postcopy.sh", "/root/mig/postcopy.sh"],
         "run_deps" : [
             "libgmp-dev",
-            "redis-server"
+            "redis-server",
+            "gcc-multilib",
+            "git",
+            "nginx"
         ],
         "files" : [
             ["services/mig", "/home/"],
