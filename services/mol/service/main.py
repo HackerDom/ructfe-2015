@@ -21,7 +21,7 @@ from tornado.websocket import WebSocketHandler
 extras.register_uuid()
 JSONEncoder_default = JSONEncoder.default
 
-
+logging.getLogger().setLevel(logging.DEBUG)
 def json_encoder(self, o):
     if isinstance(o, UUID):
         return str(o)
@@ -59,9 +59,9 @@ class Handler(WebSocketHandler):
 
     @gen.coroutine
     def on_message(self, message):
-        message = loads(message)
-        logging.debug("Message received")
         try:
+            message = loads(message)
+            logging.debug("Message received")
             if hasattr(self, message['action']):
                 try:
                     return getattr(self, message['action'])(message)
@@ -459,11 +459,11 @@ class Handler(WebSocketHandler):
                 "FROM crimes ORDER BY crimeid "
                 "DESC limit 10 offset %s" % (offset,)
             )
+            db_result = cursor.fetchall()
         except (DataError, ProgrammingError):
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE,
                            text="Error while fetching")))
-        db_result = cursor.fetchall()
         crimes = [
             dict(zip(
                 'crimeid name article city country crimedate public'.split(),
@@ -633,7 +633,8 @@ if __name__ == '__main__':
         ioloop = IOLoop.instance()
         app.db = Pool(dsn="dbname=mol user=mol password=molpassword "
                           "host=localhost port=5432",
-                      size=1, ioloop=ioloop)
+                      size=5, max_size=100, auto_shrink=True,
+                      ioloop=ioloop)
         future = app.db.connect()
         ioloop.add_future(future, lambda _: ioloop.stop())
         app.wsPool = {}

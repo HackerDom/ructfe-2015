@@ -4,23 +4,23 @@ import utils/utils
 type
     State* = ref StateObj
     StateObj* = object
-        login*: string
         start*: Time
         join*: Time
         user*: UserDataObj
         page*: int
         offer*: bool
         public*: bool
+        login*: string
 
     UserDataObj* = object
         name*: string
         sname*: string
         bdate*: string
         bplace*: string
-        phone*: string
         occup*: string
         empl*: string
         thought*: string
+        phone*: string
 
     JoinInfo* = object
         login*: string

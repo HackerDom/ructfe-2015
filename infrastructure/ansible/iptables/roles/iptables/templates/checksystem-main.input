@@ -1,2 +1,2 @@
 -A INPUT -p tcp -s 10.10.10.1  --dport 8080  -j ACCEPT -m comment --comment "web monitor for dev"
--A INPUT -p tcp -s 10.10.10.1  --dport 31337 -j ACCEPT -m comment --comment "flags for dev"
+-A INPUT -p tcp -s {{net_vms}} --dport 31337 -j ACCEPT -m comment --comment "flags for dev vms"

@@ -55,11 +55,13 @@ class Checker(HttpCheckerBase):
 			response.close()
 
 	def jpost(self, s, addr, suffix, data = None):
-		response = s.post(self.url(addr, suffix), json.dumps(data), timeout=5)
+		dump = '' if data == None else json.dumps(data)
+		response = s.post(self.url(addr, suffix), dump, timeout=5)
 		return self.parseresponse(response, suffix)
 
 	def jposts(self, s, addr, suffix, data = None):
-		response = s.post(self.url(addr, suffix), json.dumps(data), timeout=5)
+		dump = '' if data == None else json.dumps(data)
+		response = s.post(self.url(addr, suffix), dump, timeout=5)
 		return self.parsestringresponse(response, suffix)
 
 	def spost(self, s, addr, suffix, data = None):
@@ -291,33 +293,67 @@ class Checker(HttpCheckerBase):
 		return text
 
 	def sign(self, msg):
-		return "%x" % pow(int(msg, 16), PrivExp, Modulus)
+		return "%x" % pow(int(msg.replace('=', ''), 16), PrivExp, Modulus)
 
-	def randform1(self, state):
-		return {'action':'next', 'fields':{'name':self.randmsg(),'sname':self.randmsg(),'bdate':'2015-11-17','bplace':'123','mphone':'123'}, 'state': state}
-	def randform2(self, state):
-		return {'action':'next', 'fields':{'occup':self.randmsg(),'empl':self.randmsg()}, 'state': state}
-	def randform3(self, state, flag):
-		return {'action':'next', 'fields':{'thought':flag, 'sign':self.sign(flag.replace('=', ''))}, 'state': state}
-	def randform4(self, state):
-		return {'action':'next', 'fields':{'public':'','offer':'yes'}, 'state': state}
+	def randhex(self, len):
+		lst = [random.choice('0123456789ABCDEF') for i in range(len)]
+		return "".join(lst)
 
-	def findField(self, fields, name):
+	def randthought(self):
+		return self.randhex(random.randrange(16,32))
+
+	def randform_vuln_1(self, i, state, flag):
+		if i == 0: return {'action':'load'}
+		if i == 1: return {'action':'next', 'fields':{'name':'Super','sname':'Tester','bdate':'2015-11-17','bplace':'Somewhere','mphone':'123'}, 'state': state}
+		if i == 2: return {'action':'next', 'fields':{'occup':'Somewhere','empl':'Somebody'}, 'state': state}
+		if i == 3: return {'action':'next', 'fields':{'thought':flag, 'sign':self.sign(flag)}, 'state': state}
+		if i == 4: return {'action':'next', 'fields':{'public':'','offer':'yes'}, 'state': state}
+		raise
+
+	def randform_vuln_2(self, i, state, flag):
+		if i == 0: return {'action':'load'}
+		if i == 1: return {'action':'next', 'fields':{'name':'Super','sname':'Tester','bdate':'2015-11-17','bplace':flag,'mphone':'123'}, 'state': state}
+		if i == 2: return {'action':'next', 'fields':{'occup':'Somewhere','empl':'Somebody'}, 'state': state}
+		if i == 3:
+			thought = self.randthought()
+			return {'action':'next', 'fields':{'thought':thought, 'sign':self.sign(thought)}, 'state': state}
+		if i == 4: return {'action':'next', 'fields':{'public':'yes','offer':'yes'}, 'state': state}
+		raise
+
+	def randform(self, vuln, i, state, flag):
+		if vuln == 1:
+			return self.randform_vuln_1(i, state, flag)
+		elif vuln == 2:
+			return self.randform_vuln_2(i, state, flag)
+		raise
+
+	def findfield(self, fields, name):
 		for field in fields:
 			if field and field.get('name') == name:
 				return True
 		return False
 
-	def checkFields(self, form, names):
+	def checkfields(self, form, names):
 		if not form or isBlank(form.get("state")):
 			return False
 		fields = form.get("fields")
 		if not fields or not isinstance(fields, list) or len(fields) == 0:
 			return False
 		for name in names:
-			if not self.findField(fields, name):
+			if not self.findfield(fields, name):
 				return False
 		return True
+
+	def checkform(self, form, i, flag):
+		if i == 5:
+			return not isBlank(form)
+		fields = []
+		if i == 1: fields = ['name', 'sname', 'bdate', 'bplace', 'mphone']
+		if i == 2: fields = ['occup', 'empl']
+		if i == 3: fields = ['thought', 'sign']
+		if i == 4: fields = ['public', 'offer']
+		if len(fields) == 0: raise
+		return self.checkfields(form, fields)
 
 	#################
 	#     CHECK     #
@@ -343,12 +379,24 @@ class Checker(HttpCheckerBase):
 
 		self.debug(user)
 
+		if vuln == 2:
+			result = self.sget(s, addr, '/last/')
+			self.debug(result)
+
+			if not result or result.find(user['login']) < 0:
+				print('not found self in /last/')
+				return EXITCODE_MUMBLE
+
 		result = self.jposts(s, addr, '/auth/', user)
+		self.debug(result)
+
 		if not result:# or result.get('about') != flag:
 			print('login failed')
 			return EXITCODE_MUMBLE
 
 		result = self.jposts(s, addr, '/form/')
+		self.debug(result)
+
 		if not result:
 			print('incorrect form fields')
 			return EXITCODE_MUMBLE
@@ -371,7 +419,7 @@ class Checker(HttpCheckerBase):
 		for i in range(0, 3):
 			try:
 				result = self.jposts(s, addr, '/auth/', user)
-				if not result:# or result.get('about') != flag:
+				if not result:
 					print('registration failed')
 					return EXITCODE_MUMBLE
 
@@ -381,54 +429,34 @@ class Checker(HttpCheckerBase):
 					raise
 				user = self.randuser(flag, i * 5)
 
-		result = self.jpost(s, addr, '/form/')
-		if not self.checkFields(result, ['name', 'sname', 'bdate', 'bplace', 'mphone']):
-			print('form filling failed')
-			return EXITCODE_MUMBLE
+		state = ''
+		for i in range(0, 4):
+			result = self.jpost(s, addr, '/form/', self.randform(vuln, i, state, flag))
+			self.debug(result)
 
-		form1 = self.randform1(result.get("state"))
-		self.debug(form1)
+			if not self.checkform(result, i + 1, flag):
+				print('form step', str(i), 'failed')
+				return EXITCODE_MUMBLE
+			state = result.get("state")
 
-		result = self.jpost(s, addr, '/form/', form1)
-		if not self.checkFields(result, ['occup', 'empl']):
-			print('form filling failed')
-			return EXITCODE_MUMBLE
+		result = self.jposts(s, addr, '/form/', self.randform(vuln, 4, state, flag))
+		self.debug(result)
 
-		form2 = self.randform2(result.get("state"))
-		self.debug(form2)
-
-		result = self.jpost(s, addr, '/form/', form2)
-		if not self.checkFields(result, ['thought', 'sign']):
-			print('incorrect form fields')
-			return EXITCODE_MUMBLE
-
-		form3 = self.randform3(result.get("state"), flag)
-		self.debug(form3)
-
-		result = self.jpost(s, addr, '/form/', form3)
-		if not self.checkFields(result, ['public', 'offer']):
-			print('incorrect form fields')
-			return EXITCODE_MUMBLE
-
-		form4 = self.randform4(result.get("state"))
-		self.debug(form4)
-
-		result = self.jposts(s, addr, '/form/', form4)
 		if not result:
-			print('incorrect form fields')
+			print('form step 5 failed')
 			return EXITCODE_MUMBLE
 
 		if result.find(flag) < 0:
 			print('flag not found')
 			return EXITCODE_CORRUPT
 
-#		msg = self.randmsg()
-#		self.debug(msg)
+		if vuln == 2:
+			result = self.sget(s, addr, '/last/')
+			self.debug(result)
 
-#		result = self.spost(s, addr, '/send/', msg)
-#		if not result or result != 'OK':
-#			print('send msg failed')
-#			return EXITCODE_MUMBLE
+			if not result or result.find(user['login']) < 0:
+				print('not found self in /last/')
+				return EXITCODE_MUMBLE
 
 		print('{}:{}'.format(user['login'], user['pass']))
 		return EXITCODE_OK
