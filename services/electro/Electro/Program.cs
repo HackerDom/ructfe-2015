@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Numerics;
 using System.Threading;
 using Electro.Handlers;
+using Electro.Model;
 using Electro.Utils;
 using log4net;
 using log4net.Config;
@@ -17,8 +21,10 @@ namespace Electro
 			{
 				ThreadPool.SetMinThreads(32, 1024);
 
-				AuthController authController = new AuthController();
-				ElectroController electroController = new ElectroController(authController);
+				var statePersister = new StatePersister();
+
+				AuthController authController = new AuthController(StatePersister.LoadUsers(), statePersister);
+				ElectroController electroController = new ElectroController(StatePersister.LoadElections(), StatePersister.LoadKeys(), authController, statePersister);
 
 				var staticHandler = new StaticHandler(GetPrefix("static"), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "static"));
 				staticHandler.Start();

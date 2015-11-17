@@ -8,5 +8,9 @@ services/electro/Electro/obj
 services/electro/ElectroChecker/bin
 services/electro/ElectroChecker/obj
 
+services/electro/service/logs
+services/electro/service/state
+
+
 services/hm/server/*.exe
 services/hm/server/*.db

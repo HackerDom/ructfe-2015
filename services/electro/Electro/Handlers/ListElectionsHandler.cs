@@ -25,11 +25,11 @@ namespace Electro.Handlers
 			if(!bool.TryParse(finishedString, out finished))
 				throw new HttpException(HttpStatusCode.BadRequest, "Invalid request params");
 
-			ElectionPulicCore[] elections;
+			ElectionPublicCore[] elections;
 			if(finished)
-				elections = electroController.GetFinishedElections().Select(ElectionPulicCore.Create).ToArray();
+				elections = electroController.GetFinishedElections().Select(ElectionPublicCore.Create).ToArray();
 			else
-				elections = electroController.GetUnfinishedPublicElections().Select(ElectionPulicCore.Create).ToArray();
+				elections = electroController.GetUnfinishedPublicElections().Select(ElectionPublicCore.Create).ToArray();
 
 			WriteData(context, elections.ToJson());
 		}

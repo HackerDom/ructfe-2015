@@ -24,11 +24,11 @@ namespace Electro.Handlers
 
 			var lastModified = fileInfo.LastWriteTimeUtc.TruncSeconds();
 			context.Response.AddHeader("Date", DateTime.UtcNow.ToString("r"));
-			if(IsNotModifiedSince(context, lastModified))
-			{
-				context.Response.StatusCode = (int)HttpStatusCode.NotModified;
-				return;
-			}
+//			if(IsNotModifiedSince(context, lastModified))
+//			{
+//				context.Response.StatusCode = (int)HttpStatusCode.NotModified;
+//				return;
+//			}
 
 			var contentType = GetContentType(Path.GetExtension(fileInfo.FullName));
 

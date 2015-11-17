@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Numerics;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Electro.Crypto;
 
 namespace Electro.Model
@@ -14,7 +10,34 @@ namespace Electro.Model
 	public class Vote
 	{
 		[DataMember(EmitDefaultValue = false)] public Guid UserId { get; set; }
-		[DataMember] public BigInteger[] EncryptedVector { get; set; }
+
+		[DataMember] public string[] encryptedVector { get; set; }
+		[IgnoreDataMember] public BigInteger[] EncryptedVector { get; set; }
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			if(EncryptedVector != null)
+				encryptedVector = EncryptedVector.Select(b => b.ToString()).ToArray();
+		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			bool failed = false;
+			if(encryptedVector != null)
+			{
+				var result = encryptedVector.Select(s =>
+				{
+					BigInteger b;
+					if(!BigInteger.TryParse(s, out b))
+						failed = true;
+					return b;
+				}).ToArray();
+				if(!failed)
+					EncryptedVector = result;
+			}
+		}
 	}
 
 	static class VoteExtensions
