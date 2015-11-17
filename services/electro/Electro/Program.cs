@@ -16,16 +16,6 @@ namespace Electro
 	{
 		static void Main(string[] args)
 		{
-//			var vote = new Vote {EncryptedVector = new BigInteger[] {1, 2, 3}};
-//			var vote1 = new Vote1 {EncryptedVector = new List<BigInteger> {1, 2, 3}};
-//			var jsonString = vote.ToJsonString();
-//			var jsonString1 = vote1.ToJsonString();
-//			Console.WriteLine(jsonString);
-//			Console.WriteLine(jsonString1);
-//
-//			Console.WriteLine("success");
-//			return;
-
 			XmlConfigurator.Configure();
 			try
 			{

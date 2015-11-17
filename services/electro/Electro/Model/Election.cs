@@ -34,14 +34,16 @@ namespace Electro.Model
 		[DataMember(Order = 10)] public BigInteger[] EncryptedResult { get; set; }
 		[DataMember(Order = 11)] public int[] DecryptedResult { get; set; }
 
-		[IgnoreDataMember] public bool IsNominationFinished  { get { return NominateTill < DateTime.UtcNow; } }
-		[IgnoreDataMember] public bool IsFinished  { get { return VoteTill < DateTime.UtcNow; } }
+		[DataMember(Order = 12)] public bool IsNominationFinished  { get { return NominateTill < DateTime.UtcNow; } set {} }
+		[DataMember(Order = 13)] public bool IsFinished  { get { return VoteTill < DateTime.UtcNow; } set {} }
 
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
 		{
-			candidates = Candidates.ToArray();
-			votes = Votes.ToArray();
+			if(Candidates != null)
+				candidates = Candidates.ToArray();
+			if(Votes != null)
+				votes = Votes.ToArray();
 			nominateTill = NominateTill.ToSortable();
 			voteTill = VoteTill.ToSortable();
 		}
@@ -49,8 +51,10 @@ namespace Electro.Model
 		[OnDeserialized]
 		private void OnDeserialized(StreamingContext context)
 		{
-			Candidates = new List<CandidateInfo>(candidates);
-			Votes = new List<Vote>(votes);
+			if(candidates != null)
+				Candidates = new List<CandidateInfo>(candidates);
+			if(votes != null)
+				Votes = new List<Vote>(votes);
 			NominateTill = DateTimeUtils.TryParseSortable(nominateTill);
 			VoteTill = DateTimeUtils.TryParseSortable(voteTill);
 		}
@@ -83,11 +87,11 @@ namespace Electro.Model
 	}
 
 	[DataContract]
-	class ElectionPulicCore
+	class ElectionPublicCore
 	{
-		public static ElectionPulicCore Create(Election election)
+		public static ElectionPublicCore Create(Election election)
 		{
-			return new ElectionPulicCore
+			return new ElectionPublicCore
 			{
 				Id = election.Id,
 				Name = election.Name,

@@ -10,7 +10,7 @@ namespace Electro.Utils
 			{
 				action();
 			}
-			catch(Exception e) { }
+			catch(Exception) { }
 		}
 
 		public static T TryOrDefault<T>(Func<T> func)

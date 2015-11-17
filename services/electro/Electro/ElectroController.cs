@@ -157,7 +157,9 @@ namespace Electro
 			if(!electionPrivateKeys.TryGetValue(election.Id, out privateKey))
 				return false;
 
-			election.DecryptedResult = election.EncryptedResult.Select(voteElement => HomoCrypto.Decrypt(voteElement, privateKey)).ToArray();
+			if(election.EncryptedResult != null)
+				election.DecryptedResult = election.EncryptedResult.Select(voteElement => HomoCrypto.Decrypt(voteElement, privateKey)).ToArray();
+
 			return true;
 		}
 

@@ -38,10 +38,7 @@ namespace Electro
 				return new Election[0];
 			return File.ReadLines(electionsFilePath).Select(s =>
 			{
-				Console.WriteLine("loading from {0}", s);
-				var result = JsonHelper.ParseJson<Election>(s);
-				Console.WriteLine("loaded");
-				return result;
+				return JsonHelper.ParseJson<Election>(s);
 			});
 		}
 
