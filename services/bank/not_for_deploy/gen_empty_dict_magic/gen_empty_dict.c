@@ -16,8 +16,8 @@
 #define TREE_MAX_NODES 	        (16384)
 #define MAX_KEY_LEN		        (64)
 #define BUFF_ADDR               ((char *) 0x000000dead000000)
-#define SECRET_OFFSET           ((int) 0x7181b)
-#define SECRET_OFFSET2	        ((int) 0x7189a)
+#define SECRET_OFFSET           ((int) 0x71835)
+#define SECRET_OFFSET2	        ((int) 0x718b4)
 
 // long get_hash(unsigned char *buf);
 long get_hash(unsigned char *buf);
@@ -56,7 +56,7 @@ void set(unsigned char* key, unsigned long value)
 	struct tree_node* curr_node = (struct tree_node*) TREE_NODES_ADDR;
 	long curr_node_offset = 0;
 	
-    while(curr_node->hash != 0 && curr_node->hash != hash) {
+    while(curr_node->key_offsets[0] > 0 && curr_node->key_offsets[0] < MAX_KEYS * MAX_KEY_LEN && curr_node->hash != hash) {
         if(hash < curr_node->hash) {
             curr_node_offset = curr_node_offset * 2 + 1;
         } else if (hash > curr_node->hash) {
@@ -123,7 +123,7 @@ unsigned long get(unsigned char* key) {
 	struct tree_node* curr_node = (struct tree_node*) TREE_NODES_ADDR;
 	long curr_node_offset = 0;
 
-    while(curr_node->hash != 0 && curr_node->hash != hash) {
+    while(curr_node->key_offsets[0] > 0 && curr_node->key_offsets[0] < MAX_KEYS * MAX_KEY_LEN && curr_node->hash != hash) {
         if(hash < curr_node->hash) {
             curr_node_offset = curr_node_offset * 2 + 1;
         } else if (hash > curr_node->hash) {

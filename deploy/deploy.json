@@ -54,7 +54,18 @@
     }
     ,
     "Mig" : {
-        "username" : "mig"
+        "username" : ["mig", "mig"],
+        "postcopy" : ["deploy/mig/postcopy.sh", "/root/mig/postcopy.sh"],
+        "run_deps" : [
+            "libgmp-dev",
+            "redis-server",
+            "gcc-multilib"
+        ],
+        "files" : [
+            ["services/mig", "/home/"],
+            ["deploy/mig/files/mig", "/etc/nginx/sites-available/mig"],
+            ["deploy/mig/mig.service", "/etc/systemd/system/mig.service"] 
+        ]
     }
     ,
     "TaX" : {
