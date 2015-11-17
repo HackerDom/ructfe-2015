@@ -16,6 +16,7 @@
 
 /services/electro/service/logs
 /services/electro/service/state
+/services/electro/service/key
 
 /services/electro/service/web/static/logos
 /services/electro/service/web/static/css
@@ -26,4 +27,5 @@
 
 services/hm/server/*.exe
 services/hm/server/*.db
+
 
