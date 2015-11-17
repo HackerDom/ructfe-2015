@@ -118,53 +118,17 @@ static void init_buf(void* dict_virt_addr) {
 }
 
 int new_dict(char* dict_name, struct dict* t) {
-    int init_needed = 0;
-
-    unsigned char hash[SHA1_BLOCK_SIZE + 1];
-    SHA1_CTX ctx;
-    sha1_init(&ctx);
-    sha1_update(&ctx, dict_name, strlen(dict_name));
-    sha1_final(&ctx, hash);
-
-    char file_name[SHA1_BLOCK_SIZE * 2 + 1 + 1] = {0};
-
-    snprintf(file_name, 2 + 1, "%02x", hash[0]);
-    mkdir(file_name, 0770);  // don't care if failed
-    snprintf(file_name, 3 + 1, "%02x/", hash[0]);
-
-    int i;
-    for(i = 1; i < SHA1_BLOCK_SIZE; i += 1) {
-        snprintf(&file_name[3 + (i - 1) * 2], 2 + 1, "%02x", hash[i]);
-    }
-
-    int fd = open(file_name, O_RDWR, 0770);
-    if (fd == -1) {
-        fd = open(file_name, O_RDWR | O_CREAT, 0770);
-        init_needed = 1;
-
-        if (fd == -1) {
-            return -1;
-        }
-    }
-
-    int result = ftruncate(fd, BUFLEN);
-    if (result == -1) {
-        return -1;
-    }
-
     static void* dict_virt_addr = BUFF_ADDR;
 
     unsigned char* buf = (unsigned char*) mmap(dict_virt_addr, BUFLEN,
-        PROT_EXEC | PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED,
-        fd, 0);
+        PROT_EXEC | PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED | MAP_ANONYMOUS,
+        0, 0);
 
     if(buf == (void *)-1) {
         return -1;
     }
 
-    if (init_needed) {
-        init_buf(dict_virt_addr);
-    }
+    init_buf(dict_virt_addr);
 
     t->set = dict_virt_addr + 0x71000;
     t->get = dict_virt_addr + 0x71116;
