@@ -173,12 +173,13 @@ class Machine:
 
 class DirtyMachine(Machine):
 
-    def __init__(self):
-        Machine.__init__(self, random_name(), "10.70.0.3")
+    def __init__(self, name, ip):
+        Machine.__init__(self, name, ip)
 
     def __clone_ructfe(self):
         self.put(self.key_filename, '/root/.ssh/id_rsa')
         self.run('chmod 600 /root/.ssh/id_rsa')
+        self.run('apt-get install -y git', True)
         self.run('ssh-keyscan github.com >> /root/.ssh/known_hosts', True)
         self.run('git clone git@github.com:HackerDom/ructfe-2015.git /root/ructfe-2015', True)
 
@@ -239,6 +240,11 @@ class Electro(Service):
 
     def __init__(self, config):
         Service.__init__(self, "Electro", config)
+
+class Bank(Service):
+
+    def __init__(self, config):
+        Service.__init__(self, "Bank", config)
   
 def read_config(filename):
     with open(filename) as f:
@@ -252,9 +258,9 @@ def main(argv):
     config = read_config(argv[1])
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
-    with DirtyMachine() as dirty_machine, TeamMachine("team220", "10.70.0.220") as team_machine:
-        # services = [Static(config), NasaRasa(config), MoL(config), TaX(config), HM(config)]
-        services = [Electro(config)]
+    with DirtyMachine("dirty-x64", "10.70.0.4") as dirty_machine, TeamMachine("team220-x64", "10.70.0.220") as team_machine:
+        # services = [Static(config), NasaRasa(config), MoL(config), TaX(config), HM(config), Electro(config)]
+        services = [Static(config), Bank(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
 
