@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 
 const STATIC_URL string = "/static/"
 const STATIC_ROOT string = "static/"
+const LOG_FILE string = "log.txt"
 
 type Link struct {
 	LinkHref string
@@ -82,7 +84,11 @@ func logoutHandler(w http.ResponseWriter, request *http.Request) {
 	http.SetCookie(w, &c2) 
 	w.WriteHeader(status)
 
-	context := Context{LoggedIn: loggedin(request), Action: "", Text: response}
+	loggedIn := true
+	if status == http.StatusOK {
+		loggedIn = false
+	}
+	context := Context{LoggedIn: loggedIn, Action: "", Text: response}
 	render(w, "text", context)
 }
 
@@ -106,11 +112,11 @@ func render(w http.ResponseWriter, tmpl string, context Context) {
         fmt.Sprintf("%s.html", tmpl)}
     t, err := template.ParseFiles(tmpl_list...)
     if err != nil {
-        fmt.Println("template parsing error: ", err)
+        logger.Println("template parsing error: ", err)
     }
     err = t.Execute(w, context)
     if err != nil {
-        fmt.Println("template executing error: ", err)
+        logger.Println("template executing error: ", err)
     }
 }
 
@@ -133,18 +139,21 @@ type myHandler struct{}
 
 func (*myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := "/" + strings.Split(r.URL.String(), "/")[1]
-	fmt.Println(path)
 	if h, ok := mux[path]; ok {
 		h(w, r)
 		return
 	}
 
-	io.WriteString(w, "My server: "+path)
+	logger.Println("Warn: requested path not found:", path)
+	http.Error(w, "404 page not found", 404)
 }
 
 var links map[string]Link
 
+var logger *log.Logger
+
 func initService(){
+	logger = setupLog(LOG_FILE)
 	prepareDb()
 }
 
@@ -154,7 +163,7 @@ func main() {
 	
 	var port = flag.String("port", "8000", "please specify the port to start server on")
 	flag.Parse()
-	fmt.Println("Port to start on: " + *port)
+	logger.Println("Port to start on: " + *port)
 	server := http.Server{
 		Addr:    ":" + *port,
 		Handler: &myHandler{},

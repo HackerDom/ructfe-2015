@@ -4,7 +4,10 @@ import (
 	"errors"
 	"strings"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -28,7 +31,7 @@ func addHealthMetrics(request *http.Request) (int, string) {
 		metrics := parseFromForm(request)
 		userId, err := strconv.Atoi(strings.Split(uId, "_")[1])
 		if err != nil {
-			fmt.Println(err)
+			logger.Println("Can't parse user Id: ", err)
 		}
 		success, id := tryAddMetrics(userId, metrics)
 		if (success) {
@@ -177,4 +180,18 @@ func logout(request *http.Request) (int, string, http.Cookie, http.Cookie) {
 	response := "Bye-bye! Seeya!"
 
 	return status, response, authCookie, idCookie
+}
+
+func setupLog(filename string) *log.Logger{
+	var logwriter io.Writer
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println("Failed to open log file", err)
+		logwriter = os.Stdout
+	}
+	
+	logwriter = file
+
+	logger := log.New(logwriter, "", log.Ldate|log.Ltime|log.Lshortfile)
+	return logger
 }
