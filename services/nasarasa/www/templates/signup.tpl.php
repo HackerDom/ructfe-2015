@@ -11,19 +11,15 @@
 
     <form method="POST" action="">
         <div class="form-group">
-            <label>First name</label>
-            <input type="text" class="form-control" placeholder="John" name="first_name" />
+            <input type="text" class="form-control" placeholder="First Name" name="first_name" />
         </div>
         <div class="form-group">
-            <label>Last name</label>
-            <input type="text" class="form-control" placeholder="Johnson" name="last_name" />
+            <input type="text" class="form-control" placeholder="Last Name" name="last_name" />
         </div>
         <div class="form-group">
-            <label>Login</label>
             <input type="text" class="form-control" placeholder="Login" name="login" />
         </div>
         <div class="form-group">
-            <label>Password</label>
             <input type="password" class="form-control" placeholder="Password" name="password" />
         </div>
         <button type="submit" class="btn btn-default">Sign up</button>
