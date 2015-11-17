@@ -91,21 +91,21 @@ namespace ElectroChecker
 				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
 		}
 
+		//TODO give more time 
+		const int nominateTimeInSec1 = 2;
+		const int voteTimeInSec1 = 5;
+
+		const int candidatesCount1 = 2;
+
 		private static void ProcessPut1(string host, string id, string flag)
 		{
-			//TODO give more time 
-			int nominateTimeInSec = 2;
-			int voteTimeInSec = 4;
-
-			int candidatesCount = 2;
-
-			var votes = Utils.GenRandomVoteVectors(candidatesCount, 3, 5).ToList();
+			var votes = Utils.GenRandomVoteVectors(candidatesCount1, 3, 5).ToList();
 			var expectedResult = Utils.SumVoteVectors(votes);
 			var winnerNum = Utils.FindWinner(expectedResult);
 
 			var flagSent = false;
 			var candidates = new List<User>();
-			for(int i = 0; i < candidatesCount; i++)
+			for(int i = 0; i < candidatesCount1; i++)
 			{
 				string privateNotes = null;
 				if(!flagSent && i != winnerNum)
@@ -121,18 +121,18 @@ namespace ElectroChecker
 
 			var electionStartDt = DateTime.UtcNow;
 
-			var election = ElectroClient.StartElection(host, PORT, candidates[0].Cookies, "Election_" + Utils.GenRandomAlphaNumeric(8, 8), true, nominateTimeInSec, voteTimeInSec);
+			var election = ElectroClient.StartElection(host, PORT, candidates[0].Cookies, "Election_" + Utils.GenRandomAlphaNumeric(8, 8), true, nominateTimeInSec1, voteTimeInSec1);
 			foreach(var candidate in candidates.Skip(1))
 			{
 				ElectroClient.Nominate(host, PORT, candidate.Cookies, election.Id);
 			}
 
-			Thread.Sleep(nominateTimeInSec * 1000);
+			Thread.Sleep(nominateTimeInSec1 * 1000);
 
 			for(int i = 0; i < candidates.Count; i++)
 			{
 				var candidate = candidates[i];
-				var vote = Utils.GenVoteVector(candidatesCount, i);
+				var vote = Utils.GenVoteVector(candidatesCount1, i);
 				ElectroClient.Vote(host, PORT, candidate.Cookies, election.Id, HomoCrypto.EncryptVector(vote, election.PublicKey));
 				expectedResult.AddVoteVector(vote);
 			}
@@ -163,6 +163,18 @@ namespace ElectroChecker
 		private static void ProcessGet1(string host, string id, string flag)
 		{
 			var state = JsonHelper.ParseJson<IdState1>(Convert.FromBase64String(id));
+
+			var now = DateTime.UtcNow;
+			var elapsedSeconds = now.Subtract(state.ElectionStartDate).TotalSeconds;
+			if(elapsedSeconds < 0)
+				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Possible time desynchronization on checksystem! Election started in future: '{0}' and now is '{1}'", state.ElectionStartDate.ToSortable(), now.ToSortable()));
+			var tts = nominateTimeInSec1 + voteTimeInSec1 - elapsedSeconds;
+			if(tts > 0)
+			{
+				Console.Error.WriteLine("Sleeping for {0} seconds (Election start '{1}' now '{2}' nomination duration {3} vote duration {4})", tts, state.ElectionStartDate.ToSortable(), now.ToSortable(), nominateTimeInSec1, voteTimeInSec1);
+				Thread.Sleep((int) ((tts + 1) * 1000));
+			}
+
 
 			var expectedResult = state.expectedResult;
 			var expectedWinnerNum = Utils.FindWinner(expectedResult);

@@ -26,7 +26,7 @@ namespace Electro
 				AuthController authController = new AuthController(StatePersister.LoadUsers(), statePersister);
 				ElectroController electroController = new ElectroController(StatePersister.LoadElections(), StatePersister.LoadKeys(), authController, statePersister);
 
-				var staticHandler = new StaticHandler(GetPrefix("static"), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "static"));
+				var staticHandler = new StaticHandler(GetPrefix(null), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web"));
 				staticHandler.Start();
 
 				var registerHandler = new RegisterHandler(authController, GetPrefix("register"));

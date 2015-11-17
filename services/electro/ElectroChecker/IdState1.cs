@@ -38,17 +38,18 @@ namespace ElectroChecker
 		[DataMember] public string Pass;
 		[DataMember] public string PublicMessage;
 		[DataMember] public string PrivateMessage;
-		[DataMember] private List<Tuple<string,string,string,string>> cookies;
+		[DataMember] private Tuple<string,string,string,string>[] cookies;
 		[IgnoreDataMember] public CookieCollection Cookies;
 
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
 		{
-			cookies = new List<Tuple<string, string, string, string>>();
+			var tmp = new List<Tuple<string, string, string, string>>();
 			foreach(Cookie cookie in Cookies)
 			{
-				cookies.Add(new Tuple<string, string, string, string>(cookie.Name, cookie.Value, cookie.Path, cookie.Domain));
+				tmp.Add(new Tuple<string, string, string, string>(cookie.Name, cookie.Value, cookie.Path, cookie.Domain));
 			}
+			cookies = tmp.ToArray();
 		}
 
 		[OnDeserialized]

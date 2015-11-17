@@ -61,10 +61,10 @@ class HttpCheckerBase(object):
 			flag_id, flag, vuln = sys.argv[3:6]
 
 			if command == 'get':
-				exit(self.get(addr, flag_id, flag, vuln))
+				exit(self.get(addr, flag_id, flag, int(vuln)))
 
 			if command == 'put':
-				exit(self.put(addr, flag_id, flag, vuln))
+				exit(self.put(addr, flag_id, flag, int(vuln)))
 
 			self.debug('Invalid command')
 			exit(EXITCODE_CHECKER_ERROR)
