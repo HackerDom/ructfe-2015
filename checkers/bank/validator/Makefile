@@ -8,7 +8,7 @@ CC=gcc
 all: validator
 
 validator: libdict.so
-	$(CC) $(CFLAGS) validator.c -o validator
+	$(CC) validator.c -o validator $(CFLAGS)
 
 libdict.so:
 	$(MAKE) -C dict

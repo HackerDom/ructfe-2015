@@ -12,12 +12,21 @@ namespace ElectroChecker
 			surnames = File.ReadAllLines(surnamesPath);
 		}
 
-		public static User GenRandomUser(string privateMessage = null)
+		public static User GenUser(string name = null, string publicMessage = null, string privateNotes = null)
 		{
-			var login = UsersManager.NextFullName();
+			if(name == null)
+				name = NextFullName();
+
+			var login = name;
 			string pass = Utils.GenRandomAlphaNumeric();
-			string publicMessage = "My public Message_" + Utils.GenRandomAlphaNumeric(10, 6);
-			return new User { Login = login, Pass = pass, PublicMessage = publicMessage, PrivateMessage = privateMessage};
+			if(publicMessage == null)
+				publicMessage = "My public Message_" + Utils.GenRandomAlphaNumeric(10, 6);
+			return new User { Login = login, Pass = pass, PublicMessage = publicMessage, PrivateMessage = privateNotes };
+		}
+
+		public static User GenRandomUser(string privateNotes = null)
+		{
+			return GenUser(null, null, privateNotes);
 		}
 
 		public static string NextFullName()

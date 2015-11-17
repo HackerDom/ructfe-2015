@@ -1,7 +1,6 @@
 md %1\..\service
 md %1\..\service\web
 
-xcopy /d /y /e %1\..\..\..\static %1\..\service\web
 del %1\..\service\web\service-template.html
 xcopy /d /y /e %1\web %1\..\service\web
 

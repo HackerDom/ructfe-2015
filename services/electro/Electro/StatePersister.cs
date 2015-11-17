@@ -29,7 +29,17 @@ namespace Electro
 		{
 			if(!File.Exists(usersFilePath))
 				return new User[0];
-			return File.ReadLines(usersFilePath).Select(JsonHelper.ParseJson<User>);
+			return File.ReadLines(usersFilePath).Select(s =>
+			{
+				try
+				{
+					return JsonHelper.ParseJson<User>(s);
+				}
+				catch(Exception)
+				{
+					return null;
+				}
+			}).Where(user => user != null);
 		}
 
 		public static IEnumerable<Election> LoadElections()
@@ -38,15 +48,33 @@ namespace Electro
 				return new Election[0];
 			return File.ReadLines(electionsFilePath).Select(s =>
 			{
-				return JsonHelper.ParseJson<Election>(s);
-			});
+				try
+				{
+					return JsonHelper.ParseJson<Election>(s);
+				}
+				catch(Exception)
+				{
+					return null;
+				}
+			}).Where(election => election != null);
 		}
 
 		public static IEnumerable<KeyValuePair<Guid, PrivateKey>> LoadKeys()
 		{
 			if(!File.Exists(keysFilePath))
 				return new KeyValuePair<Guid, PrivateKey>[0];
-			return File.ReadLines(keysFilePath).Select(JsonHelper.ParseJson<KeyValuePair<Guid, PrivateKey>>);
+			return File.ReadLines(keysFilePath).Select(s =>
+			{
+				try
+				{
+					return JsonHelper.ParseJson<KeyValuePair<Guid, PrivateKey>>(s);
+				}
+				catch(Exception)
+				{
+					return default(KeyValuePair<Guid, PrivateKey>);
+				}
+				
+			}).Where(kvp => kvp.Value != null);
 		}
 
 		public void SaveUser(User user)
