@@ -61,7 +61,9 @@
         "run_deps" : [
             "libgmp-dev",
             "redis-server",
-            "gcc-multilib"
+            "gcc-multilib",
+            "git",
+            "nginx"
         ],
         "files" : [
             ["services/mig", "/home/"],
