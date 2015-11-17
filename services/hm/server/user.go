@@ -18,7 +18,8 @@ func parseUser(r *http.Request) *User {
 	if login == "" || pass == "" {
 		return nil
 	}
-    result := &User{login, pass}
+	
+    result := &User{login, md5hash(pass)}
 	return result
 }
 
