@@ -1,3 +1,2 @@
 #!/bin/bash
-parallel-ssh -h servers "$@"
-
+parallel-ssh -ih servers "$@"

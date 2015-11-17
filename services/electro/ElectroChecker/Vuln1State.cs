@@ -15,7 +15,6 @@ namespace ElectroChecker
 
 		[DataMember] public string ElectionId;
 		[DataMember] public User[] Candidates;
-		[DataMember] public User[] Voters;
 		[DataMember] public int[] expectedResult;
 
 		[OnSerializing]

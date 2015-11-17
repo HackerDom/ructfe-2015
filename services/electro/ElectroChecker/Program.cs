@@ -77,9 +77,9 @@ namespace ElectroChecker
 			int vuln;
 			GetCommonParams(args, out host, out id, out flag, out vuln);
 
-			if(vuln == 1)
+			if(vuln == 2)
 				Vuln1Methods.ProcessPut(host, id, flag);
-			else if(vuln == 2)
+			else if(vuln == 1)
 				Vuln2Methods.ProcessPut(host, id, flag);
 			else
 				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
@@ -91,9 +91,9 @@ namespace ElectroChecker
 			int vuln;
 			GetCommonParams(args, out host, out id, out flag, out vuln);
 
-			if(vuln == 1)
+			if(vuln == 2)
 				Vuln1Methods.ProcessGet(host, id, flag);
-			else if(vuln == 2)
+			else if(vuln == 1)
 				Vuln2Methods.ProcessGet(host, id, flag);
 			else
 				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
