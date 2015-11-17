@@ -96,8 +96,8 @@ proc handleFormRequest(req: Request): Future[void] =
     if isNil(login):
         return req.send(Http403, "Forbidden")
 
-    let json = try: parseJson(req.body) except: nil
-    if isNil(json):
+    let json = if isNilOrEmpty(req.body): newJObject() else: (try: parseJson(req.body) except: nil)
+    if isNil(json) or json.kind != JObject:
         return req.send(Http400, "Bad Request")
 
     let data = nextForm(login, json)
@@ -138,13 +138,14 @@ proc handle(req: Request) {.async.} =
         asyncCheck req.send(Http413, "Request Entity Too Large")
         return
 
-    var fail = false
     try: asyncCheck route(req)
-    except: fail = true
-
-    if fail:
-        asyncCheck req.send(Http500, "Internal Server Error")
+    except: discard req.send(Http500, "Internal Server Error")
 
 initStaticFilesTable("site/", "/index.html")
 
-waitFor newAsyncHttpServer().serve(Port(8080), handle)
+asyncCheck newAsyncHttpServer().serve(Port(80), handle)
+
+#asyncdispatch sometimes throw exceptions :(
+while true:
+    try: runForever()
+    except: discard

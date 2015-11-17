@@ -45,6 +45,11 @@ proc hex*(data: string): string {.noSideEffect.} =
         result[i shl 1] = Digits[b shr 4]
         result[(i shl 1) + 1] = Digits[b and 0xf]
 
+proc intToBStr*(val: int): string =
+    result = newString(4)
+    for i in 0..3:
+        result[i] = chr((val shr (i shl 3)) and 0xff);
+
 proc toRfcDate*(time: Time): string =
     time.getGMTime().format("ddd, dd MMM yyyy HH:mm:ss") & " GMT"
 
