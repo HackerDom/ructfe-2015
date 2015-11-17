@@ -25,4 +25,4 @@ libdict.so:
 
 clean:
 	$(MAKE) -C dict clean	
-	rm -f libdict.so bank.cgi account.cgi bank.o account.o cgi.o common.o
+	rm -f libdict.so bank.cgi account.cgi add_money.cgi transfer_money.cgi bank.o account.o cgi.o add_money.o transfer_money.o common.o
