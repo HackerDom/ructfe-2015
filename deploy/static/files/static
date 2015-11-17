@@ -1,0 +1,22 @@
+server{
+    access_log /home/static/access.log;
+    error_log  /home/static/error.log;
+    
+    root /var/www/html/;
+    index index.html;
+
+    location /static/ {
+        try_files $uri @static;
+    }
+
+    location @static {
+        root /home;
+    }
+
+    location = /home {
+        rewrite .* http://$main_host/;
+    }
+}
+
+
+

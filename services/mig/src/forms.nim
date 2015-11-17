@@ -92,7 +92,7 @@ proc checkForm2(data: tuple[occup, empl: string]): string =
 
 proc checkForm3(data: tuple[thought, sign: string]): string =
     if isNil(data.thought) or data.thought.len < 16: return "Check your mind!"
-    if isNil(data.sign) or (not checkSign(data.thought.trimEnd('='), data.sign)) or (not isUniqueThought(data.thought)): return "Not trusted!"
+    if isNil(data.sign) or (not checkSign(data.thought.hex(), data.sign)) or (not isUniqueThought(data.thought)): return "Not trusted!"
 
 proc checkForm4(data: tuple[offer, public: string]): string =
     if not eqIgnoreCase(data.offer, "yes"): return "You must agree with offer"
@@ -127,26 +127,26 @@ proc update(json: JsonNode, state: State, check: bool): string =
         let error = if check: checkForm1(data) else: nil
         if isNil(error):
             saveForm1(data, state)
-        error
+        return error
     of 2:
         let data = (occup: json.val("occup", 32), empl: json.val("empl", 48))
         let error = if check: checkForm2(data) else: nil
         if isNil(error):
             saveForm2(data, state)
-        error
+        return error
     of 3:
         let data = (thought: json.val("thought", 32), sign: json.val("sign", 1024))
         let error = if check: checkForm3(data) else: nil
         if isNil(error):
             saveForm3(data, state)
-        error
+        return error
     of 4:
         let data = (offer: json.val("offer", 3), public: json.val("public", 3))
         let error = if check: checkForm4(data) else: nil
         if isNil(error):
             saveForm4(data, state)
-        error
-    else: nil
+        return error
+    else: return nil
 
 proc nextForm*(login: string, json: JsonNode): tuple[form, error: string] =
     let data = findDataInfo(login)
@@ -181,4 +181,4 @@ proc nextForm*(login: string, json: JsonNode): tuple[form, error: string] =
     if state.page < MinPage or state.page > MaxPage:
         state.page = 1
 
-    (form: form(state.page, state), error: string(nil))
+    return (form: form(state.page, state), error: string(nil))

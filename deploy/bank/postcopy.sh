@@ -12,5 +12,5 @@ find /home/bank -type d -exec chmod 770 {} +
 
 service nginx restart
 
-chmod +x /home/bank/bank_httpd/bank_httpd
+chmod +x /home/bank/bank_httpd
 chmod +x /home/bank/*.cgi

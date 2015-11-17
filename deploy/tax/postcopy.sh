@@ -5,7 +5,7 @@ USERNAME="tax"
 pushd '/home/tax'
 
 curl -sL https://deb.nodesource.com/setup_4.x | bash -
-apt-get install -y nodejs
+DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes nodejs
 
 npm install
 

@@ -20,7 +20,7 @@ proc rnd*(len: Natural): string =
     var res = ""
     for i in 0..(len shr 2) - 1:
         res.add(intToBStr(int(rnduint())))
-    res
+    return res
 
 const IVLen = 16
 const KeyLen = 32
