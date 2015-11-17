@@ -66,14 +66,6 @@ $(function() {
 		var $error = $form.find(".error").stop(true, true).hide();
 		var $inputs = $form.find("input,button").attr("disabled", true);
 		var serialize = $form.data("serialize");
-		var $proof = $form.find("#proof");
-		if($proof.length) {
-			var worker = new Worker('/static/js/pow.js');
-			worker.onmessage = function(event) {
-				console.log("Worker said : " + event.data);
-			};
-			worker.postMessage('ali');
-		}
 		$.ajax({
 			url: $form.data("action"),
 			method: "POST",
@@ -144,9 +136,6 @@ $(function() {
 				$fields.append($head)
 			}
 			setFields(data.fields);
-			if(data.proof) {
-				$fields.append($("<input id='proof' type='hidden' name='proof' value=''/>"));
-			}
 		}
 	}).submit();
 
