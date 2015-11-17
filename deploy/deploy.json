@@ -1,13 +1,15 @@
 {
     "Bank" : {
         "username" : ["bank", "bank"],
-        "run_deps" : [
+        "build_deps" : [
             "nginx",
             "gcc-multilib",
             "make"
         ],
         "files" : [
-            ["services/bank", "/home/"]
+            ["services/bank", "/home/"],
+            ["deploy/bank/files/bank", "/etc/nginx/sites-available/bank"],
+            ["deploy/bank/bank.service", "/etc/systemd/system/bank.service"] 
         ],
         "postcopy" : ["deploy/bank/postcopy.sh", "/root/bank/postcopy.sh"],
         "precopy" : "deploy/bank/precopy.sh"
