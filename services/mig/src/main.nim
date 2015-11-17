@@ -143,7 +143,7 @@ proc handle(req: Request) {.async.} =
 
 initStaticFilesTable("site/", "/index.html")
 
-asyncCheck newAsyncHttpServer().serve(Port(80), handle)
+asyncCheck newAsyncHttpServer().serve(Port(7557), handle)
 
 #asyncdispatch sometimes throw exceptions :(
 while true:
