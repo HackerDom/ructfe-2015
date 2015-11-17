@@ -7,9 +7,6 @@ GOPATH=/home/hm/server go build
 
 popd
 
-systemctl daemon-reload
-systemctl enable hm
-systemctl start hm
 
 ln -s /etc/nginx/sites-available/hm /etc/nginx/sites-enabled/hm
 
@@ -20,3 +17,7 @@ find /home/hm -type d -exec chmod 770 {} +
 service nginx restart
 
 chmod +x /home/hm/server/server
+
+systemctl daemon-reload
+systemctl enable hm
+systemctl start hm
