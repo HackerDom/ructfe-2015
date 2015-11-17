@@ -88,7 +88,7 @@ namespace ElectroChecker
 			var elapsedSeconds = now.Subtract(state.ElectionStartDate).TotalMilliseconds;
 			if(elapsedSeconds < 0)
 				throw new ServiceException(ExitCode.CHECKER_ERROR, string.Format("Possible time desynchronization on checksystem hosts! Election started in future: '{0}' and now is only '{1}'", state.ElectionStartDate.ToSortable(), now.ToSortable()));
-			var tts = (nominateTimeInSec + voteTimeInSec) * 1000 - elapsedSeconds;
+			var tts = (nominateTimeInSec + voteTimeInSec + 1) * 1000 - elapsedSeconds;
 			if(tts > 0)
 			{
 				Console.Error.WriteLine("Sleeping for {0} seconds (Election start '{1}' now '{2}' nomination duration {3} vote duration {4})", tts, state.ElectionStartDate.ToSortable(), now.ToSortable(), nominateTimeInSec, voteTimeInSec);

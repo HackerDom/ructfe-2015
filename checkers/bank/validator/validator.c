@@ -21,4 +21,5 @@ int main(int argc, char** argv) {
     t.set(str, value);
     printf("%lu\n", t.validate());
 
+    return 0;
 }
