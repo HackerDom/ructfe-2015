@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 from collections import defaultdict
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, date, time
 from hashlib import sha256
 from json import loads, dumps, JSONEncoder
 from random import choice
@@ -633,9 +633,7 @@ if __name__ == '__main__':
         ioloop = IOLoop.instance()
         app.db = Pool(dsn="dbname=mol user=mol password=molpassword "
                           "host=localhost port=5432",
-                      size=1, max_size=2, auto_shrink=True,
-                      shrink_delay=timedelta(0,10),
-                      shrink_period=timedelta(0,10),
+                      size=5, max_size=100, auto_shrink=True,
                       ioloop=ioloop)
         future = app.db.connect()
         ioloop.add_future(future, lambda _: ioloop.stop())
