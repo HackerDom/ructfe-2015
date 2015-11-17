@@ -73,7 +73,6 @@ namespace ElectroChecker
 				ElectionStartDate = electionStartDt,
 				ElectionId = election.Id.ToString(),
 				Candidates = candidates.ToArray(),
-				Voters = voters.ToArray(),
 				expectedResult = expectedResult
 			};
 
