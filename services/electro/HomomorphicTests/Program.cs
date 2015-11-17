@@ -10,8 +10,8 @@ namespace HomomorphicTests
 	{
 		static void Main(string[] args)
 		{
-			int maxNum = 128;
-			var nums = new []{1, 2, 3, 4, 5};
+			int maxNum = 81;
+			var nums = new []{0, 1, 2};
 
 			const int testsCount = 10;
 			var sw = Stopwatch.StartNew();

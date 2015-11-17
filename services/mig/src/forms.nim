@@ -92,7 +92,7 @@ proc checkForm2(data: tuple[occup, empl: string]): string =
 
 proc checkForm3(data: tuple[thought, sign: string]): string =
     if isNil(data.thought) or data.thought.len < 16: return "Check your mind!"
-    if isNil(data.sign) or (not checkSign(data.thought.trimEnd('='), data.sign)) or (not isUniqueThought(data.thought)): return "Not trusted!"
+    if isNil(data.sign) or (not checkSign(data.thought.hex(), data.sign)) or (not isUniqueThought(data.thought)): return "Not trusted!"
 
 proc checkForm4(data: tuple[offer, public: string]): string =
     if not eqIgnoreCase(data.offer, "yes"): return "You must agree with offer"

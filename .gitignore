@@ -27,5 +27,6 @@
 
 services/hm/server/*.exe
 services/hm/server/*.db
+services/hm/server/*.txt
 
 

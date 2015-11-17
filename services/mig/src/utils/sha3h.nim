@@ -1,4 +1,4 @@
-{.compile: "../lib/rhash/sha3.c"}
+{.compile: "lib/rhash/sha3.c"}
 
 const sha3_256_hash_size = 32
 

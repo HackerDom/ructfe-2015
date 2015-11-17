@@ -4,7 +4,10 @@ import (
 	"errors"
 	"strings"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -12,8 +15,9 @@ import (
 const (
 	Unauthorized = "User is not authorized"
 	AuthenticationFailed = "Authentication failed"
-	Key = "f11ecd5521ddf2614e17e4fb074a86da" //todo
 )
+
+const Key string = "f11ecd5521ddf2614e17e4fb074a86da"
 
 func addHealthMetrics(request *http.Request) (int, string) {
 
@@ -22,23 +26,31 @@ func addHealthMetrics(request *http.Request) (int, string) {
 	
 	uId, err := getUserId(request)
 	if err != nil {
-		status = http.StatusUnauthorized
-		response = err.Error()
-	} else {
-		metrics := parseFromForm(request)
-		userId, err := strconv.Atoi(strings.Split(uId, "_")[1])
-		if err != nil {
-			fmt.Println(err)
-		}
-		success, id := tryAddMetrics(userId, metrics)
-		if (success) {
-			status = http.StatusOK
-			response = fmt.Sprintf("Metrics was successfully added, id assigned: %v", id)
-		} else {
-			status = http.StatusInternalServerError
-			response = "Metrics was not added"
-		}
+		logger.Println("Can't get user from request")
+		return http.StatusUnauthorized, err.Error()
 	}
+	
+	metrics := parseFromForm(request)
+	if metrics == nil {
+		logger.Println("Can't parse metrics from request")
+		return http.StatusBadRequest, "Can't parse metrics from your request"
+	}
+	
+	userId, err := strconv.Atoi(strings.Split(uId, "_")[1])
+	if err != nil {
+		logger.Println("Can't parse user Id: ", err)
+		return http.StatusBadRequest, "Can't find user to add metrics for"
+	}
+
+	success, id := tryAddMetrics(userId, metrics)
+	if (success) {
+		status = http.StatusOK
+		response = fmt.Sprintf("Metrics were successfully added, id assigned: %v", id)
+	} else {
+		status = http.StatusInternalServerError
+		response = "Metrics were not added"
+	}
+	
 	return status, response
 }
 
@@ -53,7 +65,7 @@ func getHealthMetrics(request *http.Request) (int, string, []HealthMetrics) {
 		status = http.StatusUnauthorized
 		response = err.Error() 
 	} else {
-		response += uId // debug
+		response += uId 
 		var success bool
 		success, metrics = tryGetUserMetrics(uId)
 		if success {
@@ -79,13 +91,13 @@ func addUser(request *http.Request) (int, string) {
 		result, uId := tryAddUser(user)
 		if result == Success {
 			status = http.StatusOK
-			response = fmt.Sprintf("User was successfully added, id assigned: %v", uId) //debug?
+			response = fmt.Sprintf("User was successfully added, id assigned: %v", uId) 
 		} else if result == AlreadyExists {
 			status = http.StatusConflict
 			response = "User with this login already exists"
 		} else {
 			status = http.StatusInternalServerError
-			response = "Metrics was not added"
+			response = "Metrics were not added"
 		}
 	}
 	return status, response
@@ -177,4 +189,18 @@ func logout(request *http.Request) (int, string, http.Cookie, http.Cookie) {
 	response := "Bye-bye! Seeya!"
 
 	return status, response, authCookie, idCookie
+}
+
+func setupLog(filename string) *log.Logger{
+	var logwriter io.Writer
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println("Failed to open log file", err)
+		logwriter = os.Stdout
+	}
+	
+	logwriter = file
+
+	logger := log.New(logwriter, "", log.Ldate|log.Ltime|log.Lshortfile)
+	return logger
 }
