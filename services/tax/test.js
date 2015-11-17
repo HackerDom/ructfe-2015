@@ -4,9 +4,9 @@ var db = require('./db');
 // errors can be try/catched
 co(function *() {
     try {
-        console.log(yield db.users.find({}));
+        console.log(yield db.users.findOne({'_id': 'aawdwfafaf'}));
     } catch (err) {
-        console.error(err.message); // "boom"
+        console.error('eee', err.message); // "boom"
     }
 }).catch(onerror);
 
