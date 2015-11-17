@@ -263,7 +263,7 @@ def main(argv):
     config = read_config(argv[1])
     run('cp deploy-key /tmp/deploy-key-vbox', True)
     run('chmod 600 /tmp/deploy-key-vbox', True)
-    with DirtyMachine("dirty-x64", "10.70.0.4") as dirty_machine, TeamMachine("team222-x64", "10.70.0.222") as team_machine:
+    with DirtyMachine("dirty-x64", "10.70.0.4") as dirty_machine, TeamMachine("team220-x64", "10.70.0.220") as team_machine:
         services = [Static(config), NasaRasa(config), MoL(config), TaX(config), HM(config), Electro(config), Bank(config), Mig(config)]
         for service in services:
             service.deploy(dirty_machine, team_machine)
