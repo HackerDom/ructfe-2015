@@ -1,16 +1,29 @@
 .idea
 *.py[co]
-services/electro/packages
-services/electro/HomomorphicTests/bin
-services/electro/HomomorphicTests/obj
-services/electro/Electro/bin
-services/electro/Electro/obj
-services/electro/ElectroChecker/bin
-services/electro/ElectroChecker/obj
+/services/electro/packages
+/services/electro/HomomorphicTests/bin
+/services/electro/HomomorphicTests/obj
+/services/electro/Electro/bin
+/services/electro/Electro/obj
+/services/electro/ElectroChecker/bin
+/services/electro/ElectroChecker/obj
 
-services/electro/service/logs
-services/electro/service/state
+/services/electro/Electro/web/static/inc
+/services/electro/Electro/web/static/logos
+/services/electro/Electro/web/static/css
+/services/electro/Electro/web/static/img
+/services/electro/Electro/web/static/js/theme.js
+
+/services/electro/service/logs
+/services/electro/service/state
+
+/services/electro/service/web/static/logos
+/services/electro/service/web/static/css
+/services/electro/service/web/static/img
+/services/electro/service/web/static/inc
+/services/electro/service/web/static/js/theme.js
 
 
 services/hm/server/*.exe
 services/hm/server/*.db
+
