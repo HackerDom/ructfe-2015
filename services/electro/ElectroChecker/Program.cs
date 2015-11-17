@@ -157,7 +157,7 @@ namespace ElectroChecker
 				expectedResult = expectedResult
 			};
 
-			ExitWithMessage(ExitCode.OK, Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));
+			ExitWithMessage(ExitCode.OK, null, Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));
 		}
 
 		private static void ProcessGet1(string host, string id, string flag)

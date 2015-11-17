@@ -23,7 +23,6 @@ namespace Electro.Crypto
 				if(i == 0 || randomBuff[0] % 2 == 1)
 					core = core + publicKey.KeyParts[i];
 			}
-			Console.WriteLine();
 			return core + val;
 		}
 

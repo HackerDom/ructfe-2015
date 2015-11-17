@@ -102,6 +102,7 @@ namespace ElectroChecker
 			using(var requestStream = request.GetRequestStream())
 				requestStream.Write(data, 0, data.Length);
 
+			
 			using(var response = (HttpWebResponse)request.GetResponse())
 			{
 			}
