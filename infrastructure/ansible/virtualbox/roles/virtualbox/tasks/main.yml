@@ -1,0 +1,30 @@
+- name: install virtualbox apt packages
+  apt: name={{item}} state=latest
+  with_items:
+    - virtualbox-5.0
+    - linux-headers-3.2.0-90-generic
+  notify: vboxdrv setup
+
+- name: install lamp apt packages
+  apt: name={{item}} state=latest
+  with_items:
+    - apache2
+    - libapache2-mod-php5
+    - php5-mysql
+
+- modprobe: name=vboxdrv state=present
+
+- name: create vbox user
+  user: name=vbox groups=vboxusers home=/var/vbox password=$6$hBs8jYQJXQE$2VV12zsMwFV0VgmjlC/nmojb5t1aTIbMoKLgK33E/IRdBaloXzTLBfHzV5XgtABI3OV14KjNIgP6LJTC6Me/k/
+
+- copy: src=virtualbox dest=/etc/default/virtualbox
+
+- shell: update-rc.d vboxweb-service defaults
+
+- service: name=vboxweb-service state=started
+
+- service: name=apache2 state=started
+
+- unarchive: src=phpvirtualbox-5.0-3.tar.bz2 dest=/var/www/
+
+- copy: src=config.php dest=/var/www/config.php
