@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Electro.Model;
 using Electro.Utils;
+using log4net;
 
 namespace Electro
 {
@@ -19,6 +20,7 @@ namespace Electro
 		private void LoadState(IEnumerable<User> users)
 		{
 			users.ForEach(user => AddUser(user));
+			log.InfoFormat("Loaded users state. Now have {0} users", this.users.Count);
 		}
 
 		public User AddUser(string login, string pass, string publicMessage, string privateNotes)
@@ -53,5 +55,7 @@ namespace Electro
 		}
 
 		ConcurrentDictionary<string, User> users = new ConcurrentDictionary<string, User>();
+
+		private static readonly ILog log = LogManager.GetLogger(typeof(AuthController));
 	}
 }

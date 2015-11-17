@@ -6,6 +6,7 @@ using System.Numerics;
 using Electro.Crypto;
 using Electro.Model;
 using Electro.Utils;
+using log4net;
 
 namespace Electro
 {
@@ -25,7 +26,9 @@ namespace Electro
 		private void LoadState(IEnumerable<Election> e, IEnumerable<KeyValuePair<Guid, PrivateKey>> k)
 		{
 			e.ForEach(election => elections[election.Id] = election);
+			log.InfoFormat("Loaded elections state. Now have {0} elections", this.elections.Count);
 			k.ForEach(kvp => electionPrivateKeys[kvp.Key] = kvp.Value);
+			log.InfoFormat("Loaded  keys state. Now have {0} keys", this.electionPrivateKeys.Count);
 		}
 
 		public Guid StartElection(string electionName, User firstCandidate, bool isPublic, DateTime nominateTill, DateTime till)
@@ -163,9 +166,11 @@ namespace Electro
 			return true;
 		}
 
-		private const int MaxVotes = 1024;
+		private const int MaxVotes = 243;
 
 		private ConcurrentDictionary<Guid, PrivateKey> electionPrivateKeys = new ConcurrentDictionary<Guid, PrivateKey>();
 		private ConcurrentDictionary<Guid, Election> elections = new ConcurrentDictionary<Guid, Election>();
+
+		private static readonly ILog log = LogManager.GetLogger(typeof(ElectroController));
 	}
 }
