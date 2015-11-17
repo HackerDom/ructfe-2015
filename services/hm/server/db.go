@@ -199,8 +199,6 @@ func parseUId(uId string) int {
 }
 
 func prepareDb() {
-	os.Remove(DbName)
-
 	db, err := sql.Open("sqlite3", DbName)
 	if err != nil {
 		log.Fatal("Error while connecting to db: ", err)
