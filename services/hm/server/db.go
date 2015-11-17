@@ -3,11 +3,8 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 	_ "github.com/mattn/go-sqlite3"
-	"log"
 	"errors"
-	"strings"
 )
 const (
 	DbName = "./health.db" 
@@ -19,7 +16,7 @@ const (
 )
 
 const (
-	CreateUsersTable = "CREATE TABLE IF NOT EXISTS users(id integer not null primary key AUTOINCREMENT, login text, pass text); DELETE FROM users;"
+	CreateUsersTable = "CREATE TABLE IF NOT EXISTS users(id integer not null primary key AUTOINCREMENT, login text, pass text)"
 	FindUserByLogin = "SELECT id, login FROM users WHERE login = ?"
 	FindUser = "SELECT id FROM users WHERE login = ? AND pass = ?" //todo
 	AddUser = "INSERT INTO users (login, pass) VALUES (?, ?)"
@@ -37,6 +34,7 @@ func tryAddMetrics(uId int, m *HealthMetrics) (bool, int64) {
 	db, err := sql.Open("sqlite3", DbName)
 	if err != nil {
 		logger.Fatal("Error while connecting to db: ", err)
+		return false, -1
 	}
 	defer db.Close()
 	
@@ -45,12 +43,14 @@ func tryAddMetrics(uId int, m *HealthMetrics) (bool, int64) {
 		logger.Fatal(err)
 		return false, -1
 	}
+	defer stmt.Close()
 	
 	res, err := stmt.Exec(uId, m.Weight, m.BloodPressure, m.Pulse, m.WalkingDistance, m.Comment) 
 	if err != nil {
 		logger.Fatal(err)
 		return false, -1
 	}
+	
 	id, err := res.LastInsertId()
 	if err != nil {
 		logger.Fatal(err)
@@ -85,6 +85,7 @@ func tryGetUserMetrics(uId string) (bool, []HealthMetrics) {
 		logger.Fatal(err)
 		return false, nil
 	 }
+	 defer rows.Close()
 	 
 	 for rows.Next() {
 		var id int
@@ -101,9 +102,11 @@ func tryGetUserMetrics(uId string) (bool, []HealthMetrics) {
 }
 
 func tryAddUser(user *User) (int, string){
+
 	db, err := sql.Open("sqlite3", DbName)
 	if err != nil {
 		logger.Fatal("Error while connecting to db: ", err)
+		return Error, ""
 	}
 	defer db.Close()
 	
@@ -112,6 +115,7 @@ func tryAddUser(user *User) (int, string){
 		logger.Fatal(err)
 		return Error, ""
 	}
+	defer rows.Close()
 	
 	if rows.Next() {
 		return AlreadyExists, ""
@@ -129,6 +133,7 @@ func tryAddUser(user *User) (int, string){
 		logger.Fatal(err)
 		return Error, ""
 	}
+	
 	id, err := res.LastInsertId()
 	if err != nil {
 		logger.Fatal(err)
@@ -156,6 +161,7 @@ func tryAddUser(user *User) (int, string){
 }
 
 func findUser(user *User) (string, error) {	
+
 	db, err := sql.Open("sqlite3", DbName)
 	if err != nil {
 		logger.Fatal("Error while connecting to db: ", err)
@@ -185,85 +191,68 @@ func findUser(user *User) (string, error) {
 	 return "", errors.New("")
 }
 
-func createUId(id int64) string {
-	return "u_" + strconv.FormatInt(id, 10)
-}
-
-func parseUId(uId string) int {
-	res, err := strconv.Atoi(strings.Split(uId, "_")[1])
-	if err != nil {
-		logger.Fatal("Can't parse uId=", uId)
-	}
-	return res
-}
-
 func prepareDb() {
+
 	db, err := sql.Open("sqlite3", DbName)
-	if err != nil {
-		logger.Fatal("Error while connecting to db: ", err)
-	}
+	checkErr(err)
 	defer db.Close()
 
 	_, err = db.Exec(CreateIndicesTable)
-	if err != nil {
-		logger.Println("%q: %s\n", err, CreateIndicesTable)
-		return
-	}
+	checkErr(err)
 	
 	_, err = db.Exec(CreateUsersTable)
-	if err != nil {
-		logger.Println("%q: %s\n", err, CreateUsersTable)
-		return
-	}
+	checkErr(err)
 	
-	uid := addTestUser(db)
+	uid := addTestUser(db) //debug
 	addTestMetrics(db, uid) //debug
 }
 
 func addTestUser(db *sql.DB) string{
+
 	stmt, err := db.Prepare(AddUser)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 		return ""
 	}
 	defer stmt.Close()
 	
 	res, err := stmt.Exec("testUser", "somePass") 
 	if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 		return ""
 	}
 	
 	id, err := res.LastInsertId()
 	if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 		return ""
 	}
 	return createUId(id)
 }
 
 func addTestMetrics(db *sql.DB, uid string) {
+
 	tx, err := db.Begin()
 	 if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 	 }
 	 stmt, err := tx.Prepare(InsertValues)
 	 if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 	 }
 	 defer stmt.Close()
 	 
 	 for i := 0; i < 5; i++ {
-	 _, err = stmt.Exec(uid, i, i*3, i+3, (i-1)*4, fmt.Sprintf("Comment number %03d", i))
-	 if err != nil {
-		 logger.Fatal(err)
-	 }
+		 _, err = stmt.Exec(uid, i, i*3, i+3, (i-1)*4, fmt.Sprintf("Comment number %03d", i))
+		 if err != nil {
+			 logger.Println(err)
+		 }
 	 }
 	 tx.Commit()
 
 	 rows, err := db.Query(SelectTopRows)
 	 if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 	 }
 	 defer rows.Close()
 	 
@@ -277,6 +266,7 @@ func addTestMetrics(db *sql.DB, uid string) {
 
 func checkErr(err error) {
     if err != nil {
+		logger.Fatal(err)
         panic(err)
     }
 }

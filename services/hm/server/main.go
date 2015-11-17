@@ -15,8 +15,9 @@ import (
 const (
 	Unauthorized = "User is not authorized"
 	AuthenticationFailed = "Authentication failed"
-	Key = "f11ecd5521ddf2614e17e4fb074a86da" //todo
 )
+
+const Key string = "f11ecd5521ddf2614e17e4fb074a86da"
 
 func addHealthMetrics(request *http.Request) (int, string) {
 
@@ -25,23 +26,31 @@ func addHealthMetrics(request *http.Request) (int, string) {
 	
 	uId, err := getUserId(request)
 	if err != nil {
-		status = http.StatusUnauthorized
-		response = err.Error()
-	} else {
-		metrics := parseFromForm(request)
-		userId, err := strconv.Atoi(strings.Split(uId, "_")[1])
-		if err != nil {
-			logger.Println("Can't parse user Id: ", err)
-		}
-		success, id := tryAddMetrics(userId, metrics)
-		if (success) {
-			status = http.StatusOK
-			response = fmt.Sprintf("Metrics was successfully added, id assigned: %v", id)
-		} else {
-			status = http.StatusInternalServerError
-			response = "Metrics was not added"
-		}
+		logger.Println("Can't get user from request")
+		return http.StatusUnauthorized, err.Error()
 	}
+	
+	metrics := parseFromForm(request)
+	if metrics == nil {
+		logger.Println("Can't parse metrics from request")
+		return http.StatusBadRequest, "Can't parse metrics from your request"
+	}
+	
+	userId, err := strconv.Atoi(strings.Split(uId, "_")[1])
+	if err != nil {
+		logger.Println("Can't parse user Id: ", err)
+		return http.StatusBadRequest, "Can't find user to add metrics for"
+	}
+
+	success, id := tryAddMetrics(userId, metrics)
+	if (success) {
+		status = http.StatusOK
+		response = fmt.Sprintf("Metrics were successfully added, id assigned: %v", id)
+	} else {
+		status = http.StatusInternalServerError
+		response = "Metrics were not added"
+	}
+	
 	return status, response
 }
 
@@ -56,7 +65,7 @@ func getHealthMetrics(request *http.Request) (int, string, []HealthMetrics) {
 		status = http.StatusUnauthorized
 		response = err.Error() 
 	} else {
-		response += uId // debug
+		response += uId 
 		var success bool
 		success, metrics = tryGetUserMetrics(uId)
 		if success {
@@ -82,13 +91,13 @@ func addUser(request *http.Request) (int, string) {
 		result, uId := tryAddUser(user)
 		if result == Success {
 			status = http.StatusOK
-			response = fmt.Sprintf("User was successfully added, id assigned: %v", uId) //debug?
+			response = fmt.Sprintf("User was successfully added, id assigned: %v", uId) 
 		} else if result == AlreadyExists {
 			status = http.StatusConflict
 			response = "User with this login already exists"
 		} else {
 			status = http.StatusInternalServerError
-			response = "Metrics was not added"
+			response = "Metrics were not added"
 		}
 	}
 	return status, response

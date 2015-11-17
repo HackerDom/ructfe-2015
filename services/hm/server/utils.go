@@ -21,7 +21,7 @@ func encodeBase64(s string) string {
 }
 
 func split(c rune) bool {
-	return c == ';' || c == ' ' //todo!
+	return c == ';' || c == ' ' 
 }
 
 func md5hash(params ...string) string {

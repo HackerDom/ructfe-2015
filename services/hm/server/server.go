@@ -180,7 +180,6 @@ func main() {
 	mux["/loginform"] = loginformHandler
 	mux["/logout"] = logoutHandler
 	mux["/static"] = staticHandler
-	//todo: about
 
 	server.ListenAndServe()
 }

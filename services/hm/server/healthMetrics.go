@@ -15,23 +15,26 @@ type HealthMetrics struct {
 }
 
 func parseFromForm(r *http.Request) *HealthMetrics {
-	weight := getIntField(r, "Weight")
-    bp := getIntField(r, "BloodPressure")
-    pulse := getIntField(r, "Pulse")
-    wdistance := getIntField(r, "WalkingDistance")
+	weight, err := strconv.Atoi(r.FormValue("Weight"))
+	if err != nil {
+		return nil
+	}
+    bp, err := strconv.Atoi(r.FormValue("BloodPressure"))
+	if err != nil {
+		return nil
+	}
+    pulse, err := strconv.Atoi(r.FormValue("Pulse"))
+	if err != nil {
+		return nil
+	}
+    wdistance, err := strconv.Atoi(r.FormValue("WalkingDistance"))
+	if err != nil {
+		return nil
+	}
 	comment := r.FormValue("Comment")
 	
     result := &HealthMetrics{weight, bp, pulse, wdistance, comment}
 	return result
-}
-
-func getIntField(r *http.Request, name string) int {
-	fmt.Println(name, " ", r.FormValue(name))
-	res, err := strconv.Atoi(r.FormValue(name))
-    if err != nil {
-        logger.Println("Can't parse " + name " parameter: " + err)
-    }
-	return res
 }
 
 func (this HealthMetrics) toString() string {
