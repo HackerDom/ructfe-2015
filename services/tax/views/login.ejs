@@ -1,17 +1,30 @@
 <!DOCTYPE html>
 <html>
 <% include blocks/head.ejs %>
-<body>
+<body class="service-page" data-spy="scroll" data-target="#main-navbar">
 <% include blocks/b_head.ejs %>
-<div class="content">
-    <h1>Login</h1>
+<section class="main-block" data-stellar-background-ratio="0.5">
+    <div class="container">
+        <div class="caption">
+            <div class="row">
+                <div class="col-sm-2 center-block">
+                    <a href="/">
+                        <img src="/static/logos/tax.png" class="logo img-responsive">
+                    </a>
+                </div>
+                <div class="col-sm-8 content-block">
+                    <h1>Login</h1>
 
-    <form action="" method="post">
-        <input type="text" name="name" placeholder="name">
-        <input type="password" name="password" placeholder="password">
-        <button type="submit">LogIn</button>
-    </form>
-</div>
+                    <form action="" method="post">
+                        <input type="text" name="name" placeholder="name">
+                        <input type="password" name="password" placeholder="password">
+                        <button type="submit" class="btn btn-default btn-lg">LogIn</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 <% include blocks/b_footer.ejs %>
 </body>
 </html>
