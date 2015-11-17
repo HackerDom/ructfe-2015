@@ -1,4 +1,18 @@
 {
+    "Bank" : {
+        "username" : ["bank", "bank"],
+        "run_deps" : [
+            "nginx",
+            "gcc-multilib",
+            "make"
+        ],
+        "files" : [
+            ["services/bank", "/home/"]
+        ],
+        "postcopy" : ["deploy/bank/postcopy.sh", "/root/bank/postcopy.sh"],
+        "precopy" : "deploy/bank/precopy.sh"
+    }
+    ,
     "Electro" : {
         "username" : ["electro", "electro"],
         "run_deps" : [

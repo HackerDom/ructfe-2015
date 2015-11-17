@@ -1,0 +1,15 @@
+[Unit]
+    Description=Bank
+    After=network.target
+
+[Service]
+    Environment="LD_LIBRARY_PATH=/home/bank/dict"
+    ExecStart=/home/bank/bank_httpd
+    WorkingDirectory=/home/bank
+    User=bank
+    Group=bank
+
+[Install]
+    WantedBy=multi-user.target
+
+

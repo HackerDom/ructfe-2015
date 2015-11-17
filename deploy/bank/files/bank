@@ -1,0 +1,25 @@
+server{
+    server_name ~^bank\.(?P<main_host>.+)$;
+    
+    access_log /home/bank/access.log;
+    error_log  /home/bank/error.log;
+    
+    location / {
+        proxy_pass http://localhost:3255;
+    }   
+
+    location /static/ {
+        try_files $uri @static;
+    }
+
+    location @static {
+        root /home;
+    }
+
+    location = /home {
+        rewrite .* http://$main_host/;
+    }
+}
+
+
+
