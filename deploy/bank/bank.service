@@ -4,7 +4,7 @@
 
 [Service]
     Environment="LD_LIBRARY_PATH=/home/bank/dict"
-    ExecStart=/home/bank/bank_httpd/bank_httpd
+    ExecStart=/home/bank/bank_httpd
     WorkingDirectory=/home/bank
     User=bank
     Group=bank

@@ -1,1 +1,0 @@
-Here is a magic to generate empty dict code. Not edit and run it unless you are Bay.

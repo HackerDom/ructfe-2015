@@ -34,7 +34,9 @@
              "nginx"
          ],
          "files" : [
-             ["static/static", "/home/"]
+             ["static/static", "/home/"],
+             ["static/index.html", "/var/www/html/index.html"],
+             ["deploy/static/files/static", "/etc/nginx/sites-available/default"]
          ]
     }
     ,
@@ -59,7 +61,9 @@
         "run_deps" : [
             "libgmp-dev",
             "redis-server",
-            "gcc-multilib"
+            "gcc-multilib",
+            "git",
+            "nginx"
         ],
         "files" : [
             ["services/mig", "/home/"],
@@ -98,7 +102,8 @@
             "python3",
             "python3-pip",
             "dh-systemd",
-            "nginx"
+            "nginx",
+            "git"
          ],
          "files" : [
              ["services/mol/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"],

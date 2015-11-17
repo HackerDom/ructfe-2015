@@ -5,6 +5,7 @@ import random
 import string
 import threading
 import requests as r
+import binascii
 
 from httpchecker import *
 #from gmpy import mpz
@@ -293,7 +294,9 @@ class Checker(HttpCheckerBase):
 		return text
 
 	def sign(self, msg):
-		return "%x" % pow(int(msg.replace('=', ''), 16), PrivExp, Modulus)
+		imsg = int(binascii.hexlify(msg.encode('utf-8')), 16)
+		self.debug(imsg)
+		return "%x" % pow(imsg, PrivExp, Modulus)
 
 	def randhex(self, len):
 		lst = [random.choice('0123456789ABCDEF') for i in range(len)]

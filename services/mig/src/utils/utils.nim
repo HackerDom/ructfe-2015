@@ -22,13 +22,13 @@ proc splitKeyValue*(s: string, delim: char): tuple[key, val: string] {.noSideEff
     let idx = s.find(delim)
     if idx < 0:
         return (s, string(nil))
-    (key: s.substr(0, idx - 1), val: s.substr(idx + 1))
+    return (key: s.substr(0, idx - 1), val: s.substr(idx + 1))
 
 proc isHex*(value: string): bool {.noSideEffect.} =
     for i in 0..value.len - 1:
         if not (value[i] in HexDigits):
             return false
-    true
+    return true
 
 proc `xor`*(s1, s2: string): string {.noSideEffect.} =
     if s1.len != s2.len:

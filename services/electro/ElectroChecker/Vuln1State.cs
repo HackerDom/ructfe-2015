@@ -8,12 +8,12 @@ using Electro.Utils;
 namespace ElectroChecker
 {
 	[DataContract]
-	class IdState1
+	class Vuln1State
 	{
 		[DataMember] private string electionStartDate;
 		[IgnoreDataMember] public DateTime ElectionStartDate;
 
-		[DataMember] public Guid ElectionId;
+		[DataMember] public string ElectionId;
 		[DataMember] public User[] Candidates;
 		[DataMember] public User[] Voters;
 		[DataMember] public int[] expectedResult;
