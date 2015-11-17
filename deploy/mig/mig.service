@@ -3,8 +3,8 @@
     After=network.target
 
 [Service]
-    ExecStart=/home/mig/main
-    WorkingDirectory=/home/mig/
+    ExecStart=/home/mig/src/main
+    WorkingDirectory=/home/mig/src
     User=mig
     Group=mig
 

@@ -16,11 +16,12 @@ git clone -b master --depth 1 git://github.com/nim-lang/csources
 cd csources && sh build.sh && cd ..
 popd
 
-chmod +x /home/mig/Nim/bin/nim
-/home/mig/Nim/bin/nim cc -d:release main.nim
-
 popd
 
+chmod +x /home/mig/Nim/bin/nim
+pushd /home/mig/src
+/home/mig/Nim/bin/nim cc -d:release main.nim
+popd
 
 chown mig:mig -R /home/mig/
 chmod 660 -R /home/mig/
