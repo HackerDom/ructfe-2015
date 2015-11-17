@@ -1,8 +1,8 @@
-import os, strutils, asynchttpserver, asyncdispatch, asyncnet, strtabs, tables, times, mimetypes, json
-import utils/utils, utils/crypt
+import os, strutils, sequtils, asynchttpserver, asyncdispatch, asyncnet, strtabs, tables, times, mimetypes, json, cgi, cookies
+import utils/utils, utils/crypt, utils/sha3h, utils/dbstorage, state, forms
 
 type StaticFile = tuple[content, date, mimeType: string]
-const NoStaticFile = (content:nil, date:nil, mimeType:nil)
+const NoStaticFile = (content:string(nil), date:string(nil), mimeType:string(nil))
 
 let files {.global.} = newTable[string, StaticFile]()
 
@@ -51,43 +51,99 @@ proc handleStaticFile(req: Request): Future[void] =
                 "Date": file.date}
             req.send(Http200, file.content, headers)
 
-type Auth = tuple[login: string, pass: string]
-const NoAuth = (login:nil, pass:nil)
+type AuthData = tuple[login: string, pass: string]
+const NoAuthData = (login:string(nil), pass:string(nil))
 
-proc tryParseAuth(req: Request): Auth =
+proc tryParseAuthData(req: Request): AuthData =
     try:
         let json = parseJson(req.body)
         (json["login"].getStr(), json["pass"].getStr())
     except:
-        (nil, nil)
+        NoAuthData
 
 proc handleAuthRequest(req: Request): Future[void] =
     if not eqIgnoreCase(req.reqMethod, HttpPost):
-        req.send(Http405, "Method Not Allowed")
+        return req.send(Http405, "Method Not Allowed")
+
+    let auth = req.tryParseAuthData()
+    if auth == NoAuthData:
+        req.send(Http403, "Forbidden")
+    elif auth.login.len < 4 or auth.login.len > 16 or auth.pass.len < 4 or auth.pass.len > 16:
+        req.send(Http400, "Bad login/pass")
+    elif addOrGetAuth(auth) != auth.pass:
+        req.send(Http403, "Forbidden")
     else:
-        let auth = req.tryParseAuth()
-        if auth == NoAuth or auth.login != "admin":
-            req.send(Http403, "Forbidden")
-        else:
-            req.send(Http200, "OK")
+        req.send(Http200, "OK", {"Set-Cookie": "auth=$#:$#; path=/" % [$hmac_sha3(Key, auth.login).hex(), encodeUrl(auth.login)]})
+
+proc tryAuth(req: Request): string =
+    let cookies = try: parseCookies(req.headers.getOrDefault("Cookie")) except: newStringTable()
+    let token = cookies.getOrDefault("auth")
+    if isNilOrEmpty(token):
+        return nil
+    let auth = token.splitKeyValue(':')
+    if isNilOrEmpty(auth.key) or isNilOrEmpty(auth.val):
+        return nil
+    let login = try: decodeUrl(auth.val) except: nil
+    if isNil(login) or $hmac_sha3(Key, login).hex() != auth.key:
+        return nil
+    login
+
+proc handleFormRequest(req: Request): Future[void] =
+    if not eqIgnoreCase(req.reqMethod, HttpPost):
+        return req.send(Http405, "Method Not Allowed")
+
+    let login = tryAuth(req)
+    if isNil(login):
+        return req.send(Http403, "Forbidden")
+
+    let json = try: parseJson(req.body) except: nil
+    if isNil(json):
+        return req.send(Http400, "Bad Request")
+
+    let data = nextForm(login, json)
+    if isNil(data.error):
+        req.send(Http200, data.form)
+    else:
+        req.send(Http400, data.error)
+
+proc handleLastRequest(req: Request): Future[void] =
+    if not eqIgnoreCase(req.reqMethod, HttpGet):
+        return req.send(Http405, "Method Not Allowed")
+
+    let last =
+        try: "[" & join(getLastJoins().filter(proc(ctz: JoinInfo): bool =
+            ctz.public
+        ).map(proc(ctz: JoinInfo): string =
+            $(%*{ctz.login: ctz.join.toShortTime()})
+        ), ",") & "]"
+        except: "error"
+
+    req.send(Http200, last)
 
 proc route(req: Request): Future[void] =
-    if req.url.path.startsWith("/auth/"):
+    let path = req.url.path
+    if path.startsWith("/auth/"):
         handleAuthRequest(req)
+    elif path.startsWith("/form/"):
+        handleFormRequest(req)
+    elif path.startsWith("/last/"):
+        handleLastRequest(req)
     else:
         handleStaticFile(req)
 
+const MaxRequestLength = 8192
+
 proc handle(req: Request) {.async.} =
+    if not(isNil(req.body)) and req.body.len > MaxRequestLength:
+        asyncCheck req.send(Http413, "Request Entity Too Large")
+        return
+
     var fail = false
-    try:
-        #echo req.url.path
-        await route(req)
-    except:
-        #echo "Error: " & getCurrentExceptionMsg()
-        fail = true
+    try: asyncCheck route(req)
+    except: fail = true
 
     if fail:
-        await req.send(Http500, "Internal Server Error")
+        asyncCheck req.send(Http500, "Internal Server Error")
 
 initStaticFilesTable("site/", "/index.html")
 

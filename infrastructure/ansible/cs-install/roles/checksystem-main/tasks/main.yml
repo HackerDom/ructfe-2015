@@ -1,0 +1,8 @@
+- name: upload upstart scripts
+  template: src={{item}} dest=/etc/init/
+  with_items:
+    - cs-flags.conf
+    - cs-watcher.conf
+    - cs-manager.conf
+    - cs-web.conf
+    - cs-worker-default.conf

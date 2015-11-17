@@ -1,0 +1,11 @@
+- hosts: checksystem-main
+  roles: [checksystem-main]
+  vars:
+    cs_user: cs
+    cs_dir: /home/cs
+
+- hosts: checksystem-checkers
+  roles: [checksystem-checkers]
+  vars:
+    cs_user: cs
+    cs_dir: /home/cs

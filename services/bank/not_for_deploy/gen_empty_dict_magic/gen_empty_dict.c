@@ -16,8 +16,8 @@
 #define TREE_MAX_NODES 	        (16384)
 #define MAX_KEY_LEN		        (64)
 #define BUFF_ADDR               ((char *) 0x000000dead000000)
-#define SECRET_OFFSET           ((int) 0x715d5)
-#define SECRET_OFFSET2	        ((int) 0x71654)
+#define SECRET_OFFSET           ((int) 0x7181b)
+#define SECRET_OFFSET2	        ((int) 0x7189a)
 
 // long get_hash(unsigned char *buf);
 long get_hash(unsigned char *buf);
@@ -32,13 +32,8 @@ struct tree_node {
     unsigned long values[MAX_ITEMS_IN_BUCKET];
 } __attribute__((packed));
 
-struct tree {
-	void (*set) (unsigned char* key, int value);
-	long (*get) (unsigned char* key);
-};
 
-
-void set(unsigned char* key, int value) 
+void set(unsigned char* key, unsigned long value) 
 // __attribute__((optnone)) 
 {
   	unsigned char* mem_start;
@@ -107,7 +102,7 @@ void set(unsigned char* key, int value)
     curr_node->values[i] = value;
 }
 
-long get(unsigned char* key) {
+unsigned long get(unsigned char* key) {
   	unsigned char* mem_start;
 	long hash;
     int i;
@@ -172,7 +167,7 @@ unsigned char* key_at(int num) {
     return key_ptr;
 }
 
-long size() {
+unsigned long size() {
     unsigned char* mem_start;
 
     // Get tree start address
@@ -184,7 +179,7 @@ long size() {
     return *keys_cnt;
 }
 
-long validate() {
+unsigned long validate() {
     unsigned char* mem_start;
     long hash;
 
@@ -267,9 +262,16 @@ void init_dict() {
     long prevhash = 0;
 
     int i;
+
+    struct timeval time; 
+    gettimeofday(&time,NULL);
+
+    srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
+    int r = rand();
+
     // for (i = 0; i < 32000; i += 1) {
-    //     sprintf(buf, "testttq16%d", i);
-    //     void* a = ((void *(*)(char* key, int value))FUNCTION_SET_ADDR)(buf, i * 2 + 1);
+    //     sprintf(buf, "testttq16%d%d", r, i);
+    //     void* a = ((void *(*)(char* key, unsigned long value))FUNCTION_SET_ADDR)(buf, i * 2 + 1);
     //     if (a > max_addr) {
     //         max_addr = a;
     //     }
@@ -278,8 +280,8 @@ void init_dict() {
     printf("SUCESSFULL\n");
 
     for (i = 0; i < 32000; i += 1) {
-        sprintf(buf, "testttq16%d", i);
-        long a = ((long (*)(char* key))FUNCTION_GET_ADDR)(buf);
+        sprintf(buf, "testttq16%d%d", r, i);
+        long a = ((unsigned long (*)(char* key))FUNCTION_GET_ADDR)(buf);
         if(a || i == 0) {
             printf("%lu\n", a);
         }
@@ -300,7 +302,6 @@ void init_dict() {
         }
 
     }
-
 
     printf("validate %lu %p %p\n", ((long (*)()) FUNCTION_VALIDATE_ADDR)(), FUNCTION_VALIDATE_ADDR, FUNCTION_SIZE_ADDR);
 }
@@ -334,8 +335,10 @@ int main() {
 	printf("Bank service is started. Ready for clients\n");	
 
 	// BYTE b[SHA256_BLOCK_SIZE];
+    unsigned long (*get_hash_my)(unsigned char*) = (void *)BUFF_ADDR + SECRET_OFFSET;
 
-	printf("hash: %lu\n", get_hash((unsigned char *)"test"));
+    printf("hash: %lx\n", get_hash_my((unsigned char *)"a"));
+	printf("hash: %lx\n", get_hash((unsigned char *)"a"));
 	// int i;
 
 	// for (i = 0; i < 256 / 8; i++) {

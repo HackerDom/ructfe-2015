@@ -1,6 +1,6 @@
 $TTL    10M
 @               IN      SOA     {{inventory_hostname}}. network.ructf.org. (
-                                2015111504      ; Serial
+                                2015111702      ; Serial
                                 5M              ; Refresh
                                 2M              ; Retry
                                 10M             ; Expire

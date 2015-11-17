@@ -19,7 +19,9 @@
     - unicode
 
 - name: checker requirements - MoL - pip
-  easy_install: executable=easy_install3 name=pip
+  easy_install: executable=easy_install3 name={{item}}
+  with_items:
+    - pip
 
 - name: checker requirements - MoL - websocket-client
   pip: executable=pip3 name=websocket-client state=present
@@ -45,19 +47,14 @@
     - "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main"
 
 - name: checker requirements - Electro - mono
-  apt: name=mono-runtime state=latest
+  apt: name=mono-devel state=latest
+
+- name: checker requirements - Nasarasa - requests
+  pip: executable=pip3 name={{item}} state=latest
+  with_items:
+    - requests
+    - enum34
 
 ################################ End of checkers requirements ################################
 
-- name: ensure checkers are stopped
-  service: name={{item}} state=stopped
-  when: mode=="restart" or mode=="stop"
-  with_items:
-    - cs-worker-checker
-
-- name: ensure checkers are started
-  service: name={{item}} state=started
-  when: mode=="restart" or mode=="start"
-  with_items:
-    - cs-worker-checker
 

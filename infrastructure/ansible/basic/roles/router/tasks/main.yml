@@ -2,4 +2,14 @@
   apt: name={{item}} state=latest
   with_items:
     - openvpn
+    - lighttpd
 
+- name: ensure lighttpd is running
+  service: name=lighttpd state=started
+
+- name: www index.html
+  template: src=index.html dest=/var/www/index.html
+
+- name: enable lighttpd access log
+  file: src=/etc/lighttpd/conf-available/10-accesslog.conf dest=/etc/lighttpd/conf-enabled/10-accesslog.conf state=link
+  notify: restart lighttpd

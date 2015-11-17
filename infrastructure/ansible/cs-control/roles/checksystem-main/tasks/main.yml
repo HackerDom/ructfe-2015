@@ -1,12 +1,3 @@
-- name: upload upstart scripts
-  template: src={{item}} dest=/etc/init/
-  with_items:
-    - cs-flags.conf
-    - cs-watcher.conf
-    - cs-manager.conf
-    - cs-web.conf
-    - cs-worker-default.conf
-
 - name: ensure checksystem is stopped
   service: name={{item}} state=stopped
   when: mode=="restart" or mode=="stop"
