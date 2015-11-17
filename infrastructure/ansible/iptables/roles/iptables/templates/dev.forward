@@ -3,6 +3,7 @@
 -A FORWARD -s {{net_dev_vpn}} -d {{net_vms}}        -j ACCEPT
 -A FORWARD -s {{net_dev_vpn}} -d {{net_jury}}       -j ACCEPT
 
--A FORWARD -s {{net_jury}}    -d {{net_vms}}        -j ACCEPT
--A FORWARD -s {{net_jury}}    -d {{net_dev_vpn}}    -j ACCEPT
-
+-A FORWARD -s 10.10.10.3      -d {{net_vms}}        -j ACCEPT
+-A FORWARD -s 10.10.10.4      -d {{net_vms}}        -j ACCEPT
+-A FORWARD -s 10.10.10.5      -d {{net_vms}}        -j ACCEPT
+-A FORWARD -s 10.10.10.6      -d {{net_vms}}        -j ACCEPT

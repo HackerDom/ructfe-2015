@@ -11,7 +11,8 @@ from httpchecker import *
 
 GET = 'GET'
 POST = 'POST'
-PORT = 7557
+#PORT = 7557
+PORT = 80
 
 #Modulus = mpz("00c6207dea1e8d97ebdb2c3d100b50a8de2659affb944bca1577345791904444b481bec47427486724393d7c2d52e631c26d8901b637081c1bdc3a398e924191ccf0b3d7c78dabe28b9ed49afa207bfcb4bfc1341b2e51a8d43bf2ff4e498c7e0484d630c8747be706a807f338a1a38463a5a88be69694230646018eed6ee7c32e8a24a425b4deb694e7434a73643477b21aabf9ef7d2beb90347ef844e0891bd466d456612478706938796f62811df6d986f3bcf4fcb795899ae5e40846fdea86e7010188c7d80157a0f306e5286df5b98af2bcf2562a3cde357824e4739da1b186316689d52186f7d9f109719c2317c85690b23d916a5b45890c4163324f8ef1", 16)
 #PrivExp = mpz("0985da477c7c75c6e25bf7fb636fd70e066ddd258c75301b640562081f1508f05c241d31300a2cdaf2dd5fb096017676cfe8fbea142f119acd35073b311071bf95fa2eeeea824e7b43811889d931dc6d9ba1dfad46c6aa04b974ee8c86c077f623a45fe7e2a169f349f447de7af66f10930fccd9a277304fc6e1a04b0d3f9a83f67566e5e99f4a85ca6e71e55a6ce4ddd5842de60cb2f66d9ff560a6b7d3a68f6799f079bf778fd84ac89bd4e245454bcbd085f66c2beca536706e7ca466beec26b61d2ef643b204e0350d71f0c69582dd8c19f3c0d2a17551056754d162ed2c60e36359a9331110426b3e1e4100db0d58f4378902dd77fddfe5e65c97f05b59", 16)
@@ -54,11 +55,13 @@ class Checker(HttpCheckerBase):
 			response.close()
 
 	def jpost(self, s, addr, suffix, data = None):
-		response = s.post(self.url(addr, suffix), json.dumps(data), timeout=5)
+		dump = '' if data == None else json.dumps(data)
+		response = s.post(self.url(addr, suffix), dump, timeout=5)
 		return self.parseresponse(response, suffix)
 
 	def jposts(self, s, addr, suffix, data = None):
-		response = s.post(self.url(addr, suffix), json.dumps(data), timeout=5)
+		dump = '' if data == None else json.dumps(data)
+		response = s.post(self.url(addr, suffix), dump, timeout=5)
 		return self.parsestringresponse(response, suffix)
 
 	def spost(self, s, addr, suffix, data = None):
@@ -290,33 +293,67 @@ class Checker(HttpCheckerBase):
 		return text
 
 	def sign(self, msg):
-		return "%x" % pow(int(msg, 16), PrivExp, Modulus)
+		return "%x" % pow(int(msg.replace('=', ''), 16), PrivExp, Modulus)
 
-	def randform1(self, state):
-		return {'action':'next', 'fields':{'name':self.randmsg(),'sname':self.randmsg(),'bdate':'2015-11-17','bplace':'123','mphone':'123'}, 'state': state}
-	def randform2(self, state):
-		return {'action':'next', 'fields':{'occup':self.randmsg(),'empl':self.randmsg()}, 'state': state}
-	def randform3(self, state, flag):
-		return {'action':'next', 'fields':{'thought':flag, 'sign':self.sign(flag.replace('=', ''))}, 'state': state}
-	def randform4(self, state):
-		return {'action':'next', 'fields':{'public':'','offer':'yes'}, 'state': state}
+	def randhex(self, len):
+		lst = [random.choice('0123456789ABCDEF') for i in range(len)]
+		return "".join(lst)
 
-	def findField(self, fields, name):
+	def randthought(self):
+		return self.randhex(random.randrange(16,32))
+
+	def randform_vuln_1(self, i, state, flag):
+		if i == 0: return {'action':'load'}
+		if i == 1: return {'action':'next', 'fields':{'name':'Super','sname':'Tester','bdate':'2015-11-17','bplace':'Somewhere','mphone':'123'}, 'state': state}
+		if i == 2: return {'action':'next', 'fields':{'occup':'Somewhere','empl':'Somebody'}, 'state': state}
+		if i == 3: return {'action':'next', 'fields':{'thought':flag, 'sign':self.sign(flag)}, 'state': state}
+		if i == 4: return {'action':'next', 'fields':{'public':'','offer':'yes'}, 'state': state}
+		raise
+
+	def randform_vuln_2(self, i, state, flag):
+		if i == 0: return {'action':'load'}
+		if i == 1: return {'action':'next', 'fields':{'name':'Super','sname':'Tester','bdate':'2015-11-17','bplace':flag,'mphone':'123'}, 'state': state}
+		if i == 2: return {'action':'next', 'fields':{'occup':'Somewhere','empl':'Somebody'}, 'state': state}
+		if i == 3:
+			thought = self.randthought()
+			return {'action':'next', 'fields':{'thought':thought, 'sign':self.sign(thought)}, 'state': state}
+		if i == 4: return {'action':'next', 'fields':{'public':'yes','offer':'yes'}, 'state': state}
+		raise
+
+	def randform(self, vuln, i, state, flag):
+		if vuln == 1:
+			return self.randform_vuln_1(i, state, flag)
+		elif vuln == 2:
+			return self.randform_vuln_2(i, state, flag)
+		raise
+
+	def findfield(self, fields, name):
 		for field in fields:
 			if field and field.get('name') == name:
 				return True
 		return False
 
-	def checkFields(self, form, names):
+	def checkfields(self, form, names):
 		if not form or isBlank(form.get("state")):
 			return False
 		fields = form.get("fields")
 		if not fields or not isinstance(fields, list) or len(fields) == 0:
 			return False
 		for name in names:
-			if not self.findField(fields, name):
+			if not self.findfield(fields, name):
 				return False
 		return True
+
+	def checkform(self, form, i, flag):
+		if i == 5:
+			return not isBlank(form)
+		fields = []
+		if i == 1: fields = ['name', 'sname', 'bdate', 'bplace', 'mphone']
+		if i == 2: fields = ['occup', 'empl']
+		if i == 3: fields = ['thought', 'sign']
+		if i == 4: fields = ['public', 'offer']
+		if len(fields) == 0: raise
+		return self.checkfields(form, fields)
 
 	#################
 	#     CHECK     #
@@ -342,12 +379,24 @@ class Checker(HttpCheckerBase):
 
 		self.debug(user)
 
+		if vuln == 2:
+			result = self.sget(s, addr, '/last/')
+			self.debug(result)
+
+			if not result or result.find(user['login']) < 0:
+				print('not found self in /last/')
+				return EXITCODE_MUMBLE
+
 		result = self.jposts(s, addr, '/auth/', user)
+		self.debug(result)
+
 		if not result:# or result.get('about') != flag:
 			print('login failed')
 			return EXITCODE_MUMBLE
 
 		result = self.jposts(s, addr, '/form/')
+		self.debug(result)
+
 		if not result:
 			print('incorrect form fields')
 			return EXITCODE_MUMBLE
@@ -370,7 +419,7 @@ class Checker(HttpCheckerBase):
 		for i in range(0, 3):
 			try:
 				result = self.jposts(s, addr, '/auth/', user)
-				if not result:# or result.get('about') != flag:
+				if not result:
 					print('registration failed')
 					return EXITCODE_MUMBLE
 
@@ -380,54 +429,34 @@ class Checker(HttpCheckerBase):
 					raise
 				user = self.randuser(flag, i * 5)
 
-		result = self.jpost(s, addr, '/form/')
-		if not self.checkFields(result, ['name', 'sname', 'bdate', 'bplace', 'mphone']):
-			print('form filling failed')
-			return EXITCODE_MUMBLE
+		state = ''
+		for i in range(0, 4):
+			result = self.jpost(s, addr, '/form/', self.randform(vuln, i, state, flag))
+			self.debug(result)
 
-		form1 = self.randform1(result.get("state"))
-		self.debug(form1)
+			if not self.checkform(result, i + 1, flag):
+				print('form step', str(i), 'failed')
+				return EXITCODE_MUMBLE
+			state = result.get("state")
 
-		result = self.jpost(s, addr, '/form/', form1)
-		if not self.checkFields(result, ['occup', 'empl']):
-			print('form filling failed')
-			return EXITCODE_MUMBLE
+		result = self.jposts(s, addr, '/form/', self.randform(vuln, 4, state, flag))
+		self.debug(result)
 
-		form2 = self.randform2(result.get("state"))
-		self.debug(form2)
-
-		result = self.jpost(s, addr, '/form/', form2)
-		if not self.checkFields(result, ['thought', 'sign']):
-			print('incorrect form fields')
-			return EXITCODE_MUMBLE
-
-		form3 = self.randform3(result.get("state"), flag)
-		self.debug(form3)
-
-		result = self.jpost(s, addr, '/form/', form3)
-		if not self.checkFields(result, ['public', 'offer']):
-			print('incorrect form fields')
-			return EXITCODE_MUMBLE
-
-		form4 = self.randform4(result.get("state"))
-		self.debug(form4)
-
-		result = self.jposts(s, addr, '/form/', form4)
 		if not result:
-			print('incorrect form fields')
+			print('form step 5 failed')
 			return EXITCODE_MUMBLE
 
 		if result.find(flag) < 0:
 			print('flag not found')
 			return EXITCODE_CORRUPT
 
-#		msg = self.randmsg()
-#		self.debug(msg)
+		if vuln == 2:
+			result = self.sget(s, addr, '/last/')
+			self.debug(result)
 
-#		result = self.spost(s, addr, '/send/', msg)
-#		if not result or result != 'OK':
-#			print('send msg failed')
-#			return EXITCODE_MUMBLE
+			if not result or result.find(user['login']) < 0:
+				print('not found self in /last/')
+				return EXITCODE_MUMBLE
 
 		print('{}:{}'.format(user['login'], user['pass']))
 		return EXITCODE_OK

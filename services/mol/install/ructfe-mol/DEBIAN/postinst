@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-pip3 install momoko
+pip3 install git+https://github.com/m-messiah/momoko.git#egg=momoko
 
 sudo="su - postgres -c "
 
