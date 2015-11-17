@@ -8,7 +8,7 @@
     },
     score_method   => 'v2',
     ctf            => {name => 'RuCTFE 2015 test mode'},
-    round_length   => 10,
+    round_length   => 15,
     flag_life_time => 30,
     flags          => {port => 31337, timeout => 5 * 60},
     admin          => {auth => 'root:LjdjkmysqCbybqRhjkbr'},
