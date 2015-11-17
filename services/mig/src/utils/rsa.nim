@@ -29,7 +29,7 @@ proc enc(m: Int): Int =
 proc checkSign*(hash, sign: string): bool =
     if not(sign.isHex() and hash.isHex()):
         return false
-    enc(newIntOrZero(sign, B16)) == newIntOrZero(hash, B16)
+    return enc(newIntOrZero(sign, B16)) == newIntOrZero(hash, B16)
 
 #when isMainModule:
 #    import utils, sha3h
