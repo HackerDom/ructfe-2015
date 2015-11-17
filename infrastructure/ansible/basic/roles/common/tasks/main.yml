@@ -4,6 +4,12 @@
 - name: add PostgreSQL apt key
   apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
 
+- name: add ubuntu extras apt key
+  apt_key: keyserver=keyserver.ubuntu.com id=16126D3A3E5C1192 state=present
+
+- name: add virtualbox apt key
+  apt_key: keyserver=keyserver.ubuntu.com id=54422A4B98AB5139 state=present
+
 - name: update apt cache
   apt: update_cache=yes cache_valid_time=79800
 
