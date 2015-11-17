@@ -4,7 +4,7 @@ import utils
 #type TLock = ref object
 #var lock {.global.} = new TLock
 
-#do not call this too often
+#Do not call this too often, it may break the world!
 proc urnd(len: Natural): string =
     let buf = random.urandom(len)
     assert len == buf.len

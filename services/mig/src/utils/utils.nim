@@ -59,6 +59,9 @@ proc toShortTime*(time: Time): string =
 proc addMinutes*(time: Time, m: int): Time {.noSideEffect.} =
     fromSeconds(time.toSeconds() + m.toFloat() * 60.0)
 
+proc sec*(time: Time): int =
+    time.toSeconds().toInt()
+
 when isMainModule:
     assert "123" == (string(nil) ?? "123")
     assert "123" == ("123" ?? "234")

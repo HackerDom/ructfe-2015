@@ -114,7 +114,7 @@ proc handleLastRequest(req: Request): Future[void] =
         try: "[" & join(getLastJoins().filter(proc(ctz: JoinInfo): bool =
             ctz.public
         ).map(proc(ctz: JoinInfo): string =
-            $(%*{ctz.login: ctz.join.toShortTime()})
+            $(%*{ctz.login ?? "": ctz.join.toShortTime()})
         ), ",") & "]"
         except: "error"
 

@@ -60,7 +60,7 @@ except OSError:
 #       mersenneTwisterInst.shuffle(arr)
 
 macro makeAliases(): stmt {.immediate.} =
-  let body = parseStmt(staticRead("lib/random/common.nim"))
+  let body = parseStmt(staticRead("random/common.nim"))
   result = newStmtList()
   
   for top in body.children:
