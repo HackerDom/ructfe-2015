@@ -8,6 +8,7 @@ const AuthKeyPrefix = "auth:"
 const JoinKeyPrefix = "info:"
 const DataKeyPrefix = "data:"
 const ThghKeyPrefix = "thgh:"
+const ProoKeyPrefix = "proo:"
 
 # Single thread!
 proc reconnect(): bool =
@@ -52,6 +53,9 @@ proc getLast(key: string, minutes: int = 15): seq[string] =
 
 proc isUniqueThought*(key: string): bool =
     tryAdd(ThghKeyPrefix & key, "")
+
+proc isUniqueProof*(key: string): bool =
+    tryAdd(ProoKeyPrefix & key, "")
 
 ### AuthInfo ###
 proc addOrGetAuth*(auth: tuple[login, pass: string]): string =

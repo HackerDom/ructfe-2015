@@ -16,8 +16,8 @@
                 <div><b>Size</b>: {$planet->size}%</div>
                 <div><b>Color</b>: {$planet->color}</div>
                 {if $self}
-                    <div>
-                        <b>Message</b>:
+                    <div class="planet-message">
+                        <b>Message</b> <span class="badge">visible only for you</span>
                         <pre>{$planet->message}</pre>
                     </div>
                 {/if}
