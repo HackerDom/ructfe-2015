@@ -12,7 +12,7 @@ namespace ElectroChecker
 {
 	static class Vuln2Methods
 	{
-		const int nominateTimeInSec = 5;
+		const int nominateTimeInSec = 3;
 		const int voteTimeInSec = 10;
 
 		public static void ProcessPut(string host, string id, string flag)
