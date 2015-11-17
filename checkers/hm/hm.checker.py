@@ -37,9 +37,9 @@ def generate_comment():
 
 def create_metrics(flag):
     return { "Weight": randrange(40, 100),
-        "Blood Pressure": randrange(80, 120),
+        "BloodPressure": randrange(80, 120),
         "Pulse": randrange(70, 150),
-        "Walking Distance": randrange(1000, 10 * 1000),
+        "WalkingDistance": randrange(1000, 10 * 1000),
         "Comment": flag }
 
 class CheckerException(Exception):
