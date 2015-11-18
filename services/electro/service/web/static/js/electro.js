@@ -44,7 +44,7 @@ if (! String.prototype.startsWith) {
         },
 
         encrypt_bit: function(bit, public_key) {
-            var bigInts = $.map(this.random_subset(public_key), function(obj) {
+            var bigInts = $.map(this.random_subset(public_key.keyParts), function(obj) {
                     return bigInt(obj);
             });
 
@@ -52,7 +52,7 @@ if (! String.prototype.startsWith) {
                 return prev.add(current);
             }, bigInt.zero);
 
-            return sum.add(bigInt.randBetween(0, "1e40").multiply(2)).add(bit)
+            return sum.add(bigInt.randBetween(10, 100).multiply(public_key.MaxNum)).add(bit)
         },
 
         random_subset: function(set) {
