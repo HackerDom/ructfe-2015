@@ -3,6 +3,7 @@ using System.Net;
 using Electro.Crypto;
 using Electro.Model;
 using Electro.Utils;
+using log4net;
 
 namespace Electro.Handlers
 {
@@ -36,6 +37,10 @@ namespace Electro.Handlers
 
 			var election = electroController.FindElectionForUser(electionId, user);
 			WriteData(context, election.ToJson());
+
+			log.InfoFormat("Started election '{0}''", election.Id);
 		}
+
+		private static readonly ILog log = LogManager.GetLogger(typeof(StartElectionHandler));
 	}
 }

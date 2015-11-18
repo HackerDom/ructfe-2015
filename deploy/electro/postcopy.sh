@@ -7,7 +7,7 @@ echo "deb http://download.mono-project.com/repo/debian wheezy-libjpeg62-compat m
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes mono-devel
 
-chown electro:electro -R /home/electro/
+chown electro:www-data -R /home/electro/
 chmod 660 -R /home/electro/
 find /home/electro -type d -exec chmod 770 {} +
 

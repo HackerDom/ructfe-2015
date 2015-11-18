@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Electro.Model;
 using Electro.Utils;
+using log4net;
 
 namespace Electro.Handlers
 {
@@ -39,15 +40,18 @@ namespace Electro.Handlers
 			string privateNotes;
 			form.TryGetValue("privateNotes", out privateNotes);
 
-			User user;
-			if((user = authController.AddUser(login, pass, publicMessage.TrimToNull(), privateNotes.TrimToNull())) == null)
+			if((authController.AddUser(login, pass, publicMessage.TrimToNull(), privateNotes.TrimToNull())) == null)
 				throw new HttpException(HttpStatusCode.Conflict, string.Format("User '{0}' already exists", login));
 
 			context.Response.SetCookie(LoginCookieName, login);
 			context.Response.SetCookie(TokenCookieName, TokenCrypt.Encrypt(new Token { Login = login }.ToJsonString()), true);
 
 			WriteString(context, "Register OK");
+
+			log.InfoFormat("Registered user '{0}'", login);
 		}
+
+		private static readonly ILog log = LogManager.GetLogger(typeof(RegisterHandler));
 
 		public const string TokenCookieName = "authtoken";
 		public const string LoginCookieName = "login";

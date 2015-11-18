@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Electro.Model;
 using Electro.Utils;
+using log4net;
 
 namespace Electro.Handlers
 {
@@ -35,6 +36,8 @@ namespace Electro.Handlers
 				throw new HttpException(HttpStatusCode.BadRequest, "Vote FAILED");
 
 			WriteString(context, "Vote OK");
+
+			log.InfoFormat("Recorded user '{0}' vote in election '{1}''", user.Id, electionId);
 		}
 
 		private BigInteger[] ParseVoteArray(string[] votesStringArray)
@@ -49,5 +52,7 @@ namespace Electro.Handlers
 			}).ToArray();
 			return !failed ? result : null;
 		}
+
+		private static readonly ILog log = LogManager.GetLogger(typeof(VoteHandler));
 	}
 }
