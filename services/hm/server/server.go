@@ -140,12 +140,25 @@ type myHandler struct{}
 func (*myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := "/" + strings.Split(r.URL.String(), "/")[1]
 	if h, ok := mux[path]; ok {
+		logger.Println("Incoming request: ", path, printForm(r))
 		h(w, r)
 		return
 	}
 
 	logger.Println("Warn: requested path not found:", path)
 	http.Error(w, "404 page not found", 404)
+}
+
+func printForm(r *http.Request) string {
+	if r.Method == "GET" {
+		return ""
+	}
+	res := ""
+	r.ParseForm()
+    for key, _ := range r.Form {
+        res += key + "=" + r.FormValue(key) + "; "
+    }
+	return res
 }
 
 var links map[string]Link
