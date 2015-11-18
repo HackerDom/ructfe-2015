@@ -261,7 +261,7 @@ def put(*args):
             flag_id = flag_id.replace("-", "").upper()
             c.report(flag_id, flag)
             close(OK, "%s:%s:%s" % (c.username, c.password, flag_id))
-    except net_error:
+    except (net_error, WebSocketException):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
@@ -298,7 +298,7 @@ def get(*args):
             c.search_uid(checker_flag_id, flag)
 
         close(OK)
-    except net_error:
+    except (net_error, WebSocketException):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
