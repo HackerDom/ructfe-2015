@@ -20,7 +20,7 @@ var f = function *(next) {
             kwargs[part[0]] = part[1];
         } else {
             if (part.filename){
-                var name = getRandomString(6);
+                var name = getRandomString();
                 var file = path.join('data', name);
                 var stream = fs.createWriteStream(file);
                 part.pipe(stream);
