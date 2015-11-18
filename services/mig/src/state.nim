@@ -35,6 +35,7 @@ proc newState*(login: string): State =
     State(start: getTime(), page: 1, login: login)
 
 proc tryParseState*(json: string): State =
+    if isNil(json): return nil
     try:
         let obj = to[StateObj](json)
         result = new State
@@ -57,7 +58,8 @@ proc newJoinInfo*(state: State): JoinInfo =
         private: state.private)
 
 proc tryParseJoinInfo*(json: string): JoinInfo =
-    try: to[JoinInfo](json) except: newJoinInfo(nil)
+    if isNil(json): return JoinInfo()
+    try: to[JoinInfo](json) except: JoinInfo()
 
 proc `$`*(info: JoinInfo): string =
     $$info
