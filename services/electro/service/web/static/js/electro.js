@@ -11,11 +11,14 @@ if (! String.prototype.startsWith) {
 }
 
 (function($){
-    $.fn.set_current = function() {
+    $.fn.set_current = function(callback) {
         $('.electro-block').hide();
-        return this.each(function() {
+        var $result = this.each(function() {
             $(this).show();
-        });
+        });  
+        if (callback)
+            callback();
+        return $result;
     };
 
     $.fn.serialize_form = function() {
@@ -64,14 +67,14 @@ if (! String.prototype.startsWith) {
 
     var electro = {
         is_auth: function() {
-            return document.cookie.startsWith('login=');
+            return document.cookie.indexOf('login=') >= 0;
         },
 
         show_elections_election: function(election) {
             var $template = $('#elections--election--template');
             var $clone = $template.clone().removeAttr('id');
 
-            var election_link = $('<a href="#">').addClass('elections--election--link').data('election-id', election.Id).text(election.Name);
+            var election_link = $('<a href="/election/' + election.Id + '">').addClass('elections--election--link').data('election-id', election.Id).text(election.Name);
             $clone.find('.elections--election--name').append(election_link);
             $clone.find('.elections--election--nominate-till').text(election.nominateTill);
             $clone.find('.elections--election--vote-till').text(election.voteTill);
@@ -97,7 +100,7 @@ if (! String.prototype.startsWith) {
                 var $clone = $candidate_template.clone().removeAttr('id');
                 $clone.data('candidate-idx', idx);
                 $clone.find('.election--candidate--name').text(candidate.Name);
-                if (election.DecryptedResult && election.DecryptedResult[idx])
+                if (election.DecryptedResult && election.DecryptedResult[idx] != undefined)
                     $clone.find('.election--candidate--result').text(election.DecryptedResult[idx]);
                 if (candidate.PrivateNotesForWinner)
                     $clone.find('.election--candidate--private-note').text(candidate.PrivateNotesForWinner);
@@ -135,54 +138,71 @@ if (! String.prototype.startsWith) {
                     $.each(data, function(idx, election) {
                         self.show_elections_election(election);
                     });
-                    self.update_handlers();
+                    
+                    $('#elections').toggleClass('empty', $('#elections .election:not(#elections--election--template)').length == 0);
+
                     callback();
                 });
             });
         },
 
         load_election: function(election_id, callback) {
+            history.pushState({}, '', '/election/' + election_id);
             var self = this;
             $.getJSON('/findElection?id=' + election_id, function(election){
                 self.show_election(election);
-                self.update_handlers();
 
-                $('#election').set_current();
-                if (callback)
-                    callback();
+                $('#election').set_current(callback);
             });
         },
 
-        update_handlers: function() {
+        logout: function(callback){
+            var self = this;
+            $.get('/logout', function(){
+                self.main(callback);
+            });
+        },
+
+        init_handlers: function() {
             var self = this;
 
-            $('.home-link').unbind('click').click(function(){
-                self.init();
-                return false;
+            $(document).on('click', '.home-link', function(e){
+                e.preventDefault();
+                self.main();                
             });
 
-            $('.elections--election--link').unbind('click').click(function(){
-                self.load_election($(this).data('election-id'));
-                return false;
+            $(document).on('click', '.elections--election--link', function(e){
+                e.preventDefault()
+                self.load_election($(this).data('election-id'));                
             });
 
             $create_election_form = $('#create-election--form');
-            $create_election_form.find('button').unbind('click').click(function(){
+            $create_election_form.find('button').click(function(e){
+                e.preventDefault();
                 $.post('/startElection', $create_election_form.serialize_form(), function(election){
                     self.load_election(election.Id);
+                    $create_election_form.trigger('reset');
                 }, 'json');
-                return false;
             });
 
-            $('.election--nominate-button button').unbind('click').click(function() {
+            $find_election_form = $('#find-election--form');
+            $find_election_form.find('button').click(function(e){
+                e.preventDefault();
+                self.load_election($find_election_form.find('[name=id]').val(), function(){
+                    $find_election_form.trigger('reset');
+                });
+            });
+
+            $(document).on('click', '.election--nominate-button button', function(e) {
+                e.preventDefault();
                 election_id = $('#election').data('election-id');
                 $.post('/nominate', {'electionId': election_id}, function(election){
                     self.load_election(election.Id)
                 }, 'json');
-                return false;
             });
 
-            $('.election--candidate--vote-button button').unbind('click').click(function(){
+            $(document).on('click', '.election--candidate--vote-button button', function(e){
+                e.preventDefault();
                 var $candidate = $($(this).parents('.election--candidate')[0]);
                 var candidate_idx = $candidate.data('candidate-idx');
                 var candidates_count = $candidate.parent().children('.election--candidate').length - 1
@@ -197,58 +217,84 @@ if (! String.prototype.startsWith) {
                         vote_vector.push(0);
 
                 var encrypted_vote = crypto.encrypt(vote_vector, public_key);
-                $.post('vote', {'electionId': election_id, 'vote': JSON.stringify(encrypted_vote)}, function(data){
+                $.post('/vote', {'electionId': election_id, 'vote': JSON.stringify(encrypted_vote)}, function(data){
                     self.load_election(election_id);
                 });
             });
 
-            $('.show-register-button').unbind('click').click(function(){
+            $(document).on('click', '.show-register-button', function(e){
+                e.preventDefault();
                 $('#register').set_current();
-                return false;
             });
 
-            $('.show-login-button').unbind('click').click(function(){
+            $(document).on('click', '.show-login-button', function(e){
+                e.preventDefault();
                 $('#login').set_current();
-                return false;
             });
 
-            $('.login-button').unbind('click').click(function(){
-                $.post('/login', $(this).parent().serialize_form(), function(){
-                    self.init();
+            $(document).on('click', '.login-button', function(e){
+                e.preventDefault();
+                var $form = $(this).parent();
+                $.post('/login', $form.serialize_form(), function(){
+                    self.main(function(){
+                        $form.trigger('reset');
+                    });
                 });
-                return false;
             });
 
-            $('.register-button').unbind('click').click(function(){
-                $.post('/register', $(this).parent().serialize_form(), function(){
-                    self.init();
+            $(document).on('click', '.register-button', function(e){
+                e.preventDefault();
+                var $form = $(this).parent();
+                $.post('/register', $form.serialize_form(), function(){
+                    self.main(function(){
+                        $form.trigger('reset');
+                    });
                 });
-                return false;
+            });
+
+            $(document).on('click', '.logout-link', function(e){
+                e.preventDefault();
+                self.logout();
             });
         },
 
-        init: function() {            
+        main: function(callback) {
+            history.pushState({}, '', '/');            
             if (electro.is_auth()) {
                 this.load_elections(function(){
-                    $('#elections').set_current();
+                    $('#elections').set_current(callback);
                 });
             } else {
-                $('#login').set_current();
-                this.update_handlers();
+                $('#login').set_current(callback);
             }
+        },
+
+        load: function(callback) {
+            this.init_handlers();
+
+            var pathname = window.location.pathname;
+            if (pathname == '/')
+                this.main(callback);
+            else if (pathname.startsWith('/election/'))
+                this.load_election(pathname.substring('/election/'.length), callback);
+            else if (pathame == '/logout')
+                this.logout(callback);
+            else
+                this.main(callback);
         },
     }
 
     $(document).ready(function(){
-        electro.init();        
+        electro.load();
 
         $('input[type=checkbox]').switcher();
 
         $(document).ajaxError(function(event, jqxhr, settings, thrownError) {
+            event.preventDefault();
             if (jqxhr.status == 401) {
+                electro.logout();
             }
-            $('.error-message').text(jqxhr.statusText).show().fadeOut(2000, 'easeInQuart');
-            return false;
+            $('.error-message').text(jqxhr.responseText).show().fadeOut(2000, 'easeInQuart');            
         });
     });
 })(jQuery);
