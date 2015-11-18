@@ -24,9 +24,11 @@ namespace Electro.Handlers
 			var idString = context.Request.QueryString["id"];
 			Guid id;
 			if(!Guid.TryParse(idString, out id))
-				throw new HttpException(HttpStatusCode.BadRequest, "Invalid request params");
+				throw new HttpException(HttpStatusCode.BadRequest, string.Format("Invalid election id '{0}'", id));
 
 			var election = electroController.FindElectionForUser(id, user);
+			if(election == null)
+				throw new HttpException(HttpStatusCode.NotFound, string.Format("Can't find election with id '{0}'", id));
 
 			WriteData(context, election.ToJson());
 

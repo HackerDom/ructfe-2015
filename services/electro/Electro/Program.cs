@@ -59,7 +59,7 @@ namespace Electro
 					try
 					{
 						log.Info("Saving elections snapshot");
-						StatePersister.SaveAllElections(electroController.DumpElections());
+						StatePersister.SaveAllElections(electroController.DumpElections().Reverse());
 						log.Info("Elections snapshot saved");
 					}
 					catch(Exception e)
