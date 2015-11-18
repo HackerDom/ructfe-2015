@@ -21,7 +21,6 @@ from tornado.websocket import WebSocketHandler
 extras.register_uuid()
 JSONEncoder_default = JSONEncoder.default
 
-logging.getLogger().setLevel(logging.DEBUG)
 def json_encoder(self, o):
     if isinstance(o, UUID):
         return str(o)
