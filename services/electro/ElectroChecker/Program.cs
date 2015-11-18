@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using log4net;
+using log4net.Config;
 
 namespace ElectroChecker
 {
@@ -17,51 +19,54 @@ namespace ElectroChecker
 
 		public static void Main(string[] args)
 		{
-			if (args.Length < 1)
-				ExitWithMessage(ExitCode.CHECKER_ERROR, "Not enough args");
-
-			var mode = args[0].ToLower();
-
+			XmlConfigurator.Configure();
 			try
 			{
-				switch(mode)
+				if(args.Length < 1)
+					ExitWithMessage(ExitCode.CHECKER_ERROR, "Not enough args");
+
+				var mode = args[0].ToLower();
+				try
 				{
-					case CommandInfo:
-						ExitWithMessage(ExitCode.OK, null, "vulns: 1:1");
-						break;
-					case CommandCheck:
-						ExitWithMessage(ExitCode.OK, "No check needed in this service");
-						break;
-					case CommandPut:
-						ProcessPut(args);
-						break;
-					case CommandGet:
-						ProcessGet(args);
-						break;
+					switch(mode)
+					{
+						case CommandInfo:
+							ExitWithMessage(ExitCode.OK, null, "vulns: 1:1");
+							break;
+						case CommandCheck:
+							ExitWithMessage(ExitCode.OK, "No check needed in this service");
+							break;
+						case CommandPut:
+							ProcessPut(args);
+							break;
+						case CommandGet:
+							ProcessGet(args);
+							break;
+					}
 				}
-			}
-			catch(ServiceException se)
-			{
-				ExitWithMessage(se.code, se.ToString());
-			}
-			catch (WebException e)
-			{
-				if (e.Status == WebExceptionStatus.ConnectFailure)
+				catch(WebException e)
 				{
-					var mes = string.Format("Connection failure in '{0}' mode", mode);
-					ExitWithMessage(ExitCode.DOWN, mes, mes);
+					if(e.Status == WebExceptionStatus.ConnectFailure)
+					{
+						var mes = string.Format("Connection failure in '{0}' mode", mode);
+						ExitWithMessage(ExitCode.DOWN, mes, mes);
+					}
+					if(e.Status == WebExceptionStatus.Timeout)
+					{
+						var mes = string.Format("Timeout in '{0}' mode", mode);
+						ExitWithMessage(ExitCode.DOWN, mes, mes);
+					}
+					if(e.Status == WebExceptionStatus.NameResolutionFailure)
+					{
+						var mes = string.Format("NameResolutionFailure in '{0}' mode", mode);
+						ExitWithMessage(ExitCode.DOWN, mes, mes);
+					}
+					ExitWithMessage(ExitCode.MUMBLE, e.ToString());
 				}
-				if (e.Status == WebExceptionStatus.Timeout)
+				catch(ServiceException se)
 				{
-					var mes = string.Format("Timeout in '{0}' mode", mode);
-					ExitWithMessage(ExitCode.DOWN, mes, mes);
+					ExitWithMessage(se.code, se.ToString());
 				}
-				if(e.Status == WebExceptionStatus.NameResolutionFailure)
-				{
-					var mes = string.Format("NameResolutionFailure in '{0}' mode", mode);
-					ExitWithMessage(ExitCode.DOWN, mes, mes);
-				}
-				ExitWithMessage(ExitCode.MUMBLE, e.ToString());
 			}
 			catch(Exception e)
 			{
@@ -102,8 +107,14 @@ namespace ElectroChecker
 		{
 			if (stdout != null)
 				Console.WriteLine(stdout);
-			if (stderr != null)
-				Console.Error.WriteLine(stderr);
+			if(stderr != null)
+			{
+				if(exitCode == ExitCode.OK)
+					log.InfoFormat(stderr);
+				else
+					log.ErrorFormat(stderr);
+			}
+
 			Environment.Exit((int) exitCode);
 		}
 
@@ -113,5 +124,7 @@ namespace ElectroChecker
 		private const string CommandCheck = "check";
 		private const string CommandPut = "put";
 		private const string CommandGet = "get";
+
+		private static readonly ILog log = LogManager.GetLogger(typeof(Program));
 	}
 }
