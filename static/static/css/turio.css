@@ -90,6 +90,11 @@ a {
     text-decoration: underline;
 }
 
+#header a,
+a.btn {
+    text-decoration: none;
+}
+
 a:hover,
 a:focus,
 a:active {
