@@ -13,7 +13,6 @@ namespace Electro
 	public class StatePersister
 	{
 		private StreamWriter usersWriter;
-		private StreamWriter electionsWriter;
 		private StreamWriter keysWriter;
 
 		private static readonly string usersFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "state/users");
@@ -90,17 +89,12 @@ namespace Electro
 			usersWriter.WriteLine(user.ToJsonString());
 		}
 
-		public void SaveElection(Election election)
+		public static void SaveAllElections(IEnumerable<Election> elections)
 		{
-			if(electionsWriter == null)
+			using(var sw = new StreamWriter(new FileStream(electionsFilePath, FileMode.Append, FileAccess.Write, FileShare.Read)) { AutoFlush = true })
 			{
-				lock(electionsFilePath)
-				{
-					if(electionsWriter == null)
-						electionsWriter = new StreamWriter(new FileStream(electionsFilePath, FileMode.Append)) { AutoFlush = true };
-				}
+				elections.Select(election => election.ToJsonString()).ForEach(sw.WriteLine);
 			}
-			electionsWriter.WriteLine(election.ToJsonString());
 		}
 
 		public void SaveKey(Guid electionId, PrivateKey privateKey)

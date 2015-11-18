@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Electro.Model;
 using Electro.Utils;
+using log4net;
 
 namespace Electro.Handlers
 {
@@ -28,7 +29,10 @@ namespace Electro.Handlers
 			var election = electroController.FindElectionForUser(id, user);
 
 			WriteData(context, election.ToJson());
+
+			log.InfoFormat("Found election '{0}'", id);
 		}
 
+		private static readonly ILog log = LogManager.GetLogger(typeof(FindElectionHandler));
 	}
 }

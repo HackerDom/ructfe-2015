@@ -2,6 +2,7 @@
 using System.Net;
 using Electro.Model;
 using Electro.Utils;
+using log4net;
 
 namespace Electro.Handlers
 {
@@ -28,6 +29,10 @@ namespace Electro.Handlers
 			context.Response.SetCookie(RegisterHandler.TokenCookieName, TokenCrypt.Encrypt(new Token { Login = login }.ToJsonString()), true);
 
 			WriteString(context, "Login OK");
+
+			log.InfoFormat("Logged in user '{0}'", login);
 		}
+
+		private static readonly ILog log = LogManager.GetLogger(typeof(LoginHandler));
 	}
 }

@@ -39,6 +39,8 @@ namespace Electro
 
 		private User AddUser(User user)
 		{
+			if(user == null || user.Login == null)
+				return null;
 			return users.TryAdd(user.Login, user) ? user : null;
 		}
 

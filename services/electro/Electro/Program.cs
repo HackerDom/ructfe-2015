@@ -53,7 +53,18 @@ namespace Electro
 				var voteHandler = new VoteHandler(electroController, authController, GetPrefix("vote"));
 				voteHandler.Start();
 
-				Thread.Sleep(Timeout.Infinite);
+				while(true)
+				{
+					Thread.Sleep(electionsSnapshotTimeoutMs);
+					try
+					{
+						StatePersister.SaveAllElections(electroController.DumpElections());
+					}
+					catch(Exception e)
+					{
+						log.Error("Failed to save elections snapshot. Sleeping and retrying", e);
+					}
+				}
 			}
 			catch(Exception e)
 			{
@@ -68,6 +79,8 @@ namespace Electro
 
 		private const int Port = 3130;
 
-		private static readonly ILog log = LogManager.GetLogger(typeof(Program));
+		const int electionsSnapshotTimeoutMs = 60 * 1000;
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(Program));
 	}
 }

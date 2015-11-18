@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,11 +30,16 @@ namespace Electro.Handlers
 			var context = listener.EndGetContext(result);
 			Task.Run(() =>
 			{
-				try
+				var sw = Stopwatch.StartNew();
+				int hash = 0;
+                try
 				{
+					hash = Math.Abs(new object().GetHashCode());
 					context.Response.KeepAlive = true;
+
+					if(!(this is StaticHandler))
+						log.InfoFormat("Start processing #{0} {1} {2} {3}", hash, context.Request.RemoteEndPoint, context.Request.HttpMethod, context.Request.Url);
 					ProcessRequest(context);
-					log.InfoFormat("{0} {1}", context.Request.HttpMethod, context.Request.RawUrl);
 				}
 				catch(HttpException exception)
 				{
@@ -44,6 +50,11 @@ namespace Electro.Handlers
 				{
 					log.Error(exception);
 					Error(context, HttpStatusCode.InternalServerError, "Internal server error");
+				}
+				finally
+				{
+					if(!(this is StaticHandler))
+						log.InfoFormat("Finished processing #{0} in {1}ms {2} {3}", hash, sw.ElapsedMilliseconds, context.Request.HttpMethod, context.Request.RawUrl);
 				}
 				CommonUtils.Try(() => context.Response.Close());
 			});

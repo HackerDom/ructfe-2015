@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Electro.Utils
 {
@@ -27,28 +23,6 @@ namespace Electro.Utils
 				array[(i << 1) + 1] = (char)(lb > 9 ? lb + ByteA - 10 : lb + Byte0);
 			}
 			return new string(array);
-		}
-
-		public static byte[] ConvertFromHex(this string str)
-		{
-			var res = new byte[str.Length / 2];
-			for(int i = 0; i < res.Length; i++)
-				res[i] = Convert.ToByte(str.Substring(i * 2, 2), 16);
-			return res;
-		}
-
-		public static bool TryConvertFromHex(this string str, out byte[] buff)
-		{
-			try
-			{
-				buff = ConvertFromHex(str);
-				return true;
-			}
-			catch(Exception)
-			{
-				buff = null;
-				return false;
-			}
 		}
 
 		private const int Byte0 = '0';
