@@ -7,8 +7,8 @@ options {
         query-source address * port 5301;
         forward first;
         forwarders {
-#               2a02:6b8::1:1; 2a02:6b8:0:3400::1;
-               8.8.8.8; 8.8.4.4;
+               77.88.8.8;
+               77.88.8.1;
         };
         auth-nxdomain no;
         allow-query { any; };
