@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"errors"
 )
@@ -140,23 +139,6 @@ func tryAddUser(user *User) (int, string){
 		return Error, ""
 	}
 	
-	//debug
-	users, err := db.Query("SELECT id, login, pass FROM users")
-	 if err != nil {
-		logger.Fatal(err)
-	 }
-	 defer users.Close()
-	 
-	 fmt.Println("Users for now:")
-	 for users.Next() {
-		var id int
-		var login string
-		var pass string
-		users.Scan(&id, &login, &pass)
-		fmt.Println(id, login, pass)
-	 }
-	 //end debug
-	
 	return Success, createUId(id)
 }
 
@@ -202,66 +184,6 @@ func prepareDb() {
 	
 	_, err = db.Exec(CreateUsersTable)
 	checkErr(err)
-	
-	uid := addTestUser(db) //debug
-	addTestMetrics(db, uid) //debug
-}
-
-func addTestUser(db *sql.DB) string{
-
-	stmt, err := db.Prepare(AddUser)
-	if err != nil {
-		logger.Println(err)
-		return ""
-	}
-	defer stmt.Close()
-	
-	res, err := stmt.Exec("testUser", "somePass") 
-	if err != nil {
-		logger.Println(err)
-		return ""
-	}
-	
-	id, err := res.LastInsertId()
-	if err != nil {
-		logger.Println(err)
-		return ""
-	}
-	return createUId(id)
-}
-
-func addTestMetrics(db *sql.DB, uid string) {
-
-	tx, err := db.Begin()
-	 if err != nil {
-		logger.Println(err)
-	 }
-	 stmt, err := tx.Prepare(InsertValues)
-	 if err != nil {
-		logger.Println(err)
-	 }
-	 defer stmt.Close()
-	 
-	 for i := 0; i < 5; i++ {
-		 _, err = stmt.Exec(uid, i, i*3, i+3, (i-1)*4, fmt.Sprintf("Comment number %03d", i))
-		 if err != nil {
-			 logger.Println(err)
-		 }
-	 }
-	 tx.Commit()
-
-	 rows, err := db.Query(SelectTopRows)
-	 if err != nil {
-		logger.Println(err)
-	 }
-	 defer rows.Close()
-	 
-	 for rows.Next() {
-		var id int
-		var comment string
-		rows.Scan(&id, &comment)
-		fmt.Println(id, comment)
-	 }
 }
 
 func checkErr(err error) {

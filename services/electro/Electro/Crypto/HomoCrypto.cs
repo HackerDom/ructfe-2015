@@ -16,14 +16,15 @@ namespace Electro.Crypto
 		{
 			BigInteger core = 0;
 			var r = RandomNumberGenerator.Create();
+			byte[] randomBuff = new byte[1];
 			for(int i = 0; i < publicKey.KeyParts.Length; i++)
 			{
-				byte[] randomBuff = new byte[1];
 				r.GetBytes(randomBuff);
 				if(i == 0 || randomBuff[0] % 2 == 1)
 					core = core + publicKey.KeyParts[i];
 			}
-			return core + val;
+			r.GetNonZeroBytes(randomBuff);
+			return core + (publicKey.MaxNum * randomBuff[0]) + val;
 		}
 
 		public static int[] DecryptVector(BigInteger[] vector, PrivateKey privateKey)

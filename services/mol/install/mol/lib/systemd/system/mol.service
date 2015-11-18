@@ -7,7 +7,9 @@
     WorkingDirectory=/home/mol
     User=mol
     Group=mol
-    PIDFile=/var/run/ructfe-mol.pid
+    PIDFile=/var/run/mol.pid
+    Restart=on-failure
+    RestartSec=3s
 
 [Install]
     WantedBy=multi-user.target

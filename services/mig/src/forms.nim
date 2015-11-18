@@ -1,5 +1,5 @@
 import json, marshal, strutils, sequtils, times
-import utils/utils, utils/crypt, utils/dbstorage, utils/rsa, utils/sha3h, state
+import utils/utils, utils/crypt, utils/dbstorage, utils/rsa, utils/sha3h, utils/timemac, state
 
 type
     Field = object
@@ -15,7 +15,6 @@ type
         head: string
         fields: seq[Field]
         prev, next: bool
-        proof: bool
         state: string
 
 const MinPage = 1
@@ -42,18 +41,19 @@ proc form2(state: State): string =
 
 proc form3(state: State): string =
     let user = state.user
-    $$(Form(head: "We need to check that your motives are pure and right from your heart. Generate unique thought from your mind. To verify that you think like us, we ask you to fill the mental sign field.", fields: @[
-        Field(name: "thought", title: "Some thought from your mind", maxlen: 32, value: user.thought, pattern: "\\w{16,}"),
+    $$(Form(head: "We need to check that your motives are pure and right from your heart. Generate some thought from your mind. To verify that you think like us, we ask you to fill the mental sign field using our thought.", fields: @[
+        Field(name: "thought", title: "Some thought from your mind", maxlen: 32, value: user.thought),
+        Field(name: "rnd", title: "Our thought", maxlen: 32, value: mac(state.login), ro: true),
         Field(name: "sign", title: "Mental signature", maxlen: 1024, value: "", pattern: "[0-9a-fA-F]+", rows: 8)
     ], prev: true, next: true, state: encrypt($state)))
 
 proc form4(state: State): string =
-    let citizens = "Last citizens joined:\n" & (try: join(getLastJoins().map(proc(ctz: JoinInfo): string =
+    let citizens = "Last citizens joined:\n" & (try: join(getLastJoins(state.start).map(proc(ctz: JoinInfo): string =
         "$#: $# $#\n   from $#\n   thinks that $#" % [ctz.join.toShortTime(), ctz.name ?? "", ctz.sname ?? "", ctz.occup ?? "", ctz.thought ?? ""]
     ), "\n") except: "error")
     $$(Form(head: "Under law T-31337 we must give you information about the latest joined citizens. Confirm our offer to join us.", fields: @[
         Field(title: "Last citizens", value: citizens, rows: 10, ro: true),
-        Field(name: "public", title: "Type `yes` if you are public enough", maxlen: 3, value: ""),
+        Field(name: "private", title: "Type `yes` if you are private", maxlen: 3, value: ""),
         Field(name: "offer", title: "Type `yes` to offer", maxlen: 3, value: "")
     ], prev: true, next: true, state: encrypt($state)))
 
@@ -92,17 +92,11 @@ proc checkForm2(data: tuple[occup, empl: string]): string =
     if isNil(data.occup): return "Check your current occupation"
     if isNil(data.empl): return "Check your employer"
 
-proc checkForm3(data: tuple[thought, sign: string]): string =
-    if isNil(data.thought) or data.thought.len < 16: return "Check your mind!"
-    if isNil(data.sign) or (not checkSign(data.thought.hex(), data.sign)) or (not isUniqueThought(data.thought)): return "Not trusted!"
+proc checkForm3(data: tuple[thought, rnd, sign: string], state: State): string =
+    if (not checkMac(state?.login, data.rnd, 4)) or isNil(data.sign) or (not checkSign(data.rnd, data.sign)): return "Not trusted!"
 
-#proc checkProof(proof: string): bool =
-#    if isNil(proof): false
-#    else: ord(proof[0]) == 0x77 and ord(proof[1]) == 0x77 and (ord(proof[2]) shr 4) == 0x7 and isUniqueProof(proof)
-
-proc checkForm4(data: tuple[offer, public, proof: string]): string =
+proc checkForm4(data: tuple[offer, private: string]): string =
     if not eqIgnoreCase(data.offer, "yes"): return "You must agree with offer"
-#    if not checkProof(data.proof): return "Invalid proof of work"
 
 proc saveForm1(data: tuple[name, sname, bdate, bplace, mphone: string], state: State) =
     state.user.name = data.name
@@ -115,11 +109,11 @@ proc saveForm2(data: tuple[occup, empl: string], state: State) =
     state.user.occup = data.occup
     state.user.empl = data.empl
 
-proc saveForm3(data: tuple[thought, sign: string], state: State) =
+proc saveForm3(data: tuple[thought, rnd, sign: string], state: State) =
     state.user.thought = data.thought
 
-proc saveForm4(data: tuple[offer, public, proof: string], state: State, next: bool) =
-    state.public = eqIgnoreCase(data.public, "yes")
+proc saveForm4(data: tuple[offer, private: string], state: State, next: bool) =
+    state.private = eqIgnoreCase(data.private, "yes")
     if next:
         state.offer = true
         state.join = getTime()
@@ -133,26 +127,22 @@ proc update(json: JsonNode, state: State, check: bool): string =
     of 1:
         let data = (name: json.val("name", 32), sname: json.val("sname", 32), bdate: json.val("bdate", 16), bplace: json.val("bplace", 48), mphone: json.val("mphone", 16))
         let error = if check: checkForm1(data) else: nil
-        if isNil(error):
-            saveForm1(data, state)
+        if isNil(error): saveForm1(data, state)
         return error
     of 2:
         let data = (occup: json.val("occup", 32), empl: json.val("empl", 48))
         let error = if check: checkForm2(data) else: nil
-        if isNil(error):
-            saveForm2(data, state)
+        if isNil(error): saveForm2(data, state)
         return error
     of 3:
-        let data = (thought: json.val("thought", 32), sign: json.val("sign", 1024))
-        let error = if check: checkForm3(data) else: nil
-        if isNil(error):
-            saveForm3(data, state)
+        let data = (thought: json.val("thought", 32), rnd: json.val("rnd", 32), sign: json.val("sign", 1024))
+        let error = if check: checkForm3(data, state) else: nil
+        if isNil(error): saveForm3(data, state)
         return error
     of 4:
-        let data = (offer: json.val("offer", 3), public: json.val("public", 3), proof: json.val("proof"))
+        let data = (offer: json.val("offer", 3), private: json.val("private", 3))
         let error = if check: checkForm4(data) else: nil
-        if isNil(error):
-            saveForm4(data, state, check)
+        if isNil(error): saveForm4(data, state, check)
         return error
     else: return nil
 

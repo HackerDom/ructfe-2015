@@ -48,8 +48,8 @@ proc addOrGet(key, value: string): string =
 proc zadd(key, value: string): bool =
     withReconnect: return db[].zadd(key, getTime().sec(), value) == 1
 
-proc getLast(key: string, minutes: int = 15): seq[string] =
-    withReconnect: return db[].zrevrangebyscore(key, "+inf", $getTime().addMinutes(-minutes).sec())
+proc getLast(key: string, start: Time, minutes: int = 30): seq[string] =
+    withReconnect: return db[].zrevrangebyscore(key, $start.sec(), $getTime().addMinutes(-minutes).sec())
 
 proc isUniqueThought*(key: string): bool =
     tryAdd(ThghKeyPrefix & key, "")
@@ -65,8 +65,8 @@ proc addOrGetAuth*(auth: tuple[login, pass: string]): string =
 proc tryAdd*(info: JoinInfo): bool =
     zadd(JoinKeyPrefix, $info)
 
-proc getLastJoins*(): seq[JoinInfo] =
-    getLast(JoinKeyPrefix).map(proc(val: string): JoinInfo = tryParseJoinInfo(val))
+proc getLastJoins*(start: Time): seq[JoinInfo] =
+    getLast(JoinKeyPrefix, start).map(proc(val: string): JoinInfo = tryParseJoinInfo(val))
 
 ### DataInfo ###
 proc tryAdd*(data: State): bool =

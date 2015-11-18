@@ -34,7 +34,7 @@ namespace ElectroChecker
 				switch(mode)
 				{
 					case CommandInfo:
-						ExitWithMessage(ExitCode.OK, null, "1:1");
+						ExitWithMessage(ExitCode.OK, null, "vulns: 1:1");
 						break;
 					case CommandCheck:
 						ExitWithMessage(ExitCode.OK, "No check needed in this service");

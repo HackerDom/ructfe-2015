@@ -21,7 +21,6 @@ from tornado.websocket import WebSocketHandler
 extras.register_uuid()
 JSONEncoder_default = JSONEncoder.default
 
-logging.getLogger().setLevel(logging.DEBUG)
 def json_encoder(self, o):
     if isinstance(o, UUID):
         return str(o)
@@ -577,14 +576,15 @@ class Handler(WebSocketHandler):
                 "VALUES (%(crimeid)s, %(name)s, %(article)s, %(city)s, "
                 "%(country)s, %(crimedate)s, %(description)s, "
                 "%(participants)s, %(judgement)s, %(closed)s, "
-                "%(public)s, %(author)s)", params
-            ), ]
+                "%(public)s, %(author)s);", params
+            ),  ]
             if params['participants']:
                 sql.append((
                     "UPDATE profiles SET crimes=crimes|| %(crimeid)s::bigint "
-                    "WHERE profileid = ANY(%(participants)s)", params
+                    "WHERE profileid = ANY(%(participants)s);", params
                 ))
-            self.application.db.transaction(sql)
+            yield self.application.db.transaction(sql)
+            yield self.application.db.execute("COMMIT;")
         except ProgrammingError:
             return self.write_message(
                 dumps(dict(tpl.ERROR_MESSAGE, text="Error while reporting"))

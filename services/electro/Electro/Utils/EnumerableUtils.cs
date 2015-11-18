@@ -28,5 +28,15 @@ namespace Electro.Utils
 				yield return item;
 			}
 		}
+
+		public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T> enumerable)
+		{
+			return enumerable ?? GetEmpty<T>();
+		}
+
+		public static IEnumerable<T> GetEmpty<T>()
+		{
+			yield break;
+		}
 	}
 }

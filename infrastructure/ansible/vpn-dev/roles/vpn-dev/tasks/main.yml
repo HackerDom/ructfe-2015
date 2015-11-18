@@ -1,0 +1,13 @@
+- apt: name=openvpn state=latest
+
+- copy: src={{item}} dest=/etc/openvpn/
+  with_items:
+    - dev-ca.crt
+    - dev-dh2048.pem
+    - dev-server.conf
+    - dev-server.crt
+    - dev-server.key
+    - dev-ta.key
+  notify: restart openvpn
+
+- service: name=openvpn state=started

@@ -1,0 +1,34 @@
+- apt: name={{item}} state=latest
+  with_items:
+    - python3
+    - python3-setuptools
+    - python3-jinja2
+    - fping
+
+- easy_install: executable=easy_install3 name=pip
+
+- pip: executable=pip3 name=requests state=latest
+
+- user: name=netstatus state=present home=/home/netstatus/ shell=/bin/false
+
+- copy: src=favicon.ico dest=/var/www/
+
+- copy: src={{item}} dest=/home/netstatus/
+  with_items:
+    - gen_status_loop.py
+    - status.tpl
+    - team_tcp_checker.py
+    - teams.py
+
+- shell: chown netstatus. /home/netstatus/*
+
+- file: path={{item}} mode=u+x
+  with_items:
+    - /home/netstatus/gen_status_loop.py
+    - /home/netstatus/team_tcp_checker.py
+
+- file: src=/home/netstatus/status.html dest=/var/www/index.html state=link force=yes
+
+- copy: src=netstatus.conf dest=/etc/init/
+
+- service: name=netstatus state=restarted
