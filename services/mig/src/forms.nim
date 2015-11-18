@@ -15,7 +15,6 @@ type
         head: string
         fields: seq[Field]
         prev, next: bool
-        proof: bool
         state: string
 
 const MinPage = 1
@@ -96,13 +95,8 @@ proc checkForm3(data: tuple[thought, sign: string]): string =
     if isNil(data.thought) or data.thought.len < 16: return "Check your mind!"
     if isNil(data.sign) or (not checkSign(data.thought.hex(), data.sign)) or (not isUniqueThought(data.thought)): return "Not trusted!"
 
-#proc checkProof(proof: string): bool =
-#    if isNil(proof): false
-#    else: ord(proof[0]) == 0x77 and ord(proof[1]) == 0x77 and (ord(proof[2]) shr 4) == 0x7 and isUniqueProof(proof)
-
 proc checkForm4(data: tuple[offer, public, proof: string]): string =
     if not eqIgnoreCase(data.offer, "yes"): return "You must agree with offer"
-#    if not checkProof(data.proof): return "Invalid proof of work"
 
 proc saveForm1(data: tuple[name, sname, bdate, bplace, mphone: string], state: State) =
     state.user.name = data.name

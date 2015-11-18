@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"errors"
+	"strconv"
 )
 const (
 	DbName = "./health.db" 
@@ -140,23 +141,6 @@ func tryAddUser(user *User) (int, string){
 		return Error, ""
 	}
 	
-	//debug
-	users, err := db.Query("SELECT id, login, pass FROM users")
-	 if err != nil {
-		logger.Fatal(err)
-	 }
-	 defer users.Close()
-	 
-	 fmt.Println("Users for now:")
-	 for users.Next() {
-		var id int
-		var login string
-		var pass string
-		users.Scan(&id, &login, &pass)
-		fmt.Println(id, login, pass)
-	 }
-	 //end debug
-	
 	return Success, createUId(id)
 }
 
@@ -227,7 +211,7 @@ func addTestUser(db *sql.DB) string{
 		logger.Println(err)
 		return ""
 	}
-	return createUId(id)
+	return strconv.FormatInt(id, 10)
 }
 
 func addTestMetrics(db *sql.DB, uid string) {
