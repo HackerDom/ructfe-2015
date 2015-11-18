@@ -158,6 +158,18 @@ func printForm(r *http.Request) string {
     for key, _ := range r.Form {
         res += key + "=" + r.FormValue(key) + "; "
     }
+	_, err := r.Cookie("id")
+	if err != nil {
+		res += "Id cookie was not set; "
+	} else {
+		res += "Id  cookie was set; "
+	}
+	_, err = r.Cookie("auth")
+	if err != nil {
+		res += "Auth cookie was not set; "
+	} else {
+		res += "Auth  cookie was set; "
+	}
 	return res
 }
 
