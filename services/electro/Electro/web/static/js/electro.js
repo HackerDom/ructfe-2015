@@ -25,7 +25,6 @@ if (! String.prototype.startsWith) {
         var values = $(this).serializeArray();
         values = values.concat(
             $(this).find('input[type=checkbox]').map(function() {
-                        console.log($(this));
                         return {"name": this.name, "value": $(this).is(':checked')}
                     }).get()
         );
