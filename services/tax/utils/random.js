@@ -3,7 +3,7 @@
  */
 
 function getRandomString() {
-    return crypto.randomBytes(8).toString('hex');
+    return require('crypto').randomBytes(8).toString('hex');
 }
 
 module.exports = {
