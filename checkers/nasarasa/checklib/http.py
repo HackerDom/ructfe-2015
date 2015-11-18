@@ -7,6 +7,8 @@ def build_main_url(fn):
     def wrapper(self, address, *args, **kwargs):
         self.main_url = 'http://%s' % address
         fn(self, address, *args, **kwargs)
+    wrapper.__name__ = fn.__name__
+    wrapper.__doc__ = fn.__doc__
     return wrapper
 
 
