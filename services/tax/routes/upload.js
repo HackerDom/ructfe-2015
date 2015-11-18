@@ -15,21 +15,26 @@ var f = function *(next) {
     var files = [];
     var part;
 
-    while (part = yield parts) {
-        if (part instanceof Array) {
-            kwargs[part[0]] = part[1];
-        } else {
-            if (part.filename){
-                var name = getRandomString(6);
-                var file = path.join('data', name);
-                var stream = fs.createWriteStream(file);
-                part.pipe(stream);
-                console.log('uploading %s -> %s', part.filename, stream.path);
-                files.push([part.filename, stream.path]);
+    try {
+        while (part = yield parts) {
+            if (part instanceof Array) {
+                kwargs[part[0]] = part[1];
             } else {
-                return this.throw(400, 'ERROR: .file problem');
+                if (part.filename){
+                    var name = getRandomString();
+                    console.log('name: ' + name);
+                    var file = path.join('data', name);
+                    var stream = fs.createWriteStream(file);
+                    part.pipe(stream);
+                    console.log('uploading %s -> %s', part.filename, stream.path);
+                    files.push([part.filename, stream.path]);
+                } else {
+                    return this.throw(400, 'ERROR: .file problem');
+                }
             }
         }
+    } catch (e) {
+        console.log('error:' + e);
     }
 
     if (!kwargs['pdata']) return this.throw(400, 'ERROR: .pdata required');
@@ -41,7 +46,7 @@ var f = function *(next) {
             return this.throw(400, 'ERROR: .pdata problem');
         }
     } catch (e) {
-        return this.throw(400, 'ERROR: .pdata problem');
+        return this.throw(400, 'ERROR: .pdata problem ' + e);
     }
 
     this.template = 'upload';
