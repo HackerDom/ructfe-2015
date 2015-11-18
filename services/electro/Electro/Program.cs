@@ -58,7 +58,9 @@ namespace Electro
 					Thread.Sleep(electionsSnapshotTimeoutMs);
 					try
 					{
+						log.Info("Saving elections snapshot");
 						StatePersister.SaveAllElections(electroController.DumpElections());
+						log.Info("Elections snapshot saved");
 					}
 					catch(Exception e)
 					{

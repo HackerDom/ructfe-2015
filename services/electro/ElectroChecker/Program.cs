@@ -63,6 +63,11 @@ namespace ElectroChecker
 					var mes = string.Format("Timeout in '{0}' mode", mode);
 					ExitWithMessage(ExitCode.DOWN, mes, mes);
 				}
+				if(e.Status == WebExceptionStatus.NameResolutionFailure)
+				{
+					var mes = string.Format("NameResolutionFailure in '{0}' mode", mode);
+					ExitWithMessage(ExitCode.DOWN, mes, mes);
+				}
 				ExitWithMessage(ExitCode.MUMBLE, e.ToString());
 			}
 			catch(Exception e)

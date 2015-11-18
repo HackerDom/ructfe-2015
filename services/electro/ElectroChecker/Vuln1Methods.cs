@@ -40,6 +40,8 @@ namespace ElectroChecker
 			}
 
 			var election = ElectroClient.StartElection(host, Program.PORT, candidates[0].Cookies, Utils.GenRandomElectionName(), true, nominateTimeInSec, voteTimeInSec);
+			if(election == null)
+				throw new ServiceException(ExitCode.MUMBLE, "Can't start election - result is NULL");
 			var electionStartDt = DateTime.UtcNow;
 
 			foreach(var candidate in candidates.Skip(1))

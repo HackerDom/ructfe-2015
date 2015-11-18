@@ -91,7 +91,7 @@ namespace Electro
 
 		public static void SaveAllElections(IEnumerable<Election> elections)
 		{
-			using(var sw = new StreamWriter(new FileStream(electionsFilePath, FileMode.Append, FileAccess.Write, FileShare.Read)) { AutoFlush = true })
+			using(var sw = new StreamWriter(electionsFilePath) { AutoFlush = true })
 			{
 				elections.Select(election => election.ToJsonString()).ForEach(sw.WriteLine);
 			}

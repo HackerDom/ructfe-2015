@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -8,8 +7,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Electro.Crypto;
-using Electro.Handlers;
 using Electro.Model;
 using Electro.Utils;
 

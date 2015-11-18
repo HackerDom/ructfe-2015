@@ -30,6 +30,9 @@ namespace ElectroChecker
 			cs = regTasks.Select(arg => { arg.candidate.Cookies = arg.task.Result; return arg.candidate; }).ToArray();
 
 			var election = ElectroClient.StartElection(host, Program.PORT, cs[0].Cookies, Utils.GenRandomElectionName(), false, nominateTimeInSec, voteTimeInSec);
+			if(election == null)
+				throw new ServiceException(ExitCode.MUMBLE, "Can't start election - result is NULL");
+
 			var electionId = election.Id;
 
 			var now = DateTime.UtcNow;

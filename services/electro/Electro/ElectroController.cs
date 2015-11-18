@@ -25,10 +25,14 @@ namespace Electro
 
 		private void LoadState(IEnumerable<Election> e, IEnumerable<KeyValuePair<Guid, PrivateKey>> k)
 		{
-			lock(electionsList)
+			log.InfoFormat("Loading elections state");
+			lock (electionsList)
 			{
+				int lines = 0;
 				e.ForEach(election =>
 				{
+					if(++lines % 100 == 0)
+						log.InfoFormat("Loaded {0} lines of election state", lines);
 					electionsList.AddFirst(election);
 					electionsDict[election.Id] = election;
 				});
@@ -63,7 +67,7 @@ namespace Electro
 				electionsList.AddFirst(election);
 				while(electionsList.Count > MaxElections)
 				{
-					var node = electionsList.First;
+					var node = electionsList.Last;
 					Election dummy;
 					electionsDict.TryRemove(node.Value.Id, out dummy);
 					electionsList.RemoveLast();
