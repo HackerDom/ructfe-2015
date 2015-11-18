@@ -271,7 +271,7 @@ class Checker(HttpCheckerBase):
 			'Kerr','Mcconnell','Hatfield','Harding','Ashley','Solis','Herman','Frost','Giles','Blackburn','William','Pennington','Woodward','Finley','Mcintosh','Koch',
 			'Best','Solomon','Mccullough','Dudley','Nolan','Blanchard','Rivas','Brennan','Mejia','Kane','Benton','Joyce','Buckley','Haley','Valentine','Maddox','Russo',
 			'Mcknight','Buck','Moon','Mcmillan','Crosby','Berg','Dotson','Mays','Roach','Church','Chan','Richmond','Meadows','Faulkner','Oneill','Knapp','Kline','Barry',
-			'Ochoa','Jacobson','Gay','Avery','Hendricks','Horne','Shepard','Hebert','Cherry','Cardenas','Mcintyre','Whitney','Waller','Holman','Donaldson','Cantu',
+			'Ochoa','Jacobson','Avery','Hendricks','Horne','Shepard','Hebert','Cherry','Cardenas','Mcintyre','Whitney','Waller','Holman','Donaldson','Cantu',
 			'Terrell','Morin','Gillespie','Fuentes','Tillman','Sanford','Bentley','Peck','Key','Salas','Rollins','Gamble','Dickson','Battle','Santana','Cabrera',
 			'Cervantes','Howe','Hinton','Hurley','Spence','Zamora','Yang','Mcneil','Suarez','Case','Petty','Gould','Mcfarland','Sampson','Carver','Bray','Rosario',
 			'Macdonald','Stout','Hester','Melendez','Dillon','Farley','Hopper','Galloway','Potts','Bernard','Joyner','Stein','Aguirre','Osborn','Mercer','Bender',
@@ -566,6 +566,7 @@ class Checker(HttpCheckerBase):
 					raise CheckException(EXITCODE_MUMBLE, 'registration failed')
 
 				user = self.randuser(i * 5)
+				self.debug('User: ' + str(user))
 
 		return user
 
@@ -580,7 +581,7 @@ class Checker(HttpCheckerBase):
 			self.debug('Recv[' + str(i + 1) + ']: ' + str(result)[:1024] + '...')
 
 			if not self.checkform(result, i + 1, flag):
-				raise CheckException(EXITCODE_MUMBLE, 'form step' + str(i + 1) + 'failed')
+				raise CheckException(EXITCODE_MUMBLE, 'form step ' + str(i + 1) + ' failed')
 
 			state = result.get('state')
 			rnd = '' if i != 2 else self.findfield(result.get('fields'), 'rnd')
