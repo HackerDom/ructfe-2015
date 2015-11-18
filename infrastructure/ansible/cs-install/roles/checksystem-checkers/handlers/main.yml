@@ -1,2 +1,5 @@
 - name: update apt
   apt: update_cache=yes
+
+- name: restart bind
+  service: name=bind9 state=restarted
