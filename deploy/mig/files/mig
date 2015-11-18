@@ -10,6 +10,7 @@ server{
         proxy_set_header Connection "";
     }   
 
+    root /home/mig/src/site;
     location /static/ {
         try_files $uri @static;
     }
