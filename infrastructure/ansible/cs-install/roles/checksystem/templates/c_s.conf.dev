@@ -8,7 +8,7 @@
     },
     score_method   => 'v2',
     ctf            => {name => 'RuCTFE 2015 test mode'},
-    round_length   => 30,
+    round_length   => 10,
     flag_life_time => 15,
     flags          => {port => 31337, timeout => 5 * 60},
     admin          => {auth => 'root:LjdjkmysqCbybqRhjkbr'},
@@ -59,12 +59,12 @@
     {name => 'team240', network => '10.70.0.240/32', host => 'dev240.e.ructf.org'},
   ],
   services => [
-    {name => 'mol',      path => '../checkers/mol/mol.checker.py',           timeout => 10},
-    {name => 'tax',      path => '../checkers/tax/tax.checker.pl',           timeout => 10},
-    {name => 'electro',  path => '../checkers/electro/electro.checker.sh',   timeout => 10},
-    {name => 'nasarasa', path => '../checkers/nasarasa/nasarasa.checker.py', timeout => 10},
-    {name => 'hm',       path => '../checkers/hm/hm.checker.sh',             timeout => 10},
-    {name => 'mig',      path => '../checkers/mig/mig.checker.py',           timeout => 10},
-    {name => 'bank',     path => '../checkers/bank/bank.checker.sh',         timeout => 10},
+    {name => 'mol',      path => '../checkers/mol/mol.checker.py',           timeout => 10, tcp_port => 80},
+    {name => 'tax',      path => '../checkers/tax/tax.checker.pl',           timeout => 10, tcp_port => 80},
+    {name => 'electro',  path => '../checkers/electro/electro.checker.sh',   timeout => 10, tcp_port => 80},
+    {name => 'nasarasa', path => '../checkers/nasarasa/nasarasa.checker.py', timeout => 10, tcp_port => 80},
+    {name => 'hm',       path => '../checkers/hm/hm.checker.sh',             timeout => 10, tcp_port => 80},
+    {name => 'mig',      path => '../checkers/mig/mig.checker.py',           timeout => 10, tcp_port => 80},
+    {name => 'bank',     path => '../checkers/bank/bank.checker.sh',         timeout => 10, tcp_port => 80},
   ]
 }
