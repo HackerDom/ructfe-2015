@@ -14,7 +14,8 @@
 
 		<link rel="stylesheet" href="/static/css/unika.min.css">
 		<link rel="stylesheet" href="/static/css/turio.css">
-    	<link rel="stylesheet" href="TODO Service name.css">
+        <link rel="stylesheet" href="/static/css/switcher.min.css">
+    	<link rel="stylesheet" href="/static/css/electro.css">
 	</head>
 	<body class="service-page" data-spy="scroll" data-target="#main-navbar">
 		<div class="page-loader"></div>  <!-- Display loading image while page loads -->
@@ -26,13 +27,6 @@
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
 						    <a class="navbar-brand" href="/home">Electro</a>
 						</div>
-
-                        <div class="collapse navbar-collapse" id="bs-navbar-collapse">
-                            <ul class="nav navbar-nav navbar-right">
-                                <li><a href="/">Home</a></li>
-                                <li><a href="/TODO Link">TODO Link name</a></li>
-                            </ul>
-                        </div>
 					</div>
 				</nav>
 			</header>
@@ -44,92 +38,103 @@
                         <div class="row">
                             <div class="col-sm-2 center-block">
                                 <a href="/">
-                                    <img src="/static/logos/vote.png" class="logo img-responsive">
+                                    <img src="/static/logos/vote.png" class="logo img-responsive home-link">
                                 </a>
+                                <div class="error-message alert alert-danger"></div>
                             </div>
                             <div class="col-sm-8 content-block">
                                 <h1>Electro</h1>
                                 <div id="login" class="electro-block">
                                     <form id="login--form">
                                         <div class="form-group">
-                                            <label>Login</label>
                                             <input type="text" name="login" placeholder="Login" class="form-control">
                                         </div>
                                         <div class="form-group">
-                                            <label>Password</label>
-                                            <input type="text" name="password" placeholder="Password" class="form-control">
+                                            <input type="password" name="pass" placeholder="Password" class="form-control">
                                         </div>
-                                        <button class="btn btn-default">Login</button>
+                                        <button class="btn btn-default login-button">Login</button>
+                                        <button class="btn btn-link show-register-button">Registration</button>
                                     </form>
                                 </div>
                                 <div id="register" class="electro-block">
                                     <form id="register--form">
                                         <div class="form-group">
-                                            <label>Login</label>
                                             <input type="text" name="login" placeholder="Login" class="form-control">
                                         </div>
                                         <div class="form-group">
-                                            <label>Password</label>
-                                            <input type="text" name="password" placeholder="Password" class="form-control">
+                                            <input type="password" name="pass" placeholder="Password" class="form-control">
                                         </div>
                                         <div class="form-group">
-                                            <label>Public message</label>
                                             <input type="text" name="publicMessage" placeholder="Public message" class="form-control">
                                         </div>
                                         <div class="form-group">
-                                            <label>Private notes</label>
                                             <input type="text" name="privateNotes" placeholder="Private notes" class="form-control">
                                         </div>
-                                        <button class="btn btn-default">Register</button>
+                                        <button class="btn btn-link show-login-button">Login</button>
+                                        <button class="btn btn-default register-button">Register</button>
                                     </form>
                                 </div>
                                 <div id="elections" class="electro-block">
                                     <div class="create-election">
+                                        <h3>Start election</h3>
                                         <form id="create-election--form">
+                                            <div class="row">
+                                                <div class="form-group col-sm-9">
+                                                    <input type="text" name="name" placeholder="Name" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="checkbox col-sm-3">
+                                                        <label>
+                                                            <input type="checkbox" name="isPublic">
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <div class="form-group">
-                                                <label>Name</label>
-                                                <input type="text" name="name" placeholder="Name" class="form-control">
-                                            </div>
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" name="isPublic"> Public
-                                                </label>
+                                                <input type="text" name="nominateDuration" placeholder="Nominate duration (in seconds)" class="form-control">
                                             </div>
                                             <div class="form-group">
-                                                <label>Nominate Duration</label>
-                                                <input type="text" name="nominateDuration" placeholder="Seconds" class="form-control">
+                                                <input type="text" name="voteDuration" placeholder="Vote duration (in seconds)" class="form-control">
                                             </div>
-                                            <div class="form-group">
-                                                <label>Vote Duration</label>
-                                                <input type="text" name="voteDuration" placeholder="Seconds" class="form-control">
-                                            </div>
-                                            <button class="btn btn-default" role="button">Create vote</button>
+                                            <button class="btn btn-default" role="button">Start</button>
                                         </form>
                                     </div>
-                                    <div id="elections--election--template" class="election" >
-                                        <div class="elections--election--name"></div>
+                                    <h3>Existing elections</h3>
+                                    <div id="elections--election--template" class="election well" >
+                                        <div class="elections--election--info">
+                                            <div class="elections--election--name"></div>
+                                            <div class="elections--election--winner label label-success"></div>
+                                        </div>
                                         <div class="elections--election--nominate-till"></div>
                                         <div class="elections--election--vote-till"></div>
-                                        <div class="elections--election--winner"></div>
                                     </div>
                                 </div>
                                 <div id="election" class="electro-block">
                                     <div class="election--name"></div>
                                     <div class="election--nominate-till"></div>
                                     <div class="election--vote-till"></div>
-                                    <div class="election--candidates">
-                                        <div id="election--canditate--template" class="election--candidate">
-                                            <div class="election--candidate--name"></div>
-                                            <div class="election--candidate--vote-button">
-                                                <button class="btn btn-default">Vote</button>
+                                    <div class="election--nominate-button">
+                                        <button class="btn btn-default">Nominate</button>
+                                    </div>
+                                    <div class="row">
+                                        <div class="election--candidates col-sm-6">
+                                            <h3>Candidates</h3>
+                                            <div id="election--canditate--template" class="election--candidate well">
+                                                <div class="election--candidate--name"></div>
+                                                <div class="election--candidate--vote-button">
+                                                    <button class="btn btn-default btn-sm">Vote</button>
+                                                </div>
+                                                <div class="election--candidate--result badge"></div>
+                                                <div class="election--candidate--private-note"></div>
                                             </div>
-                                            <div class="election--candidate--result"></div>
-                                            <div class="election--candidate--private-note"></div>
                                         </div>
                                     </div>
-                                    <div class="election--votes">
-                                        <div id="election--vote--candidate--template" class="election--vote--candidate"></div>
-                                        <div id="election--vote--template" class="election--vote"></div>
+                                    <div class="row">
+                                        <div class="election--votes col-sm-10">
+                                            <h3>Votes</h3>
+                                            <div id="election--vote--candidate--template" class="election--vote--candidate"></div>
+                                            <div id="election--vote--template" class="election--vote well"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -142,6 +147,9 @@
 		</div>
 		<script src="/static/inc/jquery/jquery-1.11.1.min.js"></script>
 		<script src="/static/inc/bootstrap/js/bootstrap.min.js"></script>
+        <script src="/static/js/BigInteger.min.js"></script>
+        <script src="/static/js/switcher.min.js"></script>
+        <script src="/static/js/jquery.easing.js"></script>        
 
 		<script src="/static/js/theme.js"></script>
         <script src="/static/js/electro.js"></script>

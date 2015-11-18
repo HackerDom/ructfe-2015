@@ -106,7 +106,7 @@
             "git"
          ],
          "files" : [
-             ["services/mol/install/ructfe-mol.deb", "/root/mol/ructfe-mol.deb"],
+             ["services/mol/install/mol.deb", "/root/mol/mol.deb"],
              ["deploy/mol/files/mol", "/etc/nginx/sites-available/mol"]
         ]
     }

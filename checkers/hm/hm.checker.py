@@ -25,9 +25,9 @@ def close(code, public="", private=""):
     exit(code)
 
 def create_name():
-    with open(NAMES_FILENAME, 'r') as f:
-        lines = f.readlines()
-    return choice(lines).strip()
+    res = ''.join(random.choice(string.ascii_lowercase) for i in range(random.randrange(3, 12)))
+    res = random.choice(string.ascii_uppercase) + res
+    return res
 
 def create_password():
     return sha1(str(time()).encode("utf-8")).hexdigest()

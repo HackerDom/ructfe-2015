@@ -167,7 +167,7 @@ class Client(object):
             close(CORRUPT, "Search", "search failed: %s" % answer)
 
         if len(answer['rows'][1]['data']) < 1:
-            close(GET_ERROR, "Search", "crime not searchable: %s" % answer)
+            close(GET_ERROR, "Search", "crime %s not searchable: %s" % (flag_id, answer))
 
         for crime in answer['rows'][1]['data']:
             self.ws.send(dumps({'action': 'show_crime',
@@ -258,9 +258,10 @@ def put(*args):
             c.report()
             close(OK, "%s" % uid)
         else:
+            flag_id = flag_id.replace("-", "").upper()
             c.report(flag_id, flag)
             close(OK, "%s:%s:%s" % (c.username, c.password, flag_id))
-    except net_error:
+    except (net_error, WebSocketException):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
@@ -297,7 +298,7 @@ def get(*args):
             c.search_uid(checker_flag_id, flag)
 
         close(OK)
-    except net_error:
+    except (net_error, WebSocketException):
         close(FAIL, "No connection to %s" % addr)
     except (KeyError, IndexError):
         close(CORRUPT, "JSON structure", "Bad answer in %s" % answer)
