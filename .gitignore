@@ -10,7 +10,8 @@
 
 /services/electro/Electro/web/static/inc
 /services/electro/Electro/web/static/logos
-/services/electro/Electro/web/static/css
+/services/electro/Electro/web/static/css/turio.css
+/services/electro/Electro/web/static/css/unika.min.css
 /services/electro/Electro/web/static/img
 /services/electro/Electro/web/static/js/theme.js
 
@@ -19,7 +20,8 @@
 /services/electro/service/key
 
 /services/electro/service/web/static/logos
-/services/electro/service/web/static/css
+/services/electro/service/web/static/css/turio.css
+/services/electro/service/web/static/css/unika.min.css
 /services/electro/service/web/static/img
 /services/electro/service/web/static/inc
 /services/electro/service/web/static/js/theme.js
