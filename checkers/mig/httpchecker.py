@@ -13,6 +13,13 @@ EXITCODE_MUMBLE        = 103
 EXITCODE_DOWN          = 104
 EXITCODE_CHECKER_ERROR = 110
 
+class CheckException(Exception):
+	def __init__(self, code, value):
+		self.code = code
+		self.value = value
+	def __str__(self):
+		return repr(self.value)
+
 class HttpWebException(Exception):
 	def __init__(self, value, path):
 		self.value = value
@@ -68,6 +75,9 @@ class HttpCheckerBase(object):
 
 			self.debug('Invalid command')
 			exit(EXITCODE_CHECKER_ERROR)
+		except CheckException as e:
+			print(e.value)
+			exit(e.code)
 		except HttpWebException as e:
 			print('http {} status {}'.format(e.path, e.value))
 			exit(EXITCODE_MUMBLE)
