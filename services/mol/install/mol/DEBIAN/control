@@ -1,6 +1,6 @@
-Package: ructfe-mol
+Package: mol
 Version: 1
-Provides: ructfe-mol
+Provides: mol
 Maintainer: m_messiah
 Architecture: all
 Section: web

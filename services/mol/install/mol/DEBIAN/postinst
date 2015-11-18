@@ -10076,16 +10076,16 @@ INSERT INTO profiles(profileid, name, lastname, city, birthdate, mobile, marital
 
 USQL
 
-deb-systemd-helper unmask ructfe-mol.service >/dev/null || true
+deb-systemd-helper unmask mol.service >/dev/null || true
 
 # was-enabled defaults to true, so new installations run enable.
-if deb-systemd-helper --quiet was-enabled ructfe-mol.service; then
+if deb-systemd-helper --quiet was-enabled mol.service; then
         # Enables the unit on first installation, creates new
         # symlinks on upgrades if the unit file has changed.
-        deb-systemd-helper enable ructfe-mol.service >/dev/null || true
+        deb-systemd-helper enable mol.service >/dev/null || true
 else
         # Update the statefile to add new symlinks (if any), which need to be
         # cleaned up on purge. Also remove old symlinks.
-        deb-systemd-helper update-state ructfe-mol.service >/dev/null || true
+        deb-systemd-helper update-state mol.service >/dev/null || true
 fi
-deb-systemd-invoke restart ructfe-mol.service >/dev/null || true
+deb-systemd-invoke restart mol.service >/dev/null || true
