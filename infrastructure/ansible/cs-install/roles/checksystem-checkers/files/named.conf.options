@@ -1,0 +1,16 @@
+options {
+        recursion yes;
+        additional-from-auth no;
+        additional-from-cache no;
+
+        directory "/var/cache/bind";
+        query-source address * port 5301;
+        forward first;
+        forwarders {
+               77.88.8.8;
+               77.88.8.1;
+        };
+        auth-nxdomain no;
+        allow-query { any; };
+        listen-on-v6 { any; };
+};

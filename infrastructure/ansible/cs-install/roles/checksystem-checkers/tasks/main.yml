@@ -9,6 +9,11 @@
 - name: chown checkers
   file: path={{cs_dir}}/checkers owner={{cs_user}} group={{cs_user}} recurse=yes
 
+- copy: src=resolv.conf dest=/etc/resolv.conf
+
+- copy: src=named.conf.options dest=/etc/bind/named.conf.options
+  notify: restart bind
+
 #################################### Checkers requirements ###################################
 
 - name: checker requirements - MoL - python3
@@ -54,6 +59,9 @@
   with_items:
     - requests
     - enum34
+
+- name: checker requirements - Bank - make validator
+  shell: chdir={{cs_dir}}/checkers/bank/validator make
 
 ################################ End of checkers requirements ################################
 

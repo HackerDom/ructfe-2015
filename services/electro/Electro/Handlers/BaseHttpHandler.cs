@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Electro.Utils;
 using log4net;
@@ -30,9 +31,12 @@ namespace Electro.Handlers
 			var context = listener.EndGetContext(result);
 			Task.Run(() =>
 			{
+				if(Thread.CurrentThread.IsThreadPoolThread)
+					Thread.CurrentThread.Name = Thread.CurrentThread.ManagedThreadId.ToString();
+
 				var sw = Stopwatch.StartNew();
 				int hash = 0;
-                try
+				try
 				{
 					hash = Math.Abs(new object().GetHashCode());
 					context.Response.KeepAlive = true;
