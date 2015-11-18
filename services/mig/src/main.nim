@@ -111,8 +111,8 @@ proc handleLastRequest(req: Request): Future[void] =
         return req.send(Http405, "Method Not Allowed")
 
     let last =
-        try: "[" & join(getLastJoins().filter(proc(ctz: JoinInfo): bool =
-            ctz.public
+        try: "[" & join(getLastJoins(getTime()).filter(proc(ctz: JoinInfo): bool =
+            not ctz.private
         ).map(proc(ctz: JoinInfo): string =
             $(%*{ctz.login ?? "": ctz.join.toShortTime()})
         ), ",") & "]"

@@ -294,9 +294,9 @@ class Checker(HttpCheckerBase):
 		return text
 
 	def sign(self, msg):
-		imsg = int(binascii.hexlify(msg.encode('utf-8')), 16)
-		self.debug(imsg)
-		return "%x" % pow(imsg, PrivExp, Modulus)
+		#imsg = int(binascii.hexlify(msg.encode('ascii')), 16)
+		#self.debug(hex(imsg))
+		return "%x" % pow(int(msg, 16), PrivExp, Modulus)
 
 	def randhex(self, len):
 		lst = [random.choice('0123456789ABCDEF') for i in range(len)]
@@ -305,45 +305,36 @@ class Checker(HttpCheckerBase):
 	def randthought(self):
 		return self.randhex(random.randrange(16,32))
 
-	def randform_vuln_1(self, i, state, flag):
+	def randform(self, rnd, vuln, i, state, flag):
 		if i == 0: return {'action':'load'}
-		if i == 1: return {'action':'next', 'fields':{'name':'Super','sname':'Tester','bdate':'2015-11-17','bplace':'Somewhere','mphone':'123'}, 'state': state}
-		if i == 2: return {'action':'next', 'fields':{'occup':'Somewhere','empl':'Somebody'}, 'state': state}
-		if i == 3: return {'action':'next', 'fields':{'thought':flag, 'sign':self.sign(flag)}, 'state': state}
-		if i == 4: return {'action':'next', 'fields':{'public':'','offer':'yes'}, 'state': state}
-		raise
-
-	def randform_vuln_2(self, i, state, flag):
-		if i == 0: return {'action':'load'}
-		if i == 1: return {'action':'next', 'fields':{'name':'Super','sname':'Tester','bdate':'2015-11-17','bplace':flag,'mphone':'123'}, 'state': state}
+		if i == 1: return {'action':'next', 'fields':{'name':'Super','sname':'Tester','bdate':'2015-11-17','bplace':flag if vuln == 2 else 'Somewhere','mphone':'123'}, 'state': state}
 		if i == 2: return {'action':'next', 'fields':{'occup':'Somewhere','empl':'Somebody'}, 'state': state}
 		if i == 3:
-			thought = self.randthought()
-			return {'action':'next', 'fields':{'thought':thought, 'sign':self.sign(thought)}, 'state': state}
-		if i == 4: return {'action':'next', 'fields':{'public':'yes','offer':'yes'}, 'state': state}
+			self.debug('Rnd: ' + rnd)
+			return {'action':'next', 'fields':{'thought':flag if vuln == 1 else self.randhex(32), 'rnd':rnd, 'sign':self.sign(rnd)}, 'state': state}
+		if i == 4: return {'action':'next', 'fields':{'private':('yes' if vuln == 1 else ''),'offer':'yes'}, 'state': state}
 		raise
 
-	def randform(self, vuln, i, state, flag):
-		if vuln == 1:
-			return self.randform_vuln_1(i, state, flag)
-		elif vuln == 2:
-			return self.randform_vuln_2(i, state, flag)
-		raise
-
-	def findfield(self, fields, name):
+	def findexists(self, fields, name):
 		for field in fields:
 			if field and field.get('name') == name:
 				return True
 		return False
 
+	def findfield(self, fields, name):
+		for field in fields:
+			if field and field.get('name') == name:
+				return field.get('value')
+		return None
+
 	def checkfields(self, form, names):
-		if not form or isBlank(form.get("state")):
+		if not form or isBlank(form.get('state')):
 			return False
-		fields = form.get("fields")
+		fields = form.get('fields')
 		if not fields or not isinstance(fields, list) or len(fields) == 0:
 			return False
 		for name in names:
-			if not self.findfield(fields, name):
+			if not self.findexists(fields, name):
 				return False
 		return True
 
@@ -353,8 +344,8 @@ class Checker(HttpCheckerBase):
 		fields = []
 		if i == 1: fields = ['name', 'sname', 'bdate', 'bplace', 'mphone']
 		if i == 2: fields = ['occup', 'empl']
-		if i == 3: fields = ['thought', 'sign']
-		if i == 4: fields = ['public', 'offer']
+		if i == 3: fields = ['thought', 'rnd', 'sign']
+		if i == 4: fields = ['private', 'offer']
 		if len(fields) == 0: raise
 		return self.checkfields(form, fields)
 
@@ -384,7 +375,7 @@ class Checker(HttpCheckerBase):
 
 		if vuln == 2:
 			result = self.sget(s, addr, '/last/')
-			self.debug(result)
+			#self.debug(result)
 
 			if not result or result.find(user['login']) < 0:
 				print('not found self in /last/')
@@ -433,16 +424,20 @@ class Checker(HttpCheckerBase):
 				user = self.randuser(flag, i * 5)
 
 		state = ''
+		rnd = ''
+
 		for i in range(0, 4):
-			result = self.jpost(s, addr, '/form/', self.randform(vuln, i, state, flag))
+			result = self.jpost(s, addr, '/form/', self.randform(rnd, vuln, i, state, flag))
 			self.debug(result)
 
 			if not self.checkform(result, i + 1, flag):
-				print('form step', str(i), 'failed')
+				print('form step', str(i + 1), 'failed')
 				return EXITCODE_MUMBLE
-			state = result.get("state")
 
-		result = self.jposts(s, addr, '/form/', self.randform(vuln, 4, state, flag))
+			state = result.get('state')
+			rnd = '' if i != 2 else self.findfield(result.get('fields'), 'rnd')
+
+		result = self.jposts(s, addr, '/form/', self.randform('', vuln, 4, state, flag))
 		self.debug(result)
 
 		if not result:
@@ -455,7 +450,7 @@ class Checker(HttpCheckerBase):
 
 		if vuln == 2:
 			result = self.sget(s, addr, '/last/')
-			self.debug(result)
+			#self.debug(result)
 
 			if not result or result.find(user['login']) < 0:
 				print('not found self in /last/')

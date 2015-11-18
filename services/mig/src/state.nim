@@ -9,7 +9,7 @@ type
         user*: UserDataObj
         page*: int
         offer*: bool
-        public*: bool
+        private*: bool
         login*: string
 
     UserDataObj* = object
@@ -25,7 +25,7 @@ type
     JoinInfo* = object
         login*: string
         join*: Time
-        public*: bool
+        private*: bool
         name*: string
         sname*: string
         occup*: string
@@ -54,7 +54,7 @@ proc newJoinInfo*(state: State): JoinInfo =
         sname: state.user.sname,
         occup: state.user.occup,
         thought: state.user.thought,
-        public: state.public)
+        private: state.private)
 
 proc tryParseJoinInfo*(json: string): JoinInfo =
     try: to[JoinInfo](json) except: newJoinInfo(nil)
