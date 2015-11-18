@@ -34,7 +34,7 @@ namespace ElectroChecker
 				switch(mode)
 				{
 					case CommandInfo:
-						ExitWithMessage(ExitCode.OK, null, "1:1");
+						ExitWithMessage(ExitCode.OK, null, "vulns: 1:1");
 						break;
 					case CommandCheck:
 						ExitWithMessage(ExitCode.OK, "No check needed in this service");
@@ -77,9 +77,9 @@ namespace ElectroChecker
 			int vuln;
 			GetCommonParams(args, out host, out id, out flag, out vuln);
 
-			if(vuln == 2)
+			if(vuln == 1)
 				Vuln1Methods.ProcessPut(host, id, flag);
-			else if(vuln == 1)
+			else if(vuln == 2)
 				Vuln2Methods.ProcessPut(host, id, flag);
 			else
 				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
@@ -91,9 +91,9 @@ namespace ElectroChecker
 			int vuln;
 			GetCommonParams(args, out host, out id, out flag, out vuln);
 
-			if(vuln == 2)
+			if(vuln == 1)
 				Vuln1Methods.ProcessGet(host, id, flag);
-			else if(vuln == 1)
+			else if(vuln == 2)
 				Vuln2Methods.ProcessGet(host, id, flag);
 			else
 				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));

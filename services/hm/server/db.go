@@ -186,66 +186,6 @@ func prepareDb() {
 	
 	_, err = db.Exec(CreateUsersTable)
 	checkErr(err)
-	
-	uid := addTestUser(db) //debug
-	addTestMetrics(db, uid) //debug
-}
-
-func addTestUser(db *sql.DB) string{
-
-	stmt, err := db.Prepare(AddUser)
-	if err != nil {
-		logger.Println(err)
-		return ""
-	}
-	defer stmt.Close()
-	
-	res, err := stmt.Exec("testUser", "somePass") 
-	if err != nil {
-		logger.Println(err)
-		return ""
-	}
-	
-	id, err := res.LastInsertId()
-	if err != nil {
-		logger.Println(err)
-		return ""
-	}
-	return strconv.FormatInt(id, 10)
-}
-
-func addTestMetrics(db *sql.DB, uid string) {
-
-	tx, err := db.Begin()
-	 if err != nil {
-		logger.Println(err)
-	 }
-	 stmt, err := tx.Prepare(InsertValues)
-	 if err != nil {
-		logger.Println(err)
-	 }
-	 defer stmt.Close()
-	 
-	 for i := 0; i < 5; i++ {
-		 _, err = stmt.Exec(uid, i, i*3, i+3, (i-1)*4, fmt.Sprintf("Comment number %03d", i))
-		 if err != nil {
-			 logger.Println(err)
-		 }
-	 }
-	 tx.Commit()
-
-	 rows, err := db.Query(SelectTopRows)
-	 if err != nil {
-		logger.Println(err)
-	 }
-	 defer rows.Close()
-	 
-	 for rows.Next() {
-		var id int
-		var comment string
-		rows.Scan(&id, &comment)
-		fmt.Println(id, comment)
-	 }
 }
 
 func checkErr(err error) {

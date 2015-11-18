@@ -21,11 +21,6 @@ namespace ElectroChecker
 			return -1;
 		}
 
-		public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T> enumerable)
-		{
-			return enumerable ?? GetEmpty<T>();
-		}
-
 		public static IEnumerable<T> GetEmpty<T>()
 		{
 			yield break;

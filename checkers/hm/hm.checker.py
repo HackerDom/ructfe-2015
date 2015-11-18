@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # coding=utf-8
-from random import randrange, shuffle, choice
+from __future__ import print_function
+import random
+import string
 from hashlib import sha1
 from time import time
 from urllib.error import URLError as http_error
@@ -36,10 +38,10 @@ def generate_comment():
     return "Totally fine!"
 
 def create_metrics(flag):
-    return { "Weight": randrange(40, 100),
-        "BloodPressure": randrange(80, 120),
-        "Pulse": randrange(70, 150),
-        "WalkingDistance": randrange(1000, 10 * 1000),
+    return { "Weight": random.randrange(40, 100),
+        "BloodPressure": random.randrange(80, 120),
+        "Pulse": random.randrange(70, 150),
+        "WalkingDistance": random.randrange(1000, 10 * 1000),
         "Comment": flag }
 
 class CheckerException(Exception):

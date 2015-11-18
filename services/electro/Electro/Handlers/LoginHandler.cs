@@ -24,10 +24,10 @@ namespace Electro.Handlers
 			if(!form.TryGetValue("login", out login) || !form.TryGetValue("pass", out pass) || string.IsNullOrEmpty(login) || string.IsNullOrEmpty(pass) || (user = authController.FindUser(login, pass)) == null)
 				throw new HttpException(HttpStatusCode.Forbidden, "Invalid credentials");
 
-			context.Response.SetCookie("login", login);
-			context.Response.SetCookie("token", TokenCrypt.Encrypt(new Token { Login = login }.ToJsonString()), true);
+			context.Response.SetCookie(RegisterHandler.LoginCookieName, login);
+			context.Response.SetCookie(RegisterHandler.TokenCookieName, TokenCrypt.Encrypt(new Token { Login = login }.ToJsonString()), true);
 
-			WriteString(context, "Name OK");
+			WriteString(context, "Login OK");
 		}
 	}
 }

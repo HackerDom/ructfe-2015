@@ -32,6 +32,8 @@ namespace Electro.Crypto
 		[DataMember] public string[] keyParts;
 		[IgnoreDataMember] public BigInteger[] KeyParts;
 
+		[DataMember] public int MaxNum { get; set; }
+
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
 		{
@@ -68,7 +70,7 @@ namespace Electro.Crypto
 				buff[i] = (BigInteger.Abs(new BigInteger(rand)) * privateKey.Key) + (privateKey.MaxNum * Singleton.Random.Next(10, 100));
 			}
 
-			return new PublicKey { KeyParts = buff };
+			return new PublicKey { KeyParts = buff, MaxNum = privateKey.MaxNum};
 		}
 
 		public const int DefaultBitsCount = 8 * 16;
