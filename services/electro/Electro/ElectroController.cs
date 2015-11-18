@@ -90,6 +90,12 @@ namespace Electro
 				if(election.Votes.Count == MaxVotes)
 					return false;
 
+				if(election.Candidates.Count != voteArray.Length)
+					return false;
+
+				if(election.Votes.Any(v => v.UserId == user.Id))
+					return false;
+
 				var vote = new Vote { UserId = user.Id, EncryptedVector = voteArray };
 				var result = election.EncryptedResult ?? new BigInteger[vote.EncryptedVector.Length];
 				election.EncryptedResult = TryMerge(result, vote);
@@ -160,8 +166,7 @@ namespace Electro
 			if(!electionPrivateKeys.TryGetValue(election.Id, out privateKey))
 				return false;
 
-			if(election.EncryptedResult != null)
-				election.DecryptedResult = election.EncryptedResult.Select(voteElement => HomoCrypto.Decrypt(voteElement, privateKey)).ToArray();
+			election.DecryptedResult = (election.EncryptedResult ?? Enumerable.Repeat(BigInteger.Zero, election.Candidates.Count)).Select(voteElement => HomoCrypto.Decrypt(voteElement, privateKey)).ToArray();
 
 			return true;
 		}
