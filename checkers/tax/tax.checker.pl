@@ -81,7 +81,8 @@ sub rand_text {
 
 sub _check {
     my ($r, $msg) = @_;
-    do_exit(CHECKER_DOWN, "$msg (1)") unless $r->is_success;
+    do_exit(CHECKER_DOWN, "$msg (0)") if $r->code >= 500;
+    do_exit(CHECKER_MUMBLE, "$msg (1)") unless $r->is_success;
     do_exit(CHECKER_MUMBLE, "$msg (2)") if $r->content =~ /error/i;
 }
 
