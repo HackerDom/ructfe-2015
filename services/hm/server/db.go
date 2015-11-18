@@ -2,10 +2,8 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"errors"
-	"strconv"
 )
 const (
 	DbName = "./health.db" 

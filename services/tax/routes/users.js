@@ -28,7 +28,6 @@ var f = function *(next) {
         return this.throw(400, 'ERROR: ' + err.message);
       }
     }
-
     this.redirect(router.resolve('index'));
   }
 };

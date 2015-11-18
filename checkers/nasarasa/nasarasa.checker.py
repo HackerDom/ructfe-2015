@@ -66,9 +66,11 @@ class NasaRasaChecker(checklib.http.HttpChecker):
 
 
     def check_main_page(self):
+        logging.info('Checking main page')
         self.check_main_page_content(self.try_http_get(self.main_url))
 
     def check_users_page(self):
+        logging.info('Checking users page')
         r = self.try_http_get(self.main_url + '/users')
         self.check_page_content(r, ['Last registered users',
                                     'NASA RASA',
@@ -160,9 +162,11 @@ class NasaRasaChecker(checklib.http.HttpChecker):
         self.try_signin(user)
         my_user_link = self.find_user_link()
         
-        logging.info('Looking for flag on user\'s page')
+        logging.info('Looking for login on user\'s page')
         r = self.try_http_get(my_user_link)
+        self.check_page_content(r, [user.login])
 
+        logging.info('Looking for flag on user\'s page')
         found = flag in r.text
         if found:
             logging.info('I found flag on user\'s page: %s', flag)

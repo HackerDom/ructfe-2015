@@ -96,3 +96,7 @@ a:active {
     color: #336;
     text-decoration: none;
 }
+
+.btn-blank {
+    text-decoration: none;
+}
