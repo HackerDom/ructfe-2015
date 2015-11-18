@@ -119,7 +119,7 @@ sub check {
     my $r = $ua->get("$url");
     _check($r, "Retrieve main page error");
 
-    for my $str ('index', 'registration', 'login') {
+    for my $str ('registration', 'login') {
         do_exit(CHECKER_MUMBLE, "Error on main page")
             unless $r->content =~ qr/$str/i;
     }

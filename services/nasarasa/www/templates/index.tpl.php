@@ -9,11 +9,13 @@
         {/if}
         <div>Report us information about unknown planet and it'll be named after you.</div>
     </div>
-
-    {if $authenticated}
-        {include 'report-form.tpl.php'}
-    {else}
-        <a class="btn btn-default" href="/signup" role="button">Sign up</a>
-        <a class="btn btn-default" href="/signin" role="button">Sign in</a>
-    {/if}
+                   
+    <div class="col-sm-8">
+        {if $authenticated}
+            {include 'report-form.tpl.php'}
+        {else}
+            <a class="btn btn-default" href="/signup" role="button">Sign up</a>
+            <a class="btn btn-default" href="/signin" role="button">Sign in</a>
+        {/if}
+    </div>
 {/block}

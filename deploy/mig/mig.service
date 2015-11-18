@@ -1,0 +1,14 @@
+[Unit]
+    Description=Mig
+    After=network.target
+
+[Service]
+    ExecStart=/home/mig/src/main
+    WorkingDirectory=/home/mig/src
+    User=mig
+    Group=mig
+
+[Install]
+    WantedBy=multi-user.target
+
+

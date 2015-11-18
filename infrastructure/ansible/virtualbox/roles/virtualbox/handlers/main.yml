@@ -1,0 +1,2 @@
+- name: vboxdrv setup
+  shell: /etc/init.d/vboxdrv setup

@@ -1,0 +1,167 @@
+/* Hide all templates */
+[id$=-template] {
+    display: none;
+}
+
+.btn-sm {
+    padding: 3px 8px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.electro-block {
+    display: none;
+}
+
+#login {
+    display: block;
+}
+
+.error-message{
+    display: none;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 12pt;
+}
+
+
+
+/* Elections list #elections */
+#elections .election {
+    padding: 10px 15px;
+    margin: 10px 0px;
+    font-size: 11pt;
+    line-height: 14pt;
+}
+
+#elections .election .elections--election--info > div {
+    display: inline-block;
+}
+
+#elections .election .elections--election--winner {
+    position: relative;
+    top: -3px;
+    margin-left: 5px;
+}
+
+#elections .election .elections--election--name {
+    font-size: 14pt;
+    padding-bottom: 5px;
+}
+
+#elections .election .elections--election--nominate-till:before,
+#election .election--nominate-till:before {
+    content: "Nominate till: ";
+}
+
+#elections .election .elections--election--vote-till:before,
+#election .election--vote-till:before {
+    content: "Vote till: ";
+}
+
+#elections .election .elections--election--winner:before {
+    content: "Winner: ";
+}
+
+#elections .election .elections--election--winner:empty {
+    display: none;
+}
+
+
+/*** Create election form */
+.create-election {
+    padding: 20px 0px 40px;
+}
+
+
+/* Election page #election */
+#election .election--name {
+    font-size: 14pt;
+    padding-bottom: 5px;
+}
+
+#election .election--candidates {
+    margin-top: 20px;
+}
+
+#election .election--candidate {
+    padding: 10px 10px;
+}
+
+#election .election--candidate > div {
+    display: inline-block;
+}
+
+#election .election--candidate .election--candidate--name {
+    font-size: 12pt;
+    padding-top: 3px;
+}
+
+#election .election--candidate .election--candidate--vote-button {
+    display: none;
+}
+
+#election.election-nomination-finished .election--candidate .election--candidate--vote-button {
+    display: inline-block;
+}
+
+
+#election.election-finished .election--candidate .election--candidate--vote-button,
+#election.election-nomination-finished .election--nominate-button {
+    display: none;
+}
+
+#election .election--candidate--result {
+    display: none;
+}
+#election.election-finished .election--candidate--result {
+    display: inline-block;
+}
+
+#election .election--candidate .election--candidate--result {
+    float: right;
+    position: relative;
+    top: 2px;
+}
+#election .election--candidate .election--candidate--vote-button {
+    float: right;
+}
+
+#election .election--candidate .election--candidate--result:empty {
+    display: none;
+}
+
+
+#election .election--votes .election--vote--candidate,
+#election .election--candidate .election--candidate--name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#election .election--votes.empty:after {
+    content: "No votes here by now";
+}
+
+#election .election--nominate-button {
+    margin-top: 10px;
+}
+
+
+/* Switcher */
+.switcher.default {
+    min-width: 140px;
+    height: 32px;
+    background-color: #DE1616;
+}
+
+.switcher.default.is-active {
+    background-color: #519b20;
+}
+
+.checkbox {
+    margin-top: 0px;    
+}
+
+.switcher.default .textNo {
+    color: white;
+}

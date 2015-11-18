@@ -35,7 +35,14 @@ var f = function *(next) {
     if (!kwargs['pdata']) return this.throw(400, 'ERROR: .pdata required');
     if (!files) return this.throw(400, 'ERROR: .file required');
 
-    var pdata = yield db.pdata.findOne({'_id': kwargs['pdata']});
+    try {
+        var pdata = yield db.pdata.findOne({'_id': kwargs['pdata']});
+        if (!pdata) {
+            return this.throw(400, 'ERROR: .pdata problem');
+        }
+    } catch (e) {
+        return this.throw(400, 'ERROR: .pdata problem');
+    }
 
     this.template = 'upload';
     this.context = {'pdata': pdata, 'file': name};

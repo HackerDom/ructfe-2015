@@ -13,23 +13,23 @@
     {/if}
     <div class="form-group">
         <label>Declination (from -90 to 90 degrees)</label>
-        <input type="text" class="form-control" name="declination" />
+        <input type="text" class="form-control" name="declination" placeholder="30" />
     </div>
     <div class="form-group">
         <label>Hour angle (from -12 to 12 degrees)</label>
-        <input type="text" class="form-control" name="hour_angle" />
+        <input type="text" class="form-control" name="hour_angle" placeholder="7" />
     </div>
     <div class="form-group">
         <label>Brightness (from 0 to 100)</label>
-        <input type="text" class="form-control" name="brightness" />
+        <input type="text" class="form-control" name="brightness" placeholder="85" />
     </div>
     <div class="form-group">
         <label>Size (from 0 to 100)</label>
-        <input type="text" class="form-control" name="size" />
+        <input type="text" class="form-control" name="size" placeholder="24" />
     </div>
     <div class="form-group">
         <label>Color</label>
-        <input type="text" class="form-control" name="color" />
+        <input type="text" class="form-control" name="color" placeholder="Dark Blue" />
     </div>
     <div class="form-group">
         <label>Message</label>

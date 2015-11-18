@@ -9,16 +9,16 @@ using Electro.Utils;
 
 namespace Electro.Handlers
 {
-	class ListElectionsHandler : BaseHttpHandler
+	class ListElectionsHandler : AuthorizedBaseHandler
 	{
 		private readonly ElectroController electroController;
 
-		public ListElectionsHandler(ElectroController electroController, string prefix) : base(prefix)
+		public ListElectionsHandler(ElectroController electroController, AuthController authController, string prefix) : base(authController, prefix)
 		{
 			this.electroController = electroController;
 		}
 
-		protected override void ProcessRequest(HttpListenerContext context)
+		protected override void ProcessAuthorizedRequest(HttpListenerContext context, User user)
 		{
 			var finishedString = context.Request.QueryString["finished"];
 			bool finished;

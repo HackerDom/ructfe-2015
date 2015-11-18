@@ -4,7 +4,7 @@ import utils
 #type TLock = ref object
 #var lock {.global.} = new TLock
 
-#do not call this too often
+#Do not call this too often, it may break the world!
 proc urnd(len: Natural): string =
     let buf = random.urandom(len)
     assert len == buf.len
@@ -20,7 +20,7 @@ proc rnd*(len: Natural): string =
     var res = ""
     for i in 0..(len shr 2) - 1:
         res.add(intToBStr(int(rnduint())))
-    res
+    return res
 
 const IVLen = 16
 const KeyLen = 32

@@ -1,0 +1,2 @@
+-A INPUT -p tcp -s 10.10.10.1     --dport 80              -j ACCEPT -m comment --comment "virtualbox web admin"
+-A INPUT -p tcp -s 10.10.10.1     --dport 10000:10100     -j ACCEPT -m comment --comment "virtualbox rdp"

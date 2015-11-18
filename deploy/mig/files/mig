@@ -1,0 +1,27 @@
+server{
+    server_name ~^mig\.(?P<main_host>.+)$;
+    
+    access_log /home/mig/access.log;
+    error_log  /home/mig/error.log;
+    
+    location / {
+        proxy_pass http://localhost:7557;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }   
+
+    location /static/ {
+        try_files $uri @static;
+    }
+
+    location @static {
+        root /home;
+    }
+
+    location = /home {
+        rewrite .* http://$main_host/;
+    }
+}
+
+
+

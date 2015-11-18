@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Electro &bull; Turio &bull; RuCTFE 2015</title>
+		<meta name="description" content="TODO Service description">
+		<meta name="keywords" content="Turio, RuCTFE, TODO Service keywords" />
+		<meta name="author" content="Hackerdom team, hackerdom.ru, TODO author">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,500' rel='stylesheet' type='text/css'> <!-- Body font -->
+		<link href='http://fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'> <!-- Navbar font -->
+		<link rel="stylesheet" href="/static/inc/bootstrap/css/bootstrap.min.css">
+
+		<link rel="stylesheet" href="/static/css/unika.min.css">
+		<link rel="stylesheet" href="/static/css/turio.css">
+        <link rel="stylesheet" href="/static/css/switcher.min.css">
+    	<link rel="stylesheet" href="/static/css/electro.css">
+	</head>
+	<body class="service-page" data-spy="scroll" data-target="#main-navbar">
+		<div class="page-loader"></div>  <!-- Display loading image while page loads -->
+		<div class="body">
+			<header id="header" class="header-main">
+				<nav id="main-navbar" class="navbar navbar-default navbar-fixed-top" role="navigation">
+					<div class="container">
+						<div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
+						    <a class="navbar-brand" href="/home">Electro</a>
+						</div>
+					</div>
+				</nav>
+			</header>
+    		<section class="main-block" data-stellar-background-ratio="0.5">
+				<div class="container">
+					<div class="caption">
+
+
+                        <div class="row">
+                            <div class="col-sm-2 center-block">
+                                <a href="/">
+                                    <img src="/static/logos/vote.png" class="logo img-responsive home-link">
+                                </a>
+                                <div class="error-message alert alert-danger"></div>
+                            </div>
+                            <div class="col-sm-8 content-block">
+                                <h1>Electro</h1>
+                                <div id="login" class="electro-block">
+                                    <form id="login--form">
+                                        <div class="form-group">
+                                            <input type="text" name="login" placeholder="Login" class="form-control">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" name="pass" placeholder="Password" class="form-control">
+                                        </div>
+                                        <button class="btn btn-default login-button">Login</button>
+                                        <button class="btn btn-link show-register-button">Registration</button>
+                                    </form>
+                                </div>
+                                <div id="register" class="electro-block">
+                                    <form id="register--form">
+                                        <div class="form-group">
+                                            <input type="text" name="login" placeholder="Login" class="form-control">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" name="pass" placeholder="Password" class="form-control">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" name="publicMessage" placeholder="Public message" class="form-control">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" name="privateNotes" placeholder="Private notes" class="form-control">
+                                        </div>
+                                        <button class="btn btn-link show-login-button">Login</button>
+                                        <button class="btn btn-default register-button">Register</button>
+                                    </form>
+                                </div>
+                                <div id="elections" class="electro-block">
+                                    <div class="create-election">
+                                        <h3>Start election</h3>
+                                        <form id="create-election--form">
+                                            <div class="row">
+                                                <div class="form-group col-sm-9">
+                                                    <input type="text" name="name" placeholder="Name" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="checkbox col-sm-3">
+                                                        <label>
+                                                            <input type="checkbox" name="isPublic">
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="text" name="nominateDuration" placeholder="Nominate duration (in seconds)" class="form-control">
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="text" name="voteDuration" placeholder="Vote duration (in seconds)" class="form-control">
+                                            </div>
+                                            <button class="btn btn-default" role="button">Start</button>
+                                        </form>
+                                    </div>
+                                    <h3>Existing elections</h3>
+                                    <div id="elections--election--template" class="election well" >
+                                        <div class="elections--election--info">
+                                            <div class="elections--election--name"></div>
+                                            <div class="elections--election--winner label label-success"></div>
+                                        </div>
+                                        <div class="elections--election--nominate-till"></div>
+                                        <div class="elections--election--vote-till"></div>
+                                    </div>
+                                </div>
+                                <div id="election" class="electro-block">
+                                    <div class="election--name"></div>
+                                    <div class="election--nominate-till"></div>
+                                    <div class="election--vote-till"></div>
+                                    <div class="election--nominate-button">
+                                        <button class="btn btn-default">Nominate</button>
+                                    </div>
+                                    <div class="row">
+                                        <div class="election--candidates col-sm-6">
+                                            <h3>Candidates</h3>
+                                            <div id="election--canditate--template" class="election--candidate well">
+                                                <div class="election--candidate--name"></div>
+                                                <div class="election--candidate--vote-button">
+                                                    <button class="btn btn-default btn-sm">Vote</button>
+                                                </div>
+                                                <div class="election--candidate--result badge"></div>
+                                                <div class="election--candidate--private-note"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="election--votes col-sm-10">
+                                            <h3>Votes</h3>
+                                            <div id="election--vote--candidate--template" class="election--vote--candidate"></div>
+                                            <div id="election--vote--template" class="election--vote well"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+					</div>
+				</div>
+            </section>
+		</div>
+		<script src="/static/inc/jquery/jquery-1.11.1.min.js"></script>
+		<script src="/static/inc/bootstrap/js/bootstrap.min.js"></script>
+        <script src="/static/js/BigInteger.min.js"></script>
+        <script src="/static/js/switcher.min.js"></script>
+        <script src="/static/js/jquery.easing.js"></script>
+
+		<script src="/static/js/theme.js"></script>
+        <script src="/static/js/electro.js"></script>
+    </body>
+</html>

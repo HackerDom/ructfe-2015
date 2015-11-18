@@ -10,7 +10,7 @@
     cs_user: cs
     cs_dir: /home/cs
 
-- hosts: checksystem-checkers
+- hosts: checksystem-main:checksystem-checkers
   roles: [checksystem-checkers]
   vars:
     cs_user: cs

@@ -21,7 +21,7 @@ namespace Electro.Crypto
 			return new HomoKeyPair
 			{
 				PrivateKey = privateKey,
-				PublicKey = PublicKey.GenPublicKey(privateKey, maxNum)
+				PublicKey = PublicKey.GenPublicKey(privateKey)
 			};
 		}
 	}

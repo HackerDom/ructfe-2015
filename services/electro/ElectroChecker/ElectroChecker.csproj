@@ -47,14 +47,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncHttpClient.cs" />
     <Compile Include="ElectroClient.cs" />
     <Compile Include="ExitCode.cs" />
-    <Compile Include="IdState1.cs" />
+    <Compile Include="Vuln1State.cs" />
+    <Compile Include="IEnumerableExtensions.cs" />
     <Compile Include="UsersManager.cs" />
     <Compile Include="ServiceException.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="Vuln1Methods.cs" />
+    <Compile Include="Vuln2Methods.cs" />
+    <Compile Include="Vuln2State.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

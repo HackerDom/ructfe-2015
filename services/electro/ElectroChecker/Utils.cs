@@ -8,6 +8,11 @@ namespace ElectroChecker
 {
 	static class Utils
 	{
+		public static string GenRandomElectionName(string prefix = "Election")
+		{
+			return prefix + "_" + GenRandomAlphaNumeric(8, 8);
+		}
+
 		public static int FindWinner(int[] votes)
 		{
 			int num = -1;
@@ -63,6 +68,8 @@ namespace ElectroChecker
 			var len = minLen + random.Next(plusRandomLen + 1);
 			return string.Join("", Enumerable.Range(0, len).Select(i => chars[random.Next(0, chars.Length)]));
 		}
+
+		
 
 		static Random random = new Random();
 	}

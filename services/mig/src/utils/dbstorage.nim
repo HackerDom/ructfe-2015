@@ -1,11 +1,30 @@
 import redis, times, sequtils
 import utils, ../state
 
-let db {.global.} = open() #TODO reopen connections
+var db: ref Redis = new Redis
+db[] = open()
 
 const AuthKeyPrefix = "auth:"
 const JoinKeyPrefix = "info:"
 const DataKeyPrefix = "data:"
+const ThghKeyPrefix = "thgh:"
+const ProoKeyPrefix = "proo:"
+
+# Single thread!
+proc reconnect(): bool =
+    try:
+        try: db[].quit() except: discard
+        db[] = open()
+        return true
+    except: discard
+
+template withReconnect(command: expr): expr =
+    for i in 0..1:
+        try:
+            command
+        except:
+            if reconnect(): discard
+            else: raise
 
 proc tryAdd(db: Redis, key, value: string): bool {.gcsafe.} =
     db.setNX(key, value)
@@ -18,25 +37,25 @@ proc addOrGet(db: Redis, key, value: string): string {.gcsafe.} =
     if tryAdd(db, key, value): value else: find(db, key)
 
 proc tryAdd(key, value: string): bool =
-    db.tryAdd(key, value)
+    withReconnect: return db[].tryAdd(key, value)
 
 proc find(key: string): string =
-    db.find(key)
-
-proc isUnique*(key: string): bool =
-    tryAdd(key, "")
+    withReconnect: return db[].find(key)
 
 proc addOrGet(key, value: string): string =
-    db.addOrGet(key, value)
-
-proc sec(time: Time): int =
-    time.toSeconds().toInt()
+    withReconnect: return db[].addOrGet(key, value)
 
 proc zadd(key, value: string): bool =
-    db.zadd(key, getTime().sec(), value) == 1
+    withReconnect: return db[].zadd(key, getTime().sec(), value) == 1
 
 proc getLast(key: string, minutes: int = 15): seq[string] =
-    db.zrevrangebyscore(key, "+inf", $getTime().addMinutes(-minutes).sec())
+    withReconnect: return db[].zrevrangebyscore(key, "+inf", $getTime().addMinutes(-minutes).sec())
+
+proc isUniqueThought*(key: string): bool =
+    tryAdd(ThghKeyPrefix & key, "")
+
+proc isUniqueProof*(key: string): bool =
+    tryAdd(ProoKeyPrefix & key, "")
 
 ### AuthInfo ###
 proc addOrGetAuth*(auth: tuple[login, pass: string]): string =
@@ -86,14 +105,14 @@ when isMainModule:
         v1[i] = val1
         v2[i] = val2
 
-        a1[i] = spawn db.tryAdd(key, val1)
-        a2[i] = spawn db.tryAdd(key, val2)
+        a1[i] = spawn db[].tryAdd(key, val1)
+        a2[i] = spawn db[].tryAdd(key, val2)
 
     for i in 0..Iterations:
         let i1 = ^a1[i]
         let i2 = ^a2[i]
         assert i1 xor i2
         let v = if i1: v1[i] else: v2[i]
-        assert db.find(k[i]) == v
+        assert db[].find(k[i]) == v
 
     echo "[dbstorage] OK: compiled ", CompileDate, " ", CompileTime
