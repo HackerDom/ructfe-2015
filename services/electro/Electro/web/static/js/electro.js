@@ -277,7 +277,7 @@ if (! String.prototype.startsWith) {
                 this.main(callback);
             else if (pathname.startsWith('/election/'))
                 this.load_election(pathname.substring('/election/'.length), callback);
-            else if (pathame == '/logout')
+            else if (pathname == '/logout')
                 this.logout(callback);
             else
                 this.main(callback);
