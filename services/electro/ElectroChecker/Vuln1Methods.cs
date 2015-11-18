@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Electro.Crypto;
 using Electro.Utils;
+using log4net;
 
 namespace ElectroChecker
 {
@@ -115,5 +116,7 @@ namespace ElectroChecker
 
 			Program.ExitWithMessage(ExitCode.OK, "Flag found! OK", null);
 		}
+
+		private static readonly ILog log = LogManager.GetLogger(typeof(Vuln1Methods));
 	}
 }

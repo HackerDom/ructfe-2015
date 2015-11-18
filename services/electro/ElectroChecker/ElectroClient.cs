@@ -26,7 +26,6 @@ namespace ElectroChecker
 			return httpResult.cookieCollection;
 		}
 
-
 		public static CookieCollection RegUser(string host, int port, string login, string pass, string publicMessage = null, string privateNotes = null)
 		{
 			var data = Encoding.UTF8.GetBytes(string.Format("login={0}&pass={1}&publicMessage={2}&privateNotes={3}", HttpUtility.UrlEncode(login), HttpUtility.UrlEncode(pass), HttpUtility.UrlEncode(publicMessage), HttpUtility.UrlEncode(privateNotes) ));
