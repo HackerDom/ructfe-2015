@@ -1,4 +1,5 @@
 server{
+    listen 80 default;
     access_log /home/static/access.log;
     error_log  /home/static/error.log;
     
