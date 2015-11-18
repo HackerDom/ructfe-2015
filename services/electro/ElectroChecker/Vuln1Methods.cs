@@ -104,6 +104,8 @@ namespace ElectroChecker
 			var expectedWinner = candidates[expectedWinnerNum];
 
 			var election = ElectroClient.FindElection(host, Program.PORT, expectedWinner.Cookies, state.ElectionId);
+			if(election == null)
+				throw new ServiceException(ExitCode.MUMBLE, string.Format("Can't find election '{0}'", id));
 
 			var readlWinner = election.FindWinner();
 			if(readlWinner == null)
