@@ -41,4 +41,6 @@ class HttpChecker(checklib.Checker):
         for s in strings_for_check:
             self.mumble_if_false(s in response.text, message, 'Can\'t find string "%s" in response from %s' % (s, response.url))
 
+        logging.info('Checked %d string(s) on page %s, all of them exists', len(strings_for_check), response.url)
+
         

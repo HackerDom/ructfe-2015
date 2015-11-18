@@ -1,5 +1,6 @@
 import enum
 import logging
+import signal
 import sys
 import traceback
 import requests
@@ -41,8 +42,25 @@ class exception_wrapper:
 
 
 class Checker:
-    def __init__(self):
+    def __init__(self, set_interrupt_signal_handlers=True):
         logging.basicConfig(format='%(asctime)-15s [%(levelname)s] %(message)s', level=logging.DEBUG)
+        if set_interrupt_signal_handlers:
+            self._set_signal_handlers()
+
+    def _signal_handler(self, signum, frame):
+        logging.warning("Received signal: %s at %s, line %s", signum, frame.f_code, frame.f_lineno)
+        logging.warning(dir(frame))
+        sys.stdout.flush()
+        sys.stderr.flush()
+        self.exit(StatusCode.ERROR)
+
+    def _set_signal_handlers(self):
+        for signum in [signal.SIGTERM, signal.SIGINT, signal.SIGABRT, signal.CTRL_C_EVENT, signal.CTRL_BREAK_EVENT]:
+            try:
+                signal.signal(signum, self._signal_handler)
+            except ValueError:
+                pass
+
 
     def check(self, address):
         raise CheckerException('Not implemented')

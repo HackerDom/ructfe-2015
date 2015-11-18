@@ -324,7 +324,7 @@ def not_found(*args):
 
 
 if __name__ == '__main__':
-    #try:
+    try:
         COMMANDS.get(argv[1], not_found)(*argv[2:])
-    #except Exception as e:
-    #    close(INTERNAL_ERROR, "Bad-ass checker", "INTERNAL ERROR: %s" % e)
+    except Exception as e:
+        close(INTERNAL_ERROR, "Bad-ass checker", "INTERNAL ERROR: %s" % e)

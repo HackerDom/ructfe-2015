@@ -1,0 +1,2 @@
+- hosts: ructf-srv08g.ructf.yandex.net
+  roles: [net-status]
