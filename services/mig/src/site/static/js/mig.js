@@ -33,16 +33,28 @@ $(function() {
 		}
 	}
 
+	var $logout = $("#logout");
+	$logout.click(function() {
+		$.removeCookie("auth");
+		window.location = "/";
+	});
+
+	var $authdone = $("#auth-done");
+	var $formauth = $("#form-auth");
+	var $wzrd = $("#form-wzrd");
+
 	function setLogin() {
 		var auth = $.cookie("auth");
 		if(auth) {
 			var login = auth.substr(Math.max(0, auth.indexOf(":")) + 1);
-			$("#auth-done").text(login).show();
-			$("#form-wzrd").show();
-			$("#form-auth").hide();
+			$authdone.text(login).show();
+			$wzrd.show();
+			$formauth.hide();
+			$logout.show();
 		} else {
-			$("#auth-done").hide();
-			$("#form-wzrd").hide();
+			$authdone.hide();
+			$wzrd.hide();
+			$logout.hide();
 		}
 	}
 
@@ -54,7 +66,6 @@ $(function() {
 		var $error = $form.find(".error").stop(true, true).hide();
 		var $inputs = $form.find("input,button").attr("disabled", true);
 		var serialize = $form.data("serialize");
-		var $proof = $form.find("#proof");
 		$.ajax({
 			url: $form.data("action"),
 			method: "POST",
@@ -71,9 +82,9 @@ $(function() {
 		return false;
 	});
 
-	$("#form-auth").data("done", function() {
+	$formauth.data("done", function() {
 		setLogin();
-		$("#form-wzrd").submit();
+		$wzrd.submit();
 	});
 
 	var $fields = $("#fields");
@@ -103,7 +114,6 @@ $(function() {
 		}
 	}
 
-	var $wzrd = $("#form-wzrd");
 	$wzrd.find("input[type=submit],button[type=submit]").click(function() {
 		var $btn = $(this);
 		$btn.closest("form").data("page", $btn.attr("id"))
@@ -126,9 +136,6 @@ $(function() {
 				$fields.append($head)
 			}
 			setFields(data.fields);
-			if(data.proof) {
-				$fields.append($("<input id='proof' type='hidden' name='proof' value=''/>"));
-			}
 		}
 	}).submit();
 
@@ -164,7 +171,7 @@ $(function() {
 						$("#hidden").show();
 						$(this).unbind().remove();
 						return false;
-					})
+					});
 				}
 			}).fail(function() {
 				$last.html("Error")
