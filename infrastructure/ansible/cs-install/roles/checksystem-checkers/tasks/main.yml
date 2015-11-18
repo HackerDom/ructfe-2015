@@ -9,9 +9,10 @@
 - name: chown checkers
   file: path={{cs_dir}}/checkers owner={{cs_user}} group={{cs_user}} recurse=yes
 
-- copy: src=resolv.conf dest=/etc/resolv.conf
-
 - copy: src=named.conf.options dest=/etc/bind/named.conf.options
+  notify: restart bind
+
+- lineinfile: dest=/etc/default/bind9 regexp=OPTIONS line='OPTIONS="-u bind -4"'
   notify: restart bind
 
 #################################### Checkers requirements ###################################
