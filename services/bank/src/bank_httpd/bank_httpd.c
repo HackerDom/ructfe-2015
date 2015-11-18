@@ -2,7 +2,7 @@
 
 int main(void) {
   struct mg_server *server = mg_create_server(NULL, NULL);
-  mg_set_option(server, "listening_port", "3255");
+  mg_set_option(server, "listening_port", "127.0.0.1:3255");
   mg_set_option(server, "document_root", ".");
   mg_set_option(server, "index_files", "bank.cgi");
 

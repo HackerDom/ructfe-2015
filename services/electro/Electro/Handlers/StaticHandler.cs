@@ -20,19 +20,13 @@ namespace Electro.Handlers
 		{
 			var fileInfo = GetFileInfo(context.Request.Url);
 			if(fileInfo == null)
-				throw new HttpException(HttpStatusCode.NotFound, "File not found");
+				throw new HttpException(HttpStatusCode.NotFound, string.Format("File for url {0} not found", context.Request.Url));
 
 			var lastModified = fileInfo.LastWriteTimeUtc.TruncSeconds();
 			context.Response.AddHeader("Date", DateTime.UtcNow.ToString("r"));
-//			if(IsNotModifiedSince(context, lastModified))
-//			{
-//				context.Response.StatusCode = (int)HttpStatusCode.NotModified;
-//				return;
-//			}
 
 			var contentType = GetContentType(Path.GetExtension(fileInfo.FullName));
 
-			//context.Response.SendChunked = true;
 			context.Response.AddHeader("Cache-Control", "max-age=" + MaxAge);
 			context.Response.AddHeader("Last-Modified", lastModified.ToString("r"));
 			context.Response.AddHeader("Accept-Ranges", "none");
@@ -41,20 +35,20 @@ namespace Electro.Handlers
 
 			var outputStream = context.Response.OutputStream;
 
-			var acceptEncoding = context.Request.Headers["Accept-Encoding"].TrimToLower();
-			if(acceptEncoding != null && !contentType.StartsWith("image") && !contentType.StartsWith("sound") && !contentType.StartsWith("video"))
-			{
-				/*if(acceptEncoding.IndexOf("gzip", StringComparison.Ordinal) >= 0)
-				{
-					outputStream = new GZipStream(outputStream, CompressionMode.Compress, false);
-					context.Response.AddHeader("Content-Encoding", "gzip");
-				}
-				else if(acceptEncoding.IndexOf("deflate", StringComparison.Ordinal) >= 0)
-				{
-					outputStream = new DeflateStream(outputStream, CompressionMode.Compress, false);
-					context.Response.AddHeader("Content-Encoding", "deflate");
-				}*/
-			}
+//			var acceptEncoding = context.Request.Headers["Accept-Encoding"].TrimToLower();
+//			if(acceptEncoding != null && !contentType.StartsWith("image") && !contentType.StartsWith("sound") && !contentType.StartsWith("video"))
+//			{
+//				if(acceptEncoding.IndexOf("gzip", StringComparison.Ordinal) >= 0)
+//				{
+//					outputStream = new GZipStream(outputStream, CompressionMode.Compress, false);
+//					context.Response.AddHeader("Content-Encoding", "gzip");
+//				}
+//				else if(acceptEncoding.IndexOf("deflate", StringComparison.Ordinal) >= 0)
+//				{
+//					outputStream = new DeflateStream(outputStream, CompressionMode.Compress, false);
+//					context.Response.AddHeader("Content-Encoding", "deflate");
+//				}
+//			}
 
 			using(outputStream)
 			using(var stream = fileInfo.OpenRead())
@@ -79,23 +73,14 @@ namespace Electro.Handlers
 			if(!fullpath.StartsWith(root))
 				return null;
 
-			if(fullpath == root)
-			{
-				var filepath = DefaultFiles.Select(filename => Path.Combine(fullpath, filename)).FirstOrDefault(File.Exists);
-				if(filepath != null)
-					fullpath = filepath;
-			}
-
 			var fileInfo = new FileInfo(fullpath);
+			if(fullpath == root || !fileInfo.Exists)
+			{
+				var filepath = DefaultFiles.Select(filename => Path.Combine(root, filename)).FirstOrDefault(File.Exists);
+				if(filepath != null)
+					fileInfo = new FileInfo(filepath);
+			}
 			return !fileInfo.Exists ? null : fileInfo;
-		}
-
-		private static bool IsNotModifiedSince(HttpListenerContext context, DateTime lastModified)
-		{
-			DateTime ifModifiedSince;
-			if(!DateTime.TryParseExact(context.Request.Headers["If-Modified-Since"], "r", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out ifModifiedSince))
-				ifModifiedSince = DateTime.MinValue;
-			return ifModifiedSince >= lastModified;
 		}
 
 		private static string GetContentType(string fileExt)

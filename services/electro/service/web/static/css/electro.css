@@ -27,6 +27,10 @@
 
 
 /* Elections list #elections */
+#elections.empty::after {
+    content: "No elections right now";
+}
+
 #elections .election {
     padding: 10px 15px;
     margin: 10px 0px;
@@ -69,7 +73,8 @@
 
 
 /*** Create election form */
-.create-election {
+.create-election,
+.find-election {
     padding: 20px 0px 40px;
 }
 
@@ -78,6 +83,11 @@
 #election .election--name {
     font-size: 14pt;
     padding-bottom: 5px;
+}
+
+#election .election--nominate-till,
+#election .election--vote-till {
+    color: #999;
 }
 
 #election .election--candidates {
@@ -118,17 +128,24 @@
     display: inline-block;
 }
 
-#election .election--candidate .election--candidate--result {
+#election .election--candidate .election--candidate--result,
+#election .election--candidate .election--candidate--private-note {
     float: right;
     position: relative;
     top: 2px;
+    margin-left: 2px;
 }
 #election .election--candidate .election--candidate--vote-button {
     float: right;
 }
 
-#election .election--candidate .election--candidate--result:empty {
+#election .election--candidate .election--candidate--result:empty,
+#election .election--candidate .election--candidate--private-note:empty {
     display: none;
+}
+
+#election .election--candidate .election--candidate--private-note {
+    background-color: #900;
 }
 
 

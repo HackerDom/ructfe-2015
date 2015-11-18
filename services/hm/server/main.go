@@ -169,7 +169,7 @@ func login(request *http.Request) (int, string, http.Cookie, http.Cookie) {
 			response = "There is no such user"
 		} else {
 			status = http.StatusOK
-			expire := time.Now().AddDate(0, 0, 1)
+			expire := time.Now().AddDate(1, 0, 0)
 			auth := md5hash(Key, uid)
 			id := encodeBase64(uid)
 			authCookie = http.Cookie{Name : "auth", Value: auth, Expires: expire}

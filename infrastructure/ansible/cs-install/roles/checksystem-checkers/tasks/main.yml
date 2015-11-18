@@ -5,14 +5,23 @@
 
 - name: upload checkers
   synchronize: src=../../../../../../checkers/ dest={{cs_dir}}/checkers
+  tags: [checkers]
 
 - name: chown checkers
   file: path={{cs_dir}}/checkers owner={{cs_user}} group={{cs_user}} recurse=yes
+  tags: [checkers]
+
+- copy: src=named.conf.options dest=/etc/bind/named.conf.options
+  notify: restart bind
+
+- lineinfile: dest=/etc/default/bind9 regexp=OPTIONS line='OPTIONS="-u bind -4"'
+  notify: restart bind
 
 #################################### Checkers requirements ###################################
 
 - name: checker requirements - MoL - python3
   apt: name={{item}} state=present
+  tags: [checkers]
   with_items:
     - python3
     - python3-setuptools
@@ -20,10 +29,12 @@
 
 - name: checker requirements - MoL - pip
   easy_install: executable=easy_install3 name={{item}}
+  tags: [checkers]
   with_items:
     - pip
 
 - name: checker requirements - MoL - websocket-client
+  tags: [checkers]
   pip: executable=pip3 name=websocket-client state=present
 
 # commented, because it fails when package is already uninstalled
@@ -32,14 +43,17 @@
 #  ignore_errors: yes
 
 - name: checker requirements - TaX
+  tags: [checkers]
   apt: name={{item}} state=latest
   with_items:
     - libwww-perl
 
 - name: checker requirements - Electro - apt key
+  tags: [checkers]
   apt_key: keyserver=keyserver.ubuntu.com id=3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 
 - name: checker requirements - Electro - apt repository
+  tags: [checkers]
   apt_repository: repo="{{item}}" state=present
   notify: update apt
   with_items:
@@ -47,13 +61,19 @@
     - "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main"
 
 - name: checker requirements - Electro - mono
+  tags: [checkers]
   apt: name=mono-devel state=latest
 
 - name: checker requirements - Nasarasa - requests
+  tags: [checkers]
   pip: executable=pip3 name={{item}} state=latest
   with_items:
     - requests
     - enum34
+
+- name: checker requirements - Bank - make validator
+  tags: [checkers]
+  shell: chdir={{cs_dir}}/checkers/bank/validator make
 
 ################################ End of checkers requirements ################################
 

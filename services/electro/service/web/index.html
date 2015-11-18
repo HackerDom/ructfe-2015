@@ -5,15 +5,16 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<title>Electro &bull; Turio &bull; RuCTFE 2015</title>
 		<meta name="description" content="TODO Service description">
-		<meta name="keywords" content="Turio, RuCTFE, TODO Service keywords" />
-		<meta name="author" content="Hackerdom team, hackerdom.ru, TODO author">
+		<meta name="keywords" content="Turio, RuCTFE, Electro, Elections" />
+		<meta name="author" content="Hackerdom team, hackerdom.ru, Konstantin Plotnikov aka kost">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,500' rel='stylesheet' type='text/css'> <!-- Body font -->
-		<link href='http://fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'> <!-- Navbar font -->
+		<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,500' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" href="/static/inc/bootstrap/css/bootstrap.min.css">
 
 		<link rel="stylesheet" href="/static/css/unika.min.css">
 		<link rel="stylesheet" href="/static/css/turio.css">
+
         <link rel="stylesheet" href="/static/css/switcher.min.css">
     	<link rel="stylesheet" href="/static/css/electro.css">
 	</head>
@@ -27,6 +28,13 @@
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
 						    <a class="navbar-brand" href="/home">Electro</a>
 						</div>
+
+                        <div class="collapse navbar-collapse" id="bs-navbar-collapse">
+                            <ul class="nav navbar-nav navbar-right">
+                                <li><a href="/" class="home-link">Home</a></li>
+                                <li><a href="/logout" class="logout-link">Logout</a></li>
+                            </ul>
+                        </div>                        
 					</div>
 				</nav>
 			</header>
@@ -37,8 +45,8 @@
 
                         <div class="row">
                             <div class="col-sm-2 center-block">
-                                <a href="/">
-                                    <img src="/static/logos/vote.png" class="logo img-responsive home-link">
+                                <a href="/" class="home-link">
+                                    <img src="/static/logos/vote.png" class="logo img-responsive">
                                 </a>
                                 <div class="error-message alert alert-danger"></div>
                             </div>
@@ -96,7 +104,20 @@
                                             <div class="form-group">
                                                 <input type="text" name="voteDuration" placeholder="Vote duration (in seconds)" class="form-control">
                                             </div>
-                                            <button class="btn btn-default" role="button">Start</button>
+                                            <button class="btn btn-default col-sm-2" role="button">Start</button>
+                                        </form>
+                                    </div>
+                                    <div class="find-election">
+                                        <h3>Find election</h3>
+                                        <form id="find-election--form">
+                                            <div class="row">
+                                                <div class="form-group col-sm-10">
+                                                    <input type="text" name="id" placeholder="Election ID" class="form-control">
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    <button class="btn btn-default col-sm-12" role="button">Find</button>
+                                                </div>
+                                            </div>
                                         </form>
                                     </div>
                                     <h3>Existing elections</h3>
@@ -117,7 +138,7 @@
                                         <button class="btn btn-default">Nominate</button>
                                     </div>
                                     <div class="row">
-                                        <div class="election--candidates col-sm-6">
+                                        <div class="election--candidates col-sm-8">
                                             <h3>Candidates</h3>
                                             <div id="election--canditate--template" class="election--candidate well">
                                                 <div class="election--candidate--name"></div>
@@ -125,12 +146,12 @@
                                                     <button class="btn btn-default btn-sm">Vote</button>
                                                 </div>
                                                 <div class="election--candidate--result badge"></div>
-                                                <div class="election--candidate--private-note"></div>
+                                                <div class="election--candidate--private-note badge"></div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="election--votes col-sm-10">
+                                        <div class="election--votes col-sm-12">
                                             <h3>Votes</h3>
                                             <div id="election--vote--candidate--template" class="election--vote--candidate"></div>
                                             <div id="election--vote--template" class="election--vote well"></div>

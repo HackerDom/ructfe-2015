@@ -25,4 +25,5 @@
     - DBD::Pg
     - Mojo::Pg
     - Minion
-
+    - Cpanel::JSON::XS
+    - Mojo::JSON::MaybeXS

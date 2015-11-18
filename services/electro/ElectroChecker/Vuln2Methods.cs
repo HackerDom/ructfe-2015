@@ -17,39 +17,39 @@ namespace ElectroChecker
 
 		public static void ProcessPut(string host, string id, string flag)
 		{
-			var cs = flag.Select(c => UsersManager.GenUser(null, c.ToString())).ToArray();
-			var regTasks = cs.Select(candidate => new { candidate, task = ElectroClient.RegUserAsync(host, Program.PORT, candidate.Login, candidate.Pass, candidate.PublicMessage, candidate.PrivateMessage) }).ToArray();
+			var candidateUsers = flag.Distinct().Select(c => UsersManager.GenUser(null, c.ToString())).ToArray();
+			var candidateTasks = candidateUsers.Select(candidate => new { candidate, task = ElectroClient.RegUserAsync(host, Program.PORT, candidate.Login, candidate.Pass, candidate.PublicMessage, candidate.PrivateMessage) }).ToArray();
 			try
 			{
-				Task.WaitAll(regTasks.Select(arg => (Task)arg.task).ToArray());
+				Task.WaitAll(candidateTasks.Select(arg => (Task)arg.task).ToArray());
 			}
 			catch(AggregateException e)
 			{
-				throw new ServiceException(ExitCode.DOWN, e.Flatten().ToString());
+				throw new ServiceException(ExitCode.DOWN, string.Format("Failed to reg {0} candidates in parallel: {1}", candidateTasks.Length, e));
 			}
-			cs = regTasks.Select(arg => { arg.candidate.Cookies = arg.task.Result; return arg.candidate; }).ToArray();
+			candidateUsers = candidateTasks.Select(arg => { arg.candidate.Cookies = arg.task.Result; return arg.candidate; }).ToArray();
 
-			var election = ElectroClient.StartElection(host, Program.PORT, cs[0].Cookies, Utils.GenRandomElectionName(), false, nominateTimeInSec, voteTimeInSec);
+			var election = ElectroClient.StartElection(host, Program.PORT, candidateUsers[0].Cookies, Utils.GenRandomElectionName(), false, nominateTimeInSec, voteTimeInSec);
 			if(election == null)
 				throw new ServiceException(ExitCode.MUMBLE, "Can't start election - result is NULL");
 
 			var electionId = election.Id;
 
 			var now = DateTime.UtcNow;
-			var nominateTasks = cs.Skip(1).Select(candidate => { return new {candidate, task = ElectroClient.NominateAsync(host, Program.PORT, candidate.Cookies, election.Id)}; });
+			var nominateTasks = candidateUsers.Skip(1).Select(candidate => { return new {candidate, task = ElectroClient.NominateAsync(host, Program.PORT, candidate.Cookies, election.Id)}; }).ToArray();
 			try
 			{
-				Task.WaitAll(regTasks.Select(arg => (Task)arg.task).ToArray());
+				Task.WaitAll(candidateTasks.Select(arg => (Task)arg.task).ToArray());
 			}
 			catch(AggregateException e)
 			{
-				throw new ServiceException(ExitCode.DOWN, e.Flatten().ToString());
+				throw new ServiceException(ExitCode.DOWN, string.Format("Failed to nominate {0} candidates in parallel: {1}", nominateTasks.Length, e));
 			}
 			var elections = nominateTasks.Select(arg => arg.task.Result).ToArray();
 
-			election = elections.FirstOrDefault(election1 => election1.Candidates.Count >= cs.Length);
+			election = elections.FirstOrDefault(election1 => election1.Candidates.Count >= candidateUsers.Length);
 			if(election == null)
-				throw new ServiceException(ExitCode.MUMBLE, string.Format("Nominated '{0}' candidates for election '{1}', but got less in result", cs.Length, electionId));
+				throw new ServiceException(ExitCode.MUMBLE, string.Format("Nominated '{0}' candidates for election '{1}', but got less in result", candidateUsers.Length, electionId));
 
 			var tts = nominateTimeInSec*1000 - DateTime.UtcNow.Subtract(now).TotalMilliseconds;
 			if(tts > 0)
@@ -58,30 +58,41 @@ namespace ElectroChecker
 				Thread.Sleep((int) tts);
 			}
 
-			var candidates = election.Candidates.ToArray();
+			var candidateInfos = election.Candidates.ToArray();
 			
 			var votes = flag.Select(c =>
 			{
-				var votePos = candidates.IndexOf(info => info.PublicMessage == c.ToString());
+				var votePos = candidateInfos.IndexOf(info => info.PublicMessage == c.ToString());
 				if(votePos < 0)
 					throw new ServiceException(ExitCode.MUMBLE, "Nominated candidates for all flag characters but in resulting election have not for all");
-				return Utils.GenVoteVector(cs.Length, votePos);
+				return Utils.GenVoteVector(candidateInfos.Length, votePos);
 			}).ToArray();
 
-			var voters = new List<User>();
-			foreach(var voteVector in votes)
+
+			var voterTasks = votes.Select(vote =>
 			{
 				var voter = UsersManager.GenRandomUser();
-				voter.Cookies = ElectroClient.RegUser(host, Program.PORT, voter.Login, voter.Pass);
-				voters.Add(voter);
+				return new { vote, voter = voter, task = ElectroClient.RegUserAsync(host, Program.PORT, voter.Login, voter.Pass, voter.PublicMessage, voter.PrivateMessage) };
+			}).ToArray();
+			try
+			{
+				Task.WaitAll(voterTasks.Select(arg => (Task)arg.task).ToArray());
+			}
+			catch(AggregateException e)
+			{
+				throw new ServiceException(ExitCode.DOWN, string.Format("Failed to reg {0} voters in parallel: {1}", voterTasks.Length, e.Flatten()));
+			}
+			var voters = voterTasks.Select(arg => { arg.voter.Cookies = arg.task.Result; return new { arg.voter, arg.vote}; }).ToArray();
 
-				ElectroClient.Vote(host, Program.PORT, voter.Cookies, election.Id, HomoCrypto.EncryptVector(voteVector, election.PublicKey));
+			foreach(var voter in voters)
+			{
+				ElectroClient.Vote(host, Program.PORT, voter.voter.Cookies, election.Id, HomoCrypto.EncryptVector(voter.vote, election.PublicKey));
 			}
 
 			var state = new Vuln2State
 			{
 				ElectionId = election.Id.ToString(),
-				Voter = voters[0]
+				Voter = voters[0].voter
 			};
 
 			Program.ExitWithMessage(ExitCode.OK, null, Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));

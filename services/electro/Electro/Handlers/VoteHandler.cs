@@ -37,7 +37,7 @@ namespace Electro.Handlers
 
 			WriteString(context, "Vote OK");
 
-			log.InfoFormat("Recorded user '{0}' vote in election '{1}''", user.Id, electionId);
+			log.InfoFormat("Recorded user '{0}' vote in election '{1}'", user.Id, electionId);
 		}
 
 		private BigInteger[] ParseVoteArray(string[] votesStringArray)
