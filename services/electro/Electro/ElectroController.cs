@@ -25,15 +25,22 @@ namespace Electro
 
 		private void LoadState(IEnumerable<Election> e, IEnumerable<KeyValuePair<Guid, PrivateKey>> k)
 		{
-			e.ForEach(election => elections[election.Id] = election);
-			log.InfoFormat("Loaded elections state. Now have {0} elections", this.elections.Count);
+			lock(electionsList)
+			{
+				e.ForEach(election =>
+				{
+					electionsList.AddFirst(election);
+					electionsDict[election.Id] = election;
+				});
+			}
+			log.InfoFormat("Loaded elections state. Now have {0} elections", electionsDict.Count);
 			k.ForEach(kvp => electionPrivateKeys[kvp.Key] = kvp.Value);
-			log.InfoFormat("Loaded  keys state. Now have {0} keys", this.electionPrivateKeys.Count);
+			log.InfoFormat("Loaded  keys state. Now have {0} keys", electionPrivateKeys.Count);
 		}
 
 		public Guid StartElection(string electionName, User firstCandidate, bool isPublic, DateTime nominateTill, DateTime till)
 		{
-			var homoKeyPair = HomoKeyPair.GenKeyPair(MaxVotes);
+			var homoKeyPair = HomoKeyPair.GenKeyPair(MaxVotesPerElection);
 			var election = new Election
 			{
 				Id = Guid.NewGuid(),
@@ -46,11 +53,22 @@ namespace Electro
 				IsPublic = isPublic
 			};
 
-			statePersister.SaveElection(election);
 			statePersister.SaveKey(election.Id, homoKeyPair.PrivateKey);
 
-			electionPrivateKeys[election.Id] = homoKeyPair.PrivateKey;
-			elections[election.Id] = election;
+			lock (electionsList)
+			{
+				electionPrivateKeys[election.Id] = homoKeyPair.PrivateKey;
+				electionsDict[election.Id] = election;
+
+				electionsList.AddFirst(election);
+				while(electionsList.Count > MaxElections)
+				{
+					var node = electionsList.First;
+					Election dummy;
+					electionsDict.TryRemove(node.Value.Id, out dummy);
+					electionsList.RemoveLast();
+				}
+			}
 
 			return election.Id;
 		}
@@ -58,7 +76,7 @@ namespace Electro
 		public Election NominateCandidate(Guid electionId, User user)
 		{
 			Election election;
-			if(!elections.TryGetValue(electionId, out election))
+			if(!electionsDict.TryGetValue(electionId, out election))
 				return null;
 
 			lock (election)
@@ -71,7 +89,6 @@ namespace Electro
 
 				election.Candidates.Add(CandidateInfo.Create(user));
 
-				statePersister.SaveElection(election);
 				return election;
 			}
 		}
@@ -79,7 +96,7 @@ namespace Electro
 		public bool Vote(Guid electionId, User user, BigInteger[] voteArray)
 		{
 			Election election;
-			if(!elections.TryGetValue(electionId, out election))
+			if(!electionsDict.TryGetValue(electionId, out election))
 				return false;
 
 			lock(election)
@@ -87,7 +104,7 @@ namespace Electro
 				if(!election.IsNominationFinished || election.IsFinished)
 					return false;
 
-				if(election.Votes.Count == MaxVotes)
+				if(election.Votes.Count == MaxVotesPerElection)
 					return false;
 
 				if(election.Candidates.Count != voteArray.Length)
@@ -101,8 +118,6 @@ namespace Electro
 				election.EncryptedResult = TryMerge(result, vote);
 
 				election.Votes.Add(vote);
-
-				statePersister.SaveElection(election);
 			}
 
 			return true;
@@ -119,7 +134,7 @@ namespace Electro
 		public Election FindElectionForUser(Guid electionId, User user)
 		{
 			Election election;
-			if(!elections.TryGetValue(electionId, out election))
+			if(!electionsDict.TryGetValue(electionId, out election))
 				return null;
 			TryDecryptElectionResultIfFinished(election);
 
@@ -147,14 +162,21 @@ namespace Electro
 			return election;
 		}
 
-		public IEnumerable<Election> GetUnfinishedPublicElections()
+		public IEnumerable<Election> GetUnfinishedPublicElections(int top = int.MaxValue)
 		{
-			return elections.Where(pair => !pair.Value.IsFinished && pair.Value.IsPublic).Select(pair => pair.Value);
+			lock(electionsList)
+			{
+				return electionsList.Where(election => !election.IsFinished && election.IsPublic).Select(election => election).Take(top).ToArray();
+			}
+			
 		}
 
-		public IEnumerable<Election> GetFinishedElections()
+		public IEnumerable<Election> GetFinishedElections(int top = int.MaxValue)
 		{
-			return elections.Where(pair => pair.Value.IsFinished).With(pair => TryDecryptElectionResultIfFinished(pair.Value)).Select(pair => pair.Value);
+			lock(electionsList)
+			{
+				return electionsList.Where(election => election.IsFinished ).Select(election => election).Take(top).With(election => TryDecryptElectionResultIfFinished(election)).ToArray();
+			}
 		}
 
 		public bool TryDecryptElectionResultIfFinished(Election election)
@@ -171,10 +193,20 @@ namespace Electro
 			return true;
 		}
 
-		private const int MaxVotes = 243;
+		public IEnumerable<Election> DumpElections()
+		{
+			lock(electionsList)
+			{
+				return electionsList.ToArray();
+			}
+		}
+
+		private const int MaxElections = 1000;
+		private const int MaxVotesPerElection = 243;
 
 		private ConcurrentDictionary<Guid, PrivateKey> electionPrivateKeys = new ConcurrentDictionary<Guid, PrivateKey>();
-		private ConcurrentDictionary<Guid, Election> elections = new ConcurrentDictionary<Guid, Election>();
+		private ConcurrentDictionary<Guid, Election> electionsDict= new ConcurrentDictionary<Guid, Election>();
+		private LinkedList<Election> electionsList = new LinkedList<Election>();
 
 		private static readonly ILog log = LogManager.GetLogger(typeof(ElectroController));
 	}

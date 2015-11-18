@@ -49,17 +49,17 @@ class Checker:
 
     def _signal_handler(self, signum, frame):
         logging.warning("Received signal: %s at %s, line %s", signum, frame.f_code, frame.f_lineno)
-        logging.warning(dir(frame))
         sys.stdout.flush()
         sys.stderr.flush()
         self.exit(StatusCode.ERROR)
 
     def _set_signal_handlers(self):
-        for signum in [signal.SIGTERM, signal.SIGINT, signal.SIGABRT, signal.CTRL_C_EVENT, signal.CTRL_BREAK_EVENT]:
-            try:
-                signal.signal(signum, self._signal_handler)
-            except ValueError:
-                pass
+        for signal_name in ['SIGTERM', 'SIGINT', 'SIGABRT', 'CTRL_C_EVENT', 'CTRL_BREAK_EVENT']:
+            if hasattr(signal, signal_name):
+                try:
+                    signal.signal(getattr(signal, signal_name), self._signal_handler)
+                except ValueError:
+                    pass
 
 
     def check(self, address):

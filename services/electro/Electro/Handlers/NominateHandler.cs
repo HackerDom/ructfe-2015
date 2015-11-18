@@ -2,6 +2,7 @@
 using System.Net;
 using Electro.Model;
 using Electro.Utils;
+using log4net;
 
 namespace Electro.Handlers
 {
@@ -28,6 +29,10 @@ namespace Electro.Handlers
 				throw new HttpException(HttpStatusCode.BadRequest, "Nominate FAILED");
 
 			WriteData(context, election.ToJson());
+
+			log.InfoFormat("Nominated user '{0}' in election '{1}''", user.Id, election.Id);
 		}
+
+		private static readonly ILog log = LogManager.GetLogger(typeof(NominateHandler));
 	}
 }

@@ -20,7 +20,7 @@ pushd /home/mig/src
 /home/mig/Nim/bin/nim cc -d:release main.nim
 popd
 
-chown mig:mig -R /home/mig/
+chown mig:www-data -R /home/mig/
 chmod 660 -R /home/mig/
 find /home/mig -type d -exec chmod 770 {} +
 
