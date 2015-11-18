@@ -40,7 +40,7 @@ if (! String.prototype.startsWith) {
     var crypto = {        
         encrypt: function(vote_vector, public_key) {
             var self = this;
-            return $.map(vote_vector, function(idx, vote_element){
+            return $.map(vote_vector, function(vote_element, idx){
                 return self.encrypt_bit(vote_element, public_key).toString();
             });            
         },
