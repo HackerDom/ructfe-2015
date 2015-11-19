@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<title>{block 'title'}NASA RASA{/block} &bull; Turio &bull; RuCTFE 2015</title>
-		<meta name="description" content="NASA RASA is a system for reporting about new planes">
+		<meta name="description" content="NASA RASA is a system for reporting information about found planets">
 		<meta name="keywords" content="Turio, RuCTFE, NASA, RASA" />
 		<meta name="author" content="Hackerdom team, hackerdom.ru, Andrew Gein aka andgein">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
