@@ -108,8 +108,8 @@ func homeHandler(w http.ResponseWriter, request *http.Request) {
 }
 
 func render(w http.ResponseWriter, tmpl string, context Context) {
-    tmpl_list := []string{"base.html",
-        fmt.Sprintf("%s.html", tmpl)}
+    tmpl_list := []string{"templates/base.html",
+        fmt.Sprintf("templates/%s.html", tmpl)}
     t, err := template.ParseFiles(tmpl_list...)
     if err != nil {
         logger.Println("template parsing error: ", err)
