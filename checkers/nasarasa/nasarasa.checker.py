@@ -74,7 +74,7 @@ class NasaRasaChecker(checklib.http.HttpChecker):
         r = self.try_http_get(self.main_url + '/users')
         self.check_page_content(r, ['Last registered users',
                                     'NASA RASA',
-                                    'system for reporting about new planes',
+                                    'system for reporting information about found planets',
                                     '<div class="last-users">',
                                    ])
         return r
