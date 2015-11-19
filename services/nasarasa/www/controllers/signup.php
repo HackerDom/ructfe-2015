@@ -17,7 +17,10 @@
         }
         catch (DbException $e)
         {
-            $result = $e->getMessage();
+            if ($e instanceof DbConstraintsException)
+                $result = 'This login is already registered, please select another one';
+            else
+                $result = $e->getMessage();
         }
     }
 

@@ -35,7 +35,7 @@
          ],
          "files" : [
              ["static/static", "/home/"],
-             ["static/index.html", "/var/www/html/index.html"],
+             ["static/index.html", "/home/index.html"],
              ["deploy/static/files/static", "/etc/nginx/sites-available/default"]
          ]
     }

@@ -1,23 +1,28 @@
-server{
+server {
     listen 80 default;
-    access_log /home/static/access.log;
-    error_log  /home/static/error.log;
-    
-    root /var/www/html/;
+    access_log /home/access.log;
+    error_log  /home/error.log;
+
+    root /home/;
     index index.html;
+
+    location = / {
+        rewrite ^ /index.html break;
+    }
 
     location /static/ {
         try_files $uri @static;
+    }
+
+    location / {
+        return 404;
     }
 
     location @static {
         root /home;
     }
 
-    location = /home {
-        rewrite .* http://$main_host/;
+    location ~ ^/(?P<service>mol|tax|electro|nasarasa|hm|mig|bank)$ {
+        rewrite ^ http://$service.$host redirect;
     }
 }
-
-
-

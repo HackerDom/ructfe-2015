@@ -13,10 +13,9 @@ import templates as tpl
 from momoko import Pool
 from psycopg2 import extras, ProgrammingError, DataError
 from tornado import gen
-from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, StaticFileHandler
-from tornado.websocket import WebSocketHandler
+from tornado.websocket import WebSocketHandler, WebSocketError
 
 extras.register_uuid()
 JSONEncoder_default = JSONEncoder.default
@@ -595,13 +594,19 @@ class Handler(WebSocketHandler):
             )
         else:
             try:
+                for_deletion = []
                 for ws in self.application.wsPool:
                     if self.application.wsPool[ws] == self:
                         continue
-                    self.application.wsPool[ws].write_message(
-                        dumps(dict(tpl.INFO_MESSAGE,
-                                   text="New crime (%s)" % params['name']))
-                    )
+                    try:
+                        self.application.wsPool[ws].write_message(
+                            dumps(dict(tpl.INFO_MESSAGE,
+                                       text="New crime (%s)" % params['name']))
+                        )
+                    except WebSocketError:
+                        for_deletion.append(ws)
+                for ws in for_deletion:
+                    del self.application.wsPool[ws]
             except Exception as e:
                 logging.warning("%s. Clients: %s"
                                 % (e, self.application.wsPool.keys()))
@@ -627,7 +632,8 @@ if __name__ == '__main__':
     app = Application([
         (r"/websocket", Handler),
         (r"/()", StaticFileHandler, {'path': 'static/index.html'}),
-        (r"/(.+)", StaticFileHandler, {'path': 'static/'}),
+        (r"/userpics/(.+)", StaticFileHandler, {'path': 'userpics/'}),
+        (r"/static/(.+)", StaticFileHandler, {'path': 'static/'}),
     ])
     try:
         ioloop = IOLoop.instance()
@@ -640,8 +646,7 @@ if __name__ == '__main__':
         app.wsPool = {}
         ioloop.start()
         future.result()
-        http_server = HTTPServer(app)
-        http_server.listen("1984")
+        app.listen(1984, address="127.0.0.1")
         ioloop.start()
     except KeyboardInterrupt:
         signal_term_handler(SIGTERM, None)

@@ -59,7 +59,7 @@ proc newJoinInfo*(state: State): JoinInfo =
 
 proc tryParseJoinInfo*(json: string): JoinInfo =
     if isNil(json): return JoinInfo()
-    try: to[JoinInfo](json) except: JoinInfo()
+    try: return to[JoinInfo](json) except: return JoinInfo()
 
 proc `$`*(info: JoinInfo): string =
     $$info

@@ -15,10 +15,12 @@
                     </a>
                 </div>
                 <div class="col-sm-8 content-block">
-                    <h1>Ok</h1>
+                    <h1>OK, we uploaded your file!</h1>
 
-                    <div><strong><%= pdata.name %></strong>: <%= pdata.private %></div>
-                    <div><a href="<%= file %>">uploaded tax declaration</a></div>
+                    <div class="well">
+                        <p><strong><%= pdata.name %></strong>: <%= pdata.private %></p>
+                        <p>Click <a href="<%= file %>">here</a> to download just uploaded declaration.</p>
+                    </div>
                 </div>
             </div>
 

@@ -51,6 +51,9 @@ proc handleStaticFile(req: Request): Future[void] =
                 "Date": file.date}
             req.send(Http200, file.content, headers)
 
+const MinLoginPassLen = 4
+const MaxLoginPassLen = 24
+
 type AuthData = tuple[login: string, pass: string]
 const NoAuthData = (login:string(nil), pass:string(nil))
 
@@ -68,7 +71,7 @@ proc handleAuthRequest(req: Request): Future[void] =
     let auth = req.tryParseAuthData()
     if auth == NoAuthData:
         return req.send(Http403, "Forbidden")
-    elif auth.login.len < 4 or auth.login.len > 16 or auth.pass.len < 4 or auth.pass.len > 16:
+    elif auth.login.len < MinLoginPassLen or auth.login.len > MaxLoginPassLen or auth.pass.len < MinLoginPassLen or auth.pass.len > MaxLoginPassLen:
         return req.send(Http400, "Bad login/pass")
     elif addOrGetAuth(auth) != auth.pass:
         return req.send(Http403, "Forbidden")
@@ -143,7 +146,7 @@ proc handle(req: Request) {.async.} =
 
 initStaticFilesTable("site/", "/index.html")
 
-asyncCheck newAsyncHttpServer().serve(Port(7557), handle)
+asyncCheck newAsyncHttpServer().serve(Port(7557), handle, "localhost")
 
 #asyncdispatch sometimes throw exceptions :(
 while true:

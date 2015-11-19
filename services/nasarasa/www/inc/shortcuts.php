@@ -41,7 +41,7 @@
         return $result;
     }
 
-    function error($code)
+    function http_error($code)
     {
         http_response_code($code);
         echo '<h1>Error ' . $code . '</h1>';

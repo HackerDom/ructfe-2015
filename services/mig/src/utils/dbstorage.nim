@@ -47,7 +47,7 @@ proc zadd(key, value: string): bool =
     withReconnect: return db[].zadd(key, getTime().sec(), value) == 1
 
 proc getLast(key: string, start: Time, minutes: int = 30): seq[string] =
-    withReconnect: return db[].zrevrangebyscore(key, $start.sec(), $getTime().addMinutes(-minutes).sec())
+    withReconnect: return db[].zrevrangebyscore(key, $start.sec(), $start.addMinutes(-minutes).sec())
 
 ### AuthInfo ###
 proc addOrGetAuth*(auth: tuple[login, pass: string]): string =

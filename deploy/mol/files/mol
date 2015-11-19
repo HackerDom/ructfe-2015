@@ -5,8 +5,9 @@ map $http_upgrade $connection_upgrade {
 
 server {
     server_name ~^mol\.(?P<main_host>.+)$;
-    access_log /home/mol/nginx-access.log;
-    error_log  /home/mol/nginx-error.log;
+    access_log /home/mol/access.log;
+    error_log  /home/mol/error.log;
+    root /home/mol;
 
     location /static/ {
         try_files $uri @static;
