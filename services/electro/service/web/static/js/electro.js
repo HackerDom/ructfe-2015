@@ -66,7 +66,7 @@ if (! String.prototype.startsWith) {
 
     var electro = {
         is_auth: function() {
-            return document.cookie.indexOf('login=') >= 0;
+            return document.cookie.indexOf('login=') >= 0 && document.cookie.indexOf('login=;') == -1;
         },
 
         show_elections_election: function(election) {
@@ -270,9 +270,7 @@ if (! String.prototype.startsWith) {
         },
 
         onpopstate: function(event) {
-            if (event && event.state) {
-                electro.on_url_change();
-            }    
+            electro.on_url_change();
         },
 
         on_url_change: function(callback) {
