@@ -93,7 +93,7 @@ proc checkForm2(data: tuple[occup, empl: string]): string =
     if isNil(data.empl): return "Check your employer"
 
 proc checkForm3(data: tuple[thought, rnd, sign: string], state: State): string =
-    if (not checkMac(state?.login, data.rnd, 4)) or isNil(data.sign) or (not checkSign(data.rnd, data.sign)): return "Not trusted!"
+    if isNil(data.thought) or isNil(data.rnd) or isNil(data.sign) or (not checkMac(state?.login, data.rnd, 4)) or (not checkSign(data.rnd, data.sign)): return "Not trusted!"
 
 proc checkForm4(data: tuple[offer, private: string]): string =
     if not eqIgnoreCase(data.offer, "yes"): return "You must agree with offer"
@@ -165,7 +165,7 @@ proc nextForm*(login: string, json: JsonNode): tuple[form, error: string] =
     var next = false
 
     case action
-    of "save": return (form: update(fields, state, false), error: string(nil))
+    #of "save": return (form: update(fields, state, false), error: string(nil))
     of "load": return (form: form(state.page, state), error: string(nil))
     of "next": next = true
     of "prev": discard

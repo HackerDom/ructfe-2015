@@ -7,8 +7,6 @@ db[] = open()
 const AuthKeyPrefix = "auth:"
 const JoinKeyPrefix = "info:"
 const DataKeyPrefix = "data:"
-const ThghKeyPrefix = "thgh:"
-const ProoKeyPrefix = "proo:"
 
 # Single thread!
 proc reconnect(): bool =
@@ -50,12 +48,6 @@ proc zadd(key, value: string): bool =
 
 proc getLast(key: string, start: Time, minutes: int = 30): seq[string] =
     withReconnect: return db[].zrevrangebyscore(key, $start.sec(), $getTime().addMinutes(-minutes).sec())
-
-proc isUniqueThought*(key: string): bool =
-    tryAdd(ThghKeyPrefix & key, "")
-
-proc isUniqueProof*(key: string): bool =
-    tryAdd(ProoKeyPrefix & key, "")
 
 ### AuthInfo ###
 proc addOrGetAuth*(auth: tuple[login, pass: string]): string =

@@ -93,7 +93,12 @@ namespace Electro
 
 				election.Candidates.Add(CandidateInfo.Create(user));
 
-				return election;
+				var clone = election.Clone();
+				PrivateKey privateKey;
+				if(electionPrivateKeys.TryGetValue(clone.Id, out privateKey))
+					clone.PrivateKeyForCandidates = privateKey;
+
+				return clone;
 			}
 		}
 

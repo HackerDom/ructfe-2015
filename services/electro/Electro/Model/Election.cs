@@ -31,7 +31,8 @@ namespace Electro.Model
 		[DataMember(Order = 9)] private Vote[] votes { get; set; }
 		[IgnoreDataMember] public List<Vote> Votes { get; set; }
 		
-		[DataMember(Order = 10)] public BigInteger[] EncryptedResult { get; set; }
+		[DataMember(Order = 10)] private string[] encryptedResult { get; set; }
+		[IgnoreDataMember] public BigInteger[] EncryptedResult { get; set; }
 		[DataMember(Order = 11)] public int[] DecryptedResult { get; set; }
 
 		[DataMember(Order = 12)] public bool IsNominationFinished  { get { return NominateTill < DateTime.UtcNow; } set {} }
@@ -44,6 +45,8 @@ namespace Electro.Model
 				candidates = Candidates.ToArray();
 			if(Votes != null)
 				votes = Votes.ToArray();
+			if(EncryptedResult != null)
+				encryptedResult = EncryptedResult.Select(b => b.ToString()).ToArray();
 			nominateTill = NominateTill.ToSortable();
 			voteTill = VoteTill.ToSortable();
 		}
@@ -55,6 +58,20 @@ namespace Electro.Model
 				Candidates = new List<CandidateInfo>(candidates);
 			if(votes != null)
 				Votes = new List<Vote>(votes);
+			bool failed = false;
+			if(encryptedResult != null)
+			{
+				var result = encryptedResult.Select(s =>
+				{
+					BigInteger b;
+					if(!BigInteger.TryParse(s, out b))
+						failed = true;
+					return b;
+				}).ToArray();
+				if(!failed)
+					EncryptedResult = result;
+			}
+
 			NominateTill = DateTimeUtils.TryParseSortable(nominateTill);
 			VoteTill = DateTimeUtils.TryParseSortable(voteTill);
 		}
@@ -62,6 +79,9 @@ namespace Electro.Model
 		public CandidateInfo FindWinner()
 		{
 			if(DecryptedResult == null)
+				return null;
+
+			if(Candidates == null)
 				return null;
 
 			int max = int.MinValue;

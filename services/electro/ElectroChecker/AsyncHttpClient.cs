@@ -10,7 +10,7 @@ namespace ElectroChecker
 {
 	internal static class AsyncHttpClient
 	{
-		public static async Task<HttpResult> DoRequestAsync(Uri uri, string method, NameValueCollection headers, CookieCollection cookieCollection, byte[] data, int timeout = 3000, bool keepAlive = true)
+		public static async Task<HttpResult> DoRequestAsync(Uri uri, string method, NameValueCollection headers, CookieCollection cookieCollection, byte[] data, int timeout = 10000, bool keepAlive = true)
 		{
 			HttpResult result;
 			var stopwatch = new Stopwatch();

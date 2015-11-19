@@ -20,7 +20,7 @@ $(function() {
 	}
 
 	function htmlEncode(value) {
-		return $('<div/>').text(value).html();
+		return $('<div/>').text(value).html().replace('"', '&quot;').replace("'", '&apos;');
 	}
 
 	function tryParseJson(text) {

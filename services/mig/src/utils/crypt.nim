@@ -93,19 +93,19 @@ when isMainModule:
     assert isNil(try: decrypt("WTF") except AssertionError: nil)
     assert isNil(try: decrypt("0123456789ABCDEF0123456789ABCDEF") except AssertionError: nil)
 
-    #import threadpool
+    import threadpool
 
-    #const Iterations = 100
+    const Iterations = 100
 
-    #var a: array[0..Iterations, string]
-    #var b: array[0..Iterations, FlowVar[string]]
+    var a: array[0..Iterations, string]
+    var b: array[0..Iterations, FlowVar[string]]
 
-    #for i in 0..Iterations:
-    #    let plain = urnd(32)
-    #    a[i] = plain
-    #    b[i] = spawn decrypt(Key, encrypt(Key, plain))
+    for i in 0..Iterations:
+        let plain = urnd(32)
+        a[i] = plain
+        b[i] = spawn decrypt(Key, encrypt(Key, plain))
 
-    #for i in 0..Iterations:
-    #    assert a[i] == (^b[i])
+    for i in 0..Iterations:
+        assert a[i] == (^b[i])
 
-    #echo "[crypt] OK: compiled ", CompileDate, " ", CompileTime
+    echo "[crypt] OK: compiled ", CompileDate, " ", CompileTime

@@ -23,9 +23,10 @@ namespace ElectroChecker
 		{
 			log.Info("Processing Vuln2.Put");
 
-			var candidateUsers = RegisterCandidates(host, flag.Distinct().Select(c => UsersManager.GenUser(null, c.ToString())).ToArray());
+			var candidateUsers = RegisterCandidates(host, flag.Distinct().Select(c => UsersManager.GenUser(null, c.ToString())).OrderBy(user => user.Login).ToArray());
 
 			var election = StartElection(host, candidateUsers[0]);
+			var privateKey = election.PrivateKeyForCandidates;
 
 			var sw = Stopwatch.StartNew();
 			election = NominateUsers(host, election, candidateUsers.Skip(1).ToArray());
@@ -50,10 +51,11 @@ namespace ElectroChecker
 			var state = new Vuln2State
 			{
 				ElectionId = election.Id.ToString(),
-				Voter = voters[0].Key
+				Voter = voters[0].Key,
+				PrivateKey = privateKey
 			};
 
-			Program.ExitWithMessage(ExitCode.OK, null, Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));
+			Program.ExitWithMessage(ExitCode.OK, "Flag put", Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));
 		}
 
 		private static int[][] GenVotes(string flag, Election election)
@@ -151,17 +153,41 @@ namespace ElectroChecker
 
 		public static void ProcessGet(string host, string id, string flag)
 		{
+			log.Info("Processing Vuln2.Get");
+
 			var state = JsonHelper.ParseJson<Vuln2State>(Convert.FromBase64String(id));
 
+			log.InfoFormat("Looking for Election {0}", state.ElectionId);
 			var election = ElectroClient.FindElection(host, Program.PORT, state.Voter.Cookies, state.ElectionId);
-			if(election == null || election.Candidates == null)
-				throw new ServiceException(ExitCode.MUMBLE, string.Format("Can't find election '{0}' or it has no candidates", id));
-			var gotFlag = string.Join("", election.Candidates.WhereNotNull().Select(info => info.PublicMessage ?? ""));
+			if(election == null)
+				throw new ServiceException(ExitCode.MUMBLE, string.Format("Can't find election '{0}'", id));
+			log.InfoFormat("Election {0} found", state.ElectionId);
+
+			var gotFlag = ExtractFlag(election, state.PrivateKey, flag.Length);
 			if(flag != gotFlag)
-				throw new ServiceException(ExitCode.CORRUPT, string.Format("Can't find flag. Got '{0}' instead of expected", gotFlag));
+				throw new ServiceException(ExitCode.CORRUPT, string.Format("Invalid flag! Got '{0}' instead of expected '{1}'", gotFlag, flag));
 
 			Program.ExitWithMessage(ExitCode.OK, "Flag found! OK");
 		}
+
+		private static string ExtractFlag(Election election, PrivateKey privateKey, int flagLen)
+		{
+			if(election.Votes == null)
+				throw new ServiceException(ExitCode.CORRUPT, "Election has no votes");
+			if(election.Candidates == null)
+				throw new ServiceException(ExitCode.CORRUPT, "Election has no candidates");
+
+			return string.Join("", election.Votes.Take(flagLen).Select(vote =>
+			{
+				var decryptedVote = vote.DecryptVote(privateKey);
+				int candidateNum = decryptedVote.IndexOf(i => i > 0);
+
+				if(candidateNum < 0 || candidateNum >= election.Candidates.Count)
+					throw new ServiceException(ExitCode.CORRUPT, string.Format("Election has no candidate corresponding to vector {0}", string.Join(",", decryptedVote)));
+				return election.Candidates[candidateNum].PublicMessage;
+			}));
+		}
+
 
 		private static readonly ILog log = LogManager.GetLogger(typeof(Vuln2Methods));
 	}

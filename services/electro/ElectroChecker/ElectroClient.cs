@@ -158,7 +158,7 @@ namespace ElectroChecker
 			}
 		}
 
-		private static HttpWebRequest CreateRequest(string url, string method, NameValueCollection headers = null, CookieCollection cookieCollection = null, int timeout = 3000)
+		private static HttpWebRequest CreateRequest(string url, string method, NameValueCollection headers = null, CookieCollection cookieCollection = null, int timeout = 10000)
 		{
 			var request = (HttpWebRequest)WebRequest.Create(url);
 			request.Method = method;
