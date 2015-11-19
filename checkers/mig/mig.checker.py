@@ -593,7 +593,8 @@ class Checker(HttpCheckerBase):
 
 			except HttpWebException as e:
 				if e.value != 403 or i == 2:
-					raise CheckException(EXITCODE_MUMBLE, 'registration failed')
+					self.debug('Auth: ' + str(e.value))
+					raise CheckException(EXITCODE_DOWN if e.value >= 500 else EXITCODE_MUMBLE, 'registration failed')
 
 				user = self.randuser(i * 5)
 				self.debug('User: ' + str(user))
