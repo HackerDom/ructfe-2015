@@ -15,7 +15,7 @@ from psycopg2 import extras, ProgrammingError, DataError
 from tornado import gen
 from tornado.ioloop import IOLoop
 from tornado.web import Application, StaticFileHandler
-from tornado.websocket import WebSocketHandler
+from tornado.websocket import WebSocketHandler, WebSocketError
 
 extras.register_uuid()
 JSONEncoder_default = JSONEncoder.default
@@ -594,13 +594,19 @@ class Handler(WebSocketHandler):
             )
         else:
             try:
+                for_deletion = []
                 for ws in self.application.wsPool:
                     if self.application.wsPool[ws] == self:
                         continue
-                    self.application.wsPool[ws].write_message(
-                        dumps(dict(tpl.INFO_MESSAGE,
-                                   text="New crime (%s)" % params['name']))
-                    )
+                    try:
+                        self.application.wsPool[ws].write_message(
+                            dumps(dict(tpl.INFO_MESSAGE,
+                                       text="New crime (%s)" % params['name']))
+                        )
+                    except WebSocketError:
+                        for_deletion.append(ws)
+                for ws in for_deletion:
+                    del self.application.wsPool[ws]
             except Exception as e:
                 logging.warning("%s. Clients: %s"
                                 % (e, self.application.wsPool.keys()))
