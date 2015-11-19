@@ -169,7 +169,7 @@ sub put {
         do_exit(CHECKER_MUMBLE, "Error while uploading file")
             unless $r->is_success;
 
-        $r->content =~ /"(.*?)">\s*uploaded/i;
+        $r->content =~ /href="(.*?)">\s*here\s*<\/a> to download/i;
 
         print "2:$id:$1";
     }
