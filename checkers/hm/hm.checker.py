@@ -2,6 +2,7 @@
 # coding=utf-8
 from __future__ import print_function
 import random
+import logging
 import string
 from hashlib import sha1
 from time import time
@@ -72,9 +73,11 @@ class Client(object):
     def open_and_check_ok(self, path, data = None):
         opener = build_opener(HTTPCookieProcessor(self.cookie_jar))
         url = "http://%s/%s" % (self.addr, path)
+        logging.info('Try to get %s', url)
         if isinstance(data, str):
             data = data.encode("utf-8")
         response = opener.open(url, data)
+        logging.info('Received http status code %d', response.getcode())
         if response.getcode() != 200:
             raise CheckerException("Recieved status %d on request %s"
                 % (response.getcode(), response.geturl()))
@@ -143,6 +146,8 @@ def get(*args):
 def info(*args):
     close(OK, "vulns: 1")
 
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
 
 COMMANDS = {'check': check, 'put': put, 'get': get, 'info': info}
 
