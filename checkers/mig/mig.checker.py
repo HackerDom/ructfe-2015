@@ -645,7 +645,7 @@ class Checker(HttpCheckerBase):
 
 		elif vuln == 2:
 			parts = flag_id.split(':', 2)
-			user = {'login':binascii.unhexlify(parts[0]).decode('utf-8'), 'pass':parts[1]}
+			user = {'login':binascii.unhexlify(parts[0].encode('utf-8')).decode('utf-8'), 'pass':parts[1]}
 
 			self.debug('User: ' + str(user))
 
