@@ -98,3 +98,4 @@
     {name => 'g7 team198', network => '10.70.1.198/32', host => 'devnew198.e.ructf.org'},
     {name => 'g7 team199', network => '10.70.1.199/32', host => 'devnew199.e.ructf.org'},
     {name => 'g7 team200', network => '10.70.1.200/32', host => 'devnew200.e.ructf.org'},
+

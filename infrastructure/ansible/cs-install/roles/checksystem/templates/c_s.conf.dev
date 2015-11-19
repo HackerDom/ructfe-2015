@@ -17,7 +17,7 @@
     }
   },
   teams => [
-    {% include "teams.dev" %}
+{% include "teams.dev" %}
   ],
   services => [
     {name => 'mol',      path => '../checkers/mol/mol.checker.py',           timeout => 10, tcp_port => 80},
