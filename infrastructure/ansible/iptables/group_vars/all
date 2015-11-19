@@ -4,5 +4,5 @@ net_dev_vpn       : 10.8.0.0/24
 net_teams_int     : 10.60.0.0/15
 net_teams_vpn     : 10.80.0.0/15
 net_jury          : 10.10.10.0/24
-net_vms           : 10.70.0.0/24
+net_vms           : 10.70.0.0/16
 
