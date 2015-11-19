@@ -154,6 +154,10 @@ namespace Electro
 					election = election.Clone();
 				}
 
+				var candidate = election.Candidates.FirstOrDefault(info => info.Id == user.Id);
+				if(candidate != null)
+					candidate.IsMe = true;
+
 				PrivateKey privateKey;
 				if(electionPrivateKeys.TryGetValue(election.Id, out privateKey))
 					election.PrivateKeyForCandidates = privateKey;
@@ -161,11 +165,12 @@ namespace Electro
 				var winner = election.FindWinner();
 				if(winner != null && winner.Id == user.Id)
 					election.Candidates.ForEach(info =>
-					{
-						var u = authController.FindUserAuthorized(info.Name);
-						if(u != null)
-							info.PrivateNotesForWinner = u.PrivateNotes;
-					} );
+						{
+							var u = authController.FindUserAuthorized(info.Name);
+							if(u != null)
+								info.PrivateNotesForWinner = u.PrivateNotes;
+						}
+					);
 			}
 
 			return election;

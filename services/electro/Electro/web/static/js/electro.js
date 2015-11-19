@@ -97,6 +97,7 @@ if (! String.prototype.startsWith) {
             $('#election').toggleClass('election-finished', election.IsFinished);
             
             var $candidate_template = $('#election--canditate--template');
+            var found_me = false;
             $.each(election.candidates, function(idx, candidate) {
                 var $clone = $candidate_template.clone().removeAttr('id');
                 $clone.data('candidate-idx', idx);
@@ -107,15 +108,21 @@ if (! String.prototype.startsWith) {
                     $clone.find('.election--candidate--private-note').text(candidate.PrivateNotesForWinner);
                 if (candidate.PublicMessage)
                     $clone.find('.election--candidate--public-message').text(candidate.PublicMessage);
+                if (candidate.IsMe)
+                    found_me = true;
                 $candidate_template.parent().append($clone);
             });
 
+            if (found_me)
+                $('#election').addClass('dont-nominate');
+
             $('.election--votes').prepare_template('.election--vote');
-            $('.election--vote').prepare_template();
+            $('.election--vote').prepare_template('.election--vote--candidate');
             $vote_template = $('#election--vote--template');
             $vote_candidate_template = $('#election--vote--candidate--template');
             $.each(election.votes, function(idx, vote) {
                 var $clone = $vote_template.clone().removeAttr('id');
+                $clone.find('.election--vote--user-id').text(vote.UserId);
                 $.each(vote.encryptedVector, function(idx, vote_candidate) {
                     var $clone_vote_candidate = $vote_candidate_template.clone().removeAttr('id');
                     $clone_vote_candidate.text(vote_candidate);
