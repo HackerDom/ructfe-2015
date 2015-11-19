@@ -10,16 +10,14 @@
         <div>Report us information about unknown planet and it'll be named after you.</div>
     </div>
 
-    <div class="row">           
-        <div class="col-sm-8">
-            {if $authenticated}
-                {include 'report-form.tpl.php'}
-            {else}
-                <div class="row">
-                    <a class="btn btn-default" href="/signup" role="button">Sign up</a>
-                    <a class="btn btn-default" href="/signin" role="button">Sign in</a>
-                </div>
-            {/if}
-        </div>
+    <div class="col-sm-8">
+        {if $authenticated}
+            {include 'report-form.tpl.php'}
+        {else}
+            <div class="row">
+                <a class="btn btn-default" href="/signup" role="button">Sign up</a>
+                <a class="btn btn-default" href="/signin" role="button">Sign in</a>
+            </div>
+        {/if}
     </div>
 {/block}

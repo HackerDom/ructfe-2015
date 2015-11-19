@@ -10,6 +10,11 @@
     </div>
 
     <form method="POST" action="">
+        {if $result}
+            <div class="alert alert-danger">
+                {$result}
+            </div>
+        {/if}    
         <div class="form-group">
             <input type="text" class="form-control" placeholder="First Name" name="first_name" />
         </div>
@@ -25,10 +30,5 @@
         <div class="form-group">
             <button type="submit" class="btn btn-default">Sign up</button>
         </div>
-        {if $result}
-            <div class="alert alert-danger">
-                {$result}
-            </div>
-        {/if}
    </form>
 {/block}

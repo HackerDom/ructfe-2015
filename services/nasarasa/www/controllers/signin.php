@@ -8,7 +8,7 @@
         if (SessionManager::try_authenticate($form['login'], $form['password']))
             redirect('/');
         else
-            $result = 'Bad :-(';            
+            $result = 'Invalid login or password';
     }
 
     render('signin', ['result' => $result]);

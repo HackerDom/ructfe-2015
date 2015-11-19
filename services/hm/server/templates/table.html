@@ -1,16 +1,20 @@
 {{ define "content" }}
-	<h4>Here are metrics you've added:</h4>
+	<h4>Here are metrics you've added</h4>
 
-	<table class="table">
-	   <tr>
-			<th>Weight</th>
-			<th>Blood Pressure</th>
-			<th>Pulse</th>
-			<th>Walking Distance</th>
-			<th>Comment</th>
-	   </tr>
-	   {{range .Metrics}}
-	   <tr><td>{{.Weight}}</td><td>{{.BloodPressure}}</td><td>{{.Pulse}}</td><td>{{.WalkingDistance}}</td><td>{{.Comment}}</td></tr>
-	   {{end}}
-	</table>
+    {{if .Metrics}}
+    	<table class="table">
+    	   <tr>
+    			<th>Weight</th>
+    			<th>Blood Pressure</th>
+    			<th>Pulse</th>
+    			<th>Walking Distance</th>
+    			<th>Comment</th>
+    	   </tr>
+    	   {{range .Metrics}}
+    	   <tr><td>{{.Weight}}</td><td>{{.BloodPressure}}</td><td>{{.Pulse}}</td><td>{{.WalkingDistance}}</td><td>{{.Comment}}</td></tr>
+    	   {{end}}
+    	</table>
+    {{else}}
+        You have not uploaded any metrics yet
+    {{end}}
 {{ end }}
