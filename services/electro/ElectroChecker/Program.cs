@@ -7,23 +7,27 @@ namespace ElectroChecker
 {
 	static class Program
 	{
-		private static void GetCommonParams(string[] args, out string host, out string id, out string flag, out int vuln)
+		private static int GetCommonParams(string[] args, out string host, out string id, out string flag, out int vuln)
 		{
+			host = null;
+			id = null;
+			flag = null;
 			vuln = 0;
 			if(args.Length < 5 || !int.TryParse(args[4], out vuln) || vuln < 1)
-				ExitWithMessage(ExitCode.CHECKER_ERROR, "Invalid args");
+				return ExitWithMessage(ExitCode.CHECKER_ERROR, "Invalid args");
 			host = args[1];
 			id = args[2];
 			flag = args[3];
+			return (int) ExitCode.OK;
 		}
 
-		public static void Main(string[] args)
+		public static int Main(string[] args)
 		{
 			XmlConfigurator.Configure();
 			try
 			{
 				if(args.Length < 1)
-					ExitWithMessage(ExitCode.CHECKER_ERROR, "Not enough args");
+					return ExitWithMessage(ExitCode.CHECKER_ERROR, "Not enough args");
 
 				var mode = args[0].ToLower();
 				try
@@ -31,17 +35,13 @@ namespace ElectroChecker
 					switch(mode)
 					{
 						case CommandInfo:
-							ExitWithMessage(ExitCode.OK, null, "vulns: 1:1");
-							break;
+							return ExitWithMessage(ExitCode.OK, null, "vulns: 1:1");
 						case CommandCheck:
-							ExitWithMessage(ExitCode.OK, "No check needed in this service");
-							break;
+							return ExitWithMessage(ExitCode.OK, "No check needed in this service");
 						case CommandPut:
-							ProcessPut(args);
-							break;
+							return ProcessPut(args);
 						case CommandGet:
-							ProcessGet(args);
-							break;
+							return ProcessGet(args);
 					}
 				}
 				catch(WebException e)
@@ -49,61 +49,65 @@ namespace ElectroChecker
 					if(e.Status == WebExceptionStatus.ConnectFailure)
 					{
 						var mes = string.Format("Connection failure in '{0}' mode", mode);
-						ExitWithMessage(ExitCode.DOWN, mes, mes);
+						return ExitWithMessage(ExitCode.DOWN, mes, mes);
 					}
 					if(e.Status == WebExceptionStatus.Timeout)
 					{
 						var mes = string.Format("Timeout in '{0}' mode", mode);
-						ExitWithMessage(ExitCode.DOWN, mes, mes);
+						return ExitWithMessage(ExitCode.DOWN, mes, mes);
 					}
 					if(e.Status == WebExceptionStatus.NameResolutionFailure)
 					{
 						var mes = string.Format("NameResolutionFailure in '{0}' mode", mode);
-						ExitWithMessage(ExitCode.DOWN, mes, mes);
+						return ExitWithMessage(ExitCode.DOWN, mes, mes);
 					}
-					ExitWithMessage(ExitCode.MUMBLE, e.ToString());
+					return ExitWithMessage(ExitCode.MUMBLE, e.ToString());
 				}
 				catch(ServiceException se)
 				{
-					ExitWithMessage(se.code, se.ToString());
+					return ExitWithMessage(se.code, se.ToString());
 				}
 			}
 			catch(Exception e)
 			{
-				ExitWithMessage(ExitCode.CHECKER_ERROR, e.ToString());
+				return ExitWithMessage(ExitCode.CHECKER_ERROR, e.ToString());
 			}
+			return (int) ExitCode.OK;
 		}
 
-		private static void ProcessPut(string[] args)
+		private static int ProcessPut(string[] args)
+		{
+			string host, id, flag;
+			int vuln;
+
+			int ec;
+			if((ec = GetCommonParams(args, out host, out id, out flag, out vuln)) != (int) ExitCode.OK)
+				return ec;
+
+			if(vuln == 1)
+				return Vuln1Methods.ProcessPut(host, id, flag);
+			else if(vuln == 2)
+				return Vuln2Methods.ProcessPut(host, id, flag);
+			else
+				return ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
+		}
+
+		private static int ProcessGet(string[] args)
 		{
 			string host, id, flag;
 			int vuln;
 			GetCommonParams(args, out host, out id, out flag, out vuln);
 
 			if(vuln == 1)
-				Vuln1Methods.ProcessPut(host, id, flag);
+				return Vuln1Methods.ProcessGet(host, id, flag);
 			else if(vuln == 2)
-				Vuln2Methods.ProcessPut(host, id, flag);
+				return Vuln2Methods.ProcessGet(host, id, flag);
 			else
-				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
-		}
-
-		private static void ProcessGet(string[] args)
-		{
-			string host, id, flag;
-			int vuln;
-			GetCommonParams(args, out host, out id, out flag, out vuln);
-
-			if(vuln == 1)
-				Vuln1Methods.ProcessGet(host, id, flag);
-			else if(vuln == 2)
-				Vuln2Methods.ProcessGet(host, id, flag);
-			else
-				ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
+				return ExitWithMessage(ExitCode.CHECKER_ERROR, string.Format("Unsupported vuln #{0}", vuln));
 		}
 
 		
-		public static void ExitWithMessage(ExitCode exitCode, string stderr, string stdout = null)
+		public static int ExitWithMessage(ExitCode exitCode, string stderr, string stdout = null)
 		{
 			if (stdout != null)
 				Console.WriteLine(stdout);
@@ -115,7 +119,7 @@ namespace ElectroChecker
 					log.ErrorFormat(stderr);
 			}
 
-			Environment.Exit((int) exitCode);
+			return (int)exitCode;
 		}
 
 		public const int PORT = 3130;

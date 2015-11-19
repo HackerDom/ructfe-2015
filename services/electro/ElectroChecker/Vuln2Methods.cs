@@ -19,7 +19,7 @@ namespace ElectroChecker
 		const int nominateTimeInSec = 3;
 		const int voteTimeInSec = 10;
 
-		public static void ProcessPut(string host, string id, string flag)
+		public static int ProcessPut(string host, string id, string flag)
 		{
 			log.Info("Processing Vuln2.Put");
 
@@ -55,7 +55,9 @@ namespace ElectroChecker
 				PrivateKey = privateKey
 			};
 
-			Program.ExitWithMessage(ExitCode.OK, "Flag put", Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));
+			log.Info("Flag put");
+			Console.Out.WriteLine(Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));
+			return (int) ExitCode.OK;
 		}
 
 		private static int[][] GenVotes(string flag, Election election)
@@ -151,7 +153,7 @@ namespace ElectroChecker
 			return voters;
 		}
 
-		public static void ProcessGet(string host, string id, string flag)
+		public static int ProcessGet(string host, string id, string flag)
 		{
 			log.Info("Processing Vuln2.Get");
 
@@ -167,7 +169,8 @@ namespace ElectroChecker
 			if(flag != gotFlag)
 				throw new ServiceException(ExitCode.CORRUPT, string.Format("Invalid flag! Got '{0}' instead of expected '{1}'", gotFlag, flag));
 
-			Program.ExitWithMessage(ExitCode.OK, "Flag found! OK");
+			log.Info("Flag found! OK");
+			return (int)ExitCode.OK;
 		}
 
 		private static string ExtractFlag(Election election, PrivateKey privateKey, int flagLen)
