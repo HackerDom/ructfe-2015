@@ -8,6 +8,11 @@
     WorkingDirectory=/home/bank
     User=bank
     Group=bank
+    Restart=on-failure
+    RestartSec=3s
+    CPUQuota=50%
+    MemoryLimit=500M
+
 
 [Install]
     WantedBy=multi-user.target
