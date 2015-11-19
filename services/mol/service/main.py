@@ -626,7 +626,7 @@ if __name__ == '__main__':
     app = Application([
         (r"/websocket", Handler),
         (r"/()", StaticFileHandler, {'path': 'static/index.html'}),
-        (r"/(.+)", StaticFileHandler, {'path': 'static/'}),
+        (r"/static/(.+)", StaticFileHandler, {'path': 'static/'}),
     ])
     try:
         ioloop = IOLoop.instance()
