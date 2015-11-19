@@ -15,20 +15,26 @@
                     </a>
                 </div>
                 <div class="col-sm-8 content-block">
-                    <h1>Upload your tax declaration</h1>
+                    <h3>Upload your tax declaration</h3>
                     <div class="well">
                         <p>Select your personal data and upload tax declaration.</p>
                         <p>Go to the <a href="<%= resolve('user') %>">profile page</a>  to fill in personal data.</p>
                     </div>
 
                     <form action="<%= resolve('upload') %>" method="post" enctype="multipart/form-data" class="form">
-                        <select name="pdata" class="form-control">
-                            <% for (var i in datalist) { var data = datalist[i]; %>
-                            <option value="<%= data._id %>"><%= data.name %></option>
-                            <% } %>
-                        </select>
-                        <input type="file" name="file" multiple class="form-control">
-                        <button type="submit" class="btn btn-default">Upload</button>
+                        <div class="form-group">
+                            <select name="pdata" class="form-control">
+                                <% for (var i in datalist) { var data = datalist[i]; %>
+                                <option value="<%= data._id %>"><%= data.name %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="file" name="file" multiple class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-default">Upload</button>
+                        </div>
                     </form>
                 </div>
             </div>

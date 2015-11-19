@@ -11,7 +11,6 @@ int main() {
                  "              <div class='well'>\n"
                  "                   We love opensource and safety. We do not take any responsibility if you login is stolen, please keep it safe.\n"
                  "               </div>\n"
-                 "               <div class='extra-space-l'></div>\n"
                  "               <form class='sparser-form' action='account.cgi'>"
                  "               <div class='input-group input-group-lg'>\n"
                  "                  <input class='form-control' id='name' value='' name='login' placeholder='Name'>\n"

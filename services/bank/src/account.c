@@ -104,17 +104,14 @@ int gen_page() {
         printf("  </table>\n");
 
     }
-    printf("         <div class='extra-space-l'></div>\n");
     printf("         <form class='sparser-form form-inline' action='add_money.cgi'>\n");
     printf("         <input type='hidden' value='%s' name='login'><br>\n", login);
     printf("         <legend><h5>Add money to the account (this is free and always will be):</h5></legend>\n");
     printf("         <div class='form-group'>\n");
-    printf("         <label for='account'>Account:</label>\n");
-    printf("         <input class='form-control' id='account' value='' name='account' placeholder='Enter account'>\n");
+    printf("         <input class='form-control' id='account' value='' name='account' placeholder='Account'>\n");
     printf("         </div>\n");
     printf("         <div class='form-group'>\n");
-    printf("         <label for='amount'>Amount:</label>\n");
-    printf("         <input type='number' min='0' class='form-control' id='amount' value='' name='amount' placeholder='Enter amount'>\n");
+    printf("         <input type='number' min='0' class='form-control' id='amount' value='' name='amount' placeholder='Amount'>\n");
     printf("         </div>\n");
     printf("         <button type='submit' class='btn btn-success'>Add</button>\n");
     printf("         </form>\n");
