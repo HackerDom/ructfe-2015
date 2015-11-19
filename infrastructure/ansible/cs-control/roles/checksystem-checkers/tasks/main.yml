@@ -1,11 +1,11 @@
-- name: ensure checkers are stopped
+- name: stop checkers
   service: name={{item}} state=stopped
-  when: mode=="restart" or mode=="stop"
+  when: mode=="stop"
   with_items:
     - cs-worker-checker
 
-- name: ensure checkers are started
+- name: start checkers
   service: name={{item}} state=started
-  when: mode=="restart" or mode=="start"
+  when: mode=="start"
   with_items:
     - cs-worker-checker
