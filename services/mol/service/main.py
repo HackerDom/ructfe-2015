@@ -626,6 +626,7 @@ if __name__ == '__main__':
     app = Application([
         (r"/websocket", Handler),
         (r"/()", StaticFileHandler, {'path': 'static/index.html'}),
+        (r"/userpics/(.+)", StaticFileHandler, {'path': 'userpics/'}),
         (r"/static/(.+)", StaticFileHandler, {'path': 'static/'}),
     ])
     try:
