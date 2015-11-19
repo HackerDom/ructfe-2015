@@ -13,7 +13,6 @@ import templates as tpl
 from momoko import Pool
 from psycopg2 import extras, ProgrammingError, DataError
 from tornado import gen
-from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, StaticFileHandler
 from tornado.websocket import WebSocketHandler
@@ -627,7 +626,8 @@ if __name__ == '__main__':
     app = Application([
         (r"/websocket", Handler),
         (r"/()", StaticFileHandler, {'path': 'static/index.html'}),
-        (r"/(.+)", StaticFileHandler, {'path': 'static/'}),
+        (r"/userpics/(.+)", StaticFileHandler, {'path': 'userpics/'}),
+        (r"/static/(.+)", StaticFileHandler, {'path': 'static/'}),
     ])
     try:
         ioloop = IOLoop.instance()
@@ -640,8 +640,7 @@ if __name__ == '__main__':
         app.wsPool = {}
         ioloop.start()
         future.result()
-        http_server = HTTPServer(app)
-        http_server.listen("1984")
+        app.listen(1984, address="127.0.0.1")
         ioloop.start()
     except KeyboardInterrupt:
         signal_term_handler(SIGTERM, None)
