@@ -24,7 +24,7 @@
     {name => 'tax',      path => '../checkers/tax/tax.checker.pl',           timeout => 10, tcp_port => 80},
     {name => 'electro',  path => '../checkers/electro/electro.checker.sh',   timeout => 10, tcp_port => 80},
     {name => 'nasarasa', path => '../checkers/nasarasa/nasarasa.checker.py', timeout => 10, tcp_port => 80},
-    {name => 'hm',       path => '../checkers/hm/hm.checker.sh',             timeout => 10, tcp_port => 80},
+    {name => 'hm',       path => '../checkers/hm/hm.checker.sh',             timeout => 20, tcp_port => 80},
     {name => 'mig',      path => '../checkers/mig/mig.checker.py',           timeout => 10, tcp_port => 80},
     {name => 'bank',     path => '../checkers/bank/bank.checker.sh',         timeout => 10, tcp_port => 80},
   ]
