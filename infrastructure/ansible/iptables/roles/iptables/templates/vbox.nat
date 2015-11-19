@@ -1,0 +1,2 @@
+-A POSTROUTING -o eth0 -s {{net_vms}} -d {{net_jury}} -j ACCEPT
+-A POSTROUTING -o eth0                                -j SNAT --to {{ansible_eth0.ipv4.address}}
