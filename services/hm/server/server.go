@@ -22,7 +22,6 @@ type Link struct {
 
 type Context struct {
     LoggedIn bool
-	Action string
 	Text string
 	Metrics []HealthMetrics
 }
@@ -32,12 +31,12 @@ func addHealthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 	status, response := addHealthMetrics(request)
 	w.WriteHeader(status)
 
-	context := Context{LoggedIn: loggedin(request), Action: "", Text: response}
+	context := Context{LoggedIn: loggedin(request), Text: response}
 	render(w, "text", context)
 }
 
 func addHealthMetricsFormHandler(w http.ResponseWriter, request *http.Request) {
-	context := Context{LoggedIn: loggedin(request), Action: "/addhealthmetrics", Text: ""}
+	context := Context{LoggedIn: loggedin(request)}
 	render(w, "metrics", context)
 }
 
@@ -60,7 +59,7 @@ func addUserHandler(w http.ResponseWriter, request *http.Request) {
 	status, response := addUser(request)
 	w.WriteHeader(status)
 	
-	context := Context{LoggedIn: loggedin(request), Action: "", Text: response}
+	context := Context{LoggedIn: loggedin(request), Text: response}
 	render(w, "text", context)
 }
 
@@ -73,7 +72,7 @@ func loginHandler(w http.ResponseWriter, request *http.Request) {
 	
 	loggedIn := status == http.StatusOK 
 
-	context := Context{LoggedIn: loggedIn, Action: "", Text: response}
+	context := Context{LoggedIn: loggedIn, Text: response}
 	render(w, "text", context)
 }
 
@@ -88,17 +87,17 @@ func logoutHandler(w http.ResponseWriter, request *http.Request) {
 	if status == http.StatusOK {
 		loggedIn = false
 	}
-	context := Context{LoggedIn: loggedIn, Action: "", Text: response}
+	context := Context{LoggedIn: loggedIn, Text: response}
 	render(w, "text", context)
 }
 
 func signupFormHandler(w http.ResponseWriter, request *http.Request) {
-	context := Context{LoggedIn: loggedin(request), Action: "/newuser"}
-	render(w, "login", context)
+	context := Context{LoggedIn: loggedin(request)}
+	render(w, "signup", context)
 }
 
 func loginformHandler(w http.ResponseWriter, request *http.Request) {
-	context := Context{LoggedIn: loggedin(request), Action: "/login"}
+	context := Context{LoggedIn: loggedin(request)}
 	render(w, "login", context)
 }
 
@@ -108,8 +107,8 @@ func homeHandler(w http.ResponseWriter, request *http.Request) {
 }
 
 func render(w http.ResponseWriter, tmpl string, context Context) {
-    tmpl_list := []string{"base.html",
-        fmt.Sprintf("%s.html", tmpl)}
+    tmpl_list := []string{"templates/base.html",
+        fmt.Sprintf("templates/%s.html", tmpl)}
     t, err := template.ParseFiles(tmpl_list...)
     if err != nil {
         logger.Println("template parsing error: ", err)

@@ -18,7 +18,7 @@ namespace ElectroChecker
 
 		const int candidatesCount = 2;
 
-		public static void ProcessPut(string host, string id, string flag)
+		public static int ProcessPut(string host, string id, string flag)
 		{
 			var votes = Utils.GenRandomVoteVectors(candidatesCount, 3, 5).ToList();
 			var expectedResult = Utils.SumVoteVectors(votes);
@@ -79,10 +79,12 @@ namespace ElectroChecker
 				expectedResult = expectedResult
 			};
 
-			Program.ExitWithMessage(ExitCode.OK, null, Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));
+			log.Info("Flag put");
+			Console.Out.WriteLine(Convert.ToBase64String(Encoding.UTF8.GetBytes(state.ToJsonString())));
+			return (int) ExitCode.OK;
 		}
 
-		public static void ProcessGet(string host, string id, string flag)
+		public static int ProcessGet(string host, string id, string flag)
 		{
 			var state = JsonHelper.ParseJson<Vuln1State>(Convert.FromBase64String(id));
 
@@ -116,7 +118,8 @@ namespace ElectroChecker
 			if(election.Candidates.All(info => info.PrivateNotesForWinner != flag))
 				throw new ServiceException(ExitCode.CORRUPT, "Can't find flag", null);
 
-			Program.ExitWithMessage(ExitCode.OK, "Flag found! OK", null);
+			log.Info("Flag found! Ok");
+			return (int)ExitCode.OK;
 		}
 
 		private static readonly ILog log = LogManager.GetLogger(typeof(Vuln1Methods));

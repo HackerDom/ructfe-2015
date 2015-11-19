@@ -1,14 +1,14 @@
 {{ define "content" }}
 <div class="col-sm-8">
-	<form role="form" action={{.Action}} method="POST">
-		<h4>Type your credentials</h4>
+	<form role="form" action="/newuser" method="POST">
+		<h4>Create user</h4>
 		<div class="form-group">
 			<input name="Login" type="text" class="form-control" placeholder="Login">
 		</div>
 		<div class="form-group">
 			<input name="Pass" type="password" class="form-control" placeholder="Password">
 		</div>
-		<button id="submit" class="btn btn-default" data-wow-delay="0.8s">Login</button>
+		<button id="submit" class="btn btn-default" data-wow-delay="0.8s">Sign up</button>
 	</form>
 </div>
 {{ end }}
