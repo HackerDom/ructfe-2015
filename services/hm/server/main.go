@@ -19,88 +19,67 @@ const (
 
 const Key string = "f11ecd5521ddf2614e17e4fb074a86da"
 
-func addHealthMetrics(request *http.Request) (int, string) {
-
-	response := ""
-	status := http.StatusTeapot
+func addHealthMetrics(request *http.Request) (error) {
 	
 	uId, err := getUserId(request)
 	if err != nil {
 		logger.Println("Can't get user from request")
-		return http.StatusUnauthorized, err.Error()
+		return err
 	}
 	
 	metrics := parseFromForm(request)
 	if metrics == nil {
 		logger.Println("Can't parse metrics from request")
-		return http.StatusBadRequest, "Can't parse metrics from your request"
+		return errors.New("Can't parse metrics from your request")
 	}
 	
 	userId, err := strconv.Atoi(strings.Split(uId, "_")[1])
 	if err != nil {
 		logger.Println("Can't parse user Id: ", err)
-		return http.StatusBadRequest, "Can't find user to add metrics for"
+		return errors.New("Can't find user to add metrics for")
 	}
 
-	success, id := tryAddMetrics(userId, metrics)
+	success, _ := tryAddMetrics(userId, metrics)
 	if (success) {
-		status = http.StatusOK
-		response = fmt.Sprintf("Metrics were successfully added, id assigned: %v", id)
+		return nil
 	} else {
-		status = http.StatusInternalServerError
-		response = "Metrics were not added"
+		return errors.New("Metrics were not added")
 	}
-	
-	return status, response
 }
 
-func getHealthMetrics(request *http.Request) (int, string, []HealthMetrics) {
+func getHealthMetrics(request *http.Request) ([]HealthMetrics, error) {
 
-	response := ""
-	status := http.StatusTeapot 
 	var metrics []HealthMetrics
 	
 	uId, err := getUserId(request)
 	if err != nil {
-		status = http.StatusUnauthorized
-		response = err.Error() 
+		return metrics, err
 	} else {
-		response += uId 
 		var success bool
 		success, metrics = tryGetUserMetrics(uId)
 		if success {
-			status = http.StatusOK
+			return metrics, nil
 		} else {
-			status = http.StatusInternalServerError
-			response = "Can't get user's metrics"
+			return metrics, errors.New("Can't get user's metrics")
 		}
 	}
-	return status, response, metrics
 }
 
-func addUser(request *http.Request) (int, string) {
-
-	response := ""
-	status := http.StatusTeapot
+func addUser(request *http.Request) (string, error) {
 	
 	user := parseUser(request)
 	if user == nil {
-		status = http.StatusBadRequest
-		response = "Not enough parameters to add user"
+		return "", errors.New("Not enough parameters to add user")
 	} else {	
 		result, uId := tryAddUser(user)
 		if result == Success {
-			status = http.StatusOK
-			response = fmt.Sprintf("User was successfully added, id assigned: %v", uId) 
+			return fmt.Sprintf("User was successfully added, id assigned: %v", uId), nil
 		} else if result == AlreadyExists {
-			status = http.StatusConflict
-			response = "User with this login already exists"
+			return "", errors.New("User with this login already exists")
 		} else {
-			status = http.StatusInternalServerError
-			response = "Metrics were not added"
+			return "", errors.New("Metrics were not added")
 		}
 	}
-	return status, response
 }
 
 func getUserId(request *http.Request) (string, error) {
@@ -152,23 +131,19 @@ func authVerified(auth string, uId string) (bool, error) {
 	}
 }
 
-func login(request *http.Request) (int, string, http.Cookie, http.Cookie) {
+func login(request *http.Request) ( string, http.Cookie, http.Cookie) {
 	response := ""
-	status := http.StatusTeapot
 	var idCookie http.Cookie
 	var authCookie http.Cookie
 	
 	user := parseUser(request)
 	if user == nil {
-		status = http.StatusBadRequest
 		response = "You should specify both login and password"
 	} else {	
 		uid, err := findUser(user)
 		if err != nil {
-			status = http.StatusNotFound
 			response = "There is no such user"
 		} else {
-			status = http.StatusOK
 			expire := time.Now().AddDate(1, 0, 0)
 			auth := md5hash(Key, uid)
 			id := encodeBase64(uid)
@@ -177,18 +152,16 @@ func login(request *http.Request) (int, string, http.Cookie, http.Cookie) {
 			response = fmt.Sprintf("Welcome, %v", user.Login)
 		}
 	}
-	return status, response, authCookie, idCookie
+	return response, authCookie, idCookie
 
 }
 
-func logout(request *http.Request) (int, string, http.Cookie, http.Cookie) {
-	status := http.StatusOK
+func logout(request *http.Request) (http.Cookie, http.Cookie) {
 	expire := time.Now().AddDate(-1, 0, 0)
 	authCookie := http.Cookie{Name : "auth", Value: "", Expires: expire}
 	idCookie := http.Cookie{Name : "id", Value: "", Expires: expire} 
-	response := "Bye-bye! Seeya!"
 
-	return status, response, authCookie, idCookie
+	return authCookie, idCookie
 }
 
 func setupLog(filename string) *log.Logger{
