@@ -112,3 +112,11 @@ a:active {
     position: relative;
     top: -2px;
 }
+
+.well {
+    background: transparent none repeat scroll 0% 0%;
+    border: 1px solid #ddc !important;
+    box-shadow: none;
+    border-radius: 5px !important;
+    border-left: 6px solid rebeccapurple !important;
+}
