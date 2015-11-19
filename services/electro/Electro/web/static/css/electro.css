@@ -41,6 +41,7 @@
 #elections .election.finished {
     background-color: #3C3636;
     color: white;
+    border-left-color: #6CBC53 !important;
 }
 #elections .election.finished a {
     color: #6CBC53;
@@ -158,6 +159,10 @@
     color: #999;
 }
 
+#election .election--candidate .election--candidate--public-message:empty:after {
+    content: "<Empty public message>";
+}
+
 #election .election--candidate .election--candidate--private-note {
     background-color: #900;
 }
@@ -169,12 +174,25 @@
     text-overflow: ellipsis;
 }
 
+#election .election--votes .election--vote--user-id {
+    margin-bottom: 20px;
+    color: #999;
+}
+
+#election .election--votes .election--vote--user-id:before {
+    content: "User ";
+}
+
 #election .election--votes.empty:after {
     content: "No votes here by now";
 }
 
 #election .election--nominate-button {
     margin-top: 10px;
+}
+
+#election.dont-nominate .election--nominate-button {
+    display: none;
 }
 
 

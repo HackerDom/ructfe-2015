@@ -1,0 +1,4 @@
+setroute {{net_teams_int}} 10.10.10.8
+setroute {{net_teams_vpn}} 10.10.10.8
+setroute {{net_tun_gh}} 10.10.10.8
+

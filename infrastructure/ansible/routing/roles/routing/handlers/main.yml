@@ -1,0 +1,2 @@
+- name: apply routing
+  shell: /etc/rc.routing

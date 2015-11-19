@@ -1,22 +1,32 @@
-- name: ensure checksystem is stopped
+- name: stop checksystem
   service: name={{item}} state=stopped
-  when: mode=="restart" or mode=="stop"
+  when: mode=="stop"
   with_items:
     - cs-flags
     - cs-watcher
     - cs-manager
-    - cs-web
     - cs-worker-default
 
-- name: ensure checksystem is started
+- name: start checksystem
   service: name={{item}} state=started
-  when: mode=="restart" or mode=="start"
+  when: mode=="start"
   with_items:
     - cs-flags
     - cs-watcher
     - cs-manager
-    - cs-web
     - cs-worker-default
+
+- name: stop web
+  service: name={{item}} state=stopped
+  when: mode=="stopweb"
+  with_items:
+    - cs-web
+
+- name: start web
+  service: name={{item}} state=started
+  when: mode=="startweb"
+  with_items:
+    - cs-web
 
 - name: reset database
   sudo: yes
