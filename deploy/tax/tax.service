@@ -7,6 +7,10 @@
     WorkingDirectory=/home/tax
     User=tax
     Group=tax
+    Restart=on-failure
+    RestartSec=3s
+    CPUQuota=50%
+    MemoryLimit=500M
 
 [Install]
     WantedBy=multi-user.target
