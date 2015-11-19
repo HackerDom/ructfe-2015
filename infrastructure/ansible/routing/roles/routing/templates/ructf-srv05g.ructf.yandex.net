@@ -1,2 +1,3 @@
 {% include "head" %}
+{% include "nets.at7.g" %}
 {% include "nets.at8.g" %}
