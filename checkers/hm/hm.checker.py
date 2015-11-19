@@ -59,12 +59,15 @@ class Client(object):
         self.cookie_jar = CookieJar()
 
     def create_user(self):
+        logging.info('Create new user on server:')
         self.open_and_check_ok('newuser', self.encode_user_data())
 
     def auth(self):
+        logging.info('Authenticate on server:')
         self.open_and_check_ok('login', self.encode_user_data())
 
     def add_metrics(self, metrics):
+        logging.info('Add metrics: %s', metrics)
         self.open_and_check_ok('addhealthmetrics', urlencode(metrics))
 
     def get_metrics(self):
@@ -74,6 +77,7 @@ class Client(object):
         opener = build_opener(HTTPCookieProcessor(self.cookie_jar))
         url = "http://%s/%s" % (self.addr, path)
         logging.info('Try to get %s', url)
+        logging.info('Cookies: %s', self.cookie_jar)
         if isinstance(data, str):
             data = data.encode("utf-8")
         response = opener.open(url, data)
@@ -84,6 +88,7 @@ class Client(object):
         return response.read(MAX_PAGE_SIZE).decode('utf-8')
 
     def encode_user_data(self):
+        logging.info('Encoding user %s', self.user)
         return urlencode({'Login': self.user[0], 'Pass': self.user[1]})
 
 
