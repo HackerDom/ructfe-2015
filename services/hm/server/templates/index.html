@@ -1,16 +1,17 @@
 {{ define "content" }}
 	<h1>Health Monitor</h1>
-	<h5>Track your health metrics and keep fit!</h5>
 	{{if .LoggedIn}}	
 		<div class="well">
             <p>
                 Welcome to our service that helps you to track your everyday health metrics, your physical activity and save them forever!
             </p>
             <p>
-        		Click <a href="/healthmetrics">MY METRICS</a> to see the metrics you've added and <a href="/addhealthmetricsform">ADD METRICS</a> to add new ones.
+        		Click <a href="/healthmetrics">here</a> to see the metrics you've added or <a href="/addhealthmetricsform">add</a> new ones.
             </p>
         </div>
 	{{else}}
-		<a class="btn btn-default btn-lg" href="/loginform" role="button">Login</a>
+        <div class="well">Track your health metrics and keep fit!</div>
+        <a class="btn btn-default" href="/loginform" role="button">Login</a>
+        <a class="btn btn-default" href="/signupform" role="button">Sign up</a>
 	{{end}}
 {{ end }}

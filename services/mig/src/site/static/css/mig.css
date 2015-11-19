@@ -19,3 +19,13 @@
 #last-join div {
 	margin-bottom: 5px;
 }
+
+#auth-done {
+    color: #696 !important;
+}
+
+#auth-done:hover,
+#auth-done:active,
+#auth-done:focus {
+    color: #696 !important;
+}
