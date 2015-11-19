@@ -80,6 +80,8 @@ if (! String.prototype.startsWith) {
             if (election.Winner)
                 $clone.find('.elections--election--winner').text(election.Winner.Name);
             $template.parent().append($clone);
+
+            return $clone;
         },
 
         show_election: function(election) {
@@ -103,6 +105,8 @@ if (! String.prototype.startsWith) {
                     $clone.find('.election--candidate--result').text(election.DecryptedResult[idx]);
                 if (candidate.PrivateNotesForWinner)
                     $clone.find('.election--candidate--private-note').text(candidate.PrivateNotesForWinner);
+                if (candidate.PublicMessage)
+                    $clone.find('.election--candidate--public-message').text(candidate.PublicMessage);
                 $candidate_template.parent().append($clone);
             });
 
@@ -130,12 +134,9 @@ if (! String.prototype.startsWith) {
                 $.each(data, function(idx, election) {
                     self.show_elections_election(election);
                 });
-
-                // TODO: add stub "Finished: "
-
                 $.getJSON('/listElections?finished=true', function(data) {
                     $.each(data, function(idx, election) {
-                        self.show_elections_election(election);
+                        self.show_elections_election(election).addClass('finished');
                     });
                     
                     $('#elections').toggleClass('empty', $('#elections .election:not(#elections--election--template)').length == 0);
@@ -146,7 +147,7 @@ if (! String.prototype.startsWith) {
         },
 
         load_election: function(election_id, callback) {
-            history.pushState({}, '', '/election/' + election_id);
+            this.set_new_url('/election/' + election_id);
             var self = this;
             $.getJSON('/findElection?id=' + election_id, function(election){
                 self.show_election(election);
@@ -258,7 +259,7 @@ if (! String.prototype.startsWith) {
         },
 
         main: function(callback) {
-            history.pushState({}, '', '/');            
+            this.set_new_url('/');
             if (electro.is_auth()) {
                 this.load_elections(function(){
                     $('#elections').set_current(callback);
@@ -268,9 +269,13 @@ if (! String.prototype.startsWith) {
             }
         },
 
-        load: function(callback) {
-            this.init_handlers();
+        onpopstate: function(event) {
+            if (event && event.state) {
+                electro.on_url_change();
+            }    
+        },
 
+        on_url_change: function(callback) {
             var pathname = window.location.pathname;
             if (pathname == '/')
                 this.main(callback);
@@ -280,6 +285,17 @@ if (! String.prototype.startsWith) {
                 this.logout(callback);
             else
                 this.main(callback);
+        },
+
+        set_new_url: function(url) {
+            if (window.location.pathname != url)
+                history.pushState({}, '', url);
+        },
+
+        load: function(callback) {
+            this.init_handlers();
+            this.on_url_change(callback);
+            window.onpopstate = this.onpopstate;
         },
     }
 

@@ -3,10 +3,13 @@
 {block 'title'}{$user->first_name} {$user->last_name}{/block}
 
 {block 'content'}
-    <h3>{$user->first_name} {$user->last_name} <small><span class="label label-success">registered at {$user->registered_at} as {$user->login}</span></small></h3>
+    <h3>
+        {$user->first_name} {$user->last_name}
+        <small><span class="label label-success registered-at">registered at {$user->registered_at} as {$user->login}</span></small>
+    </h3>
     <div>
         {foreach $planets as $planet index=$index}
-            <div class="number alert alert-success">
+            <div class="info alert alert-warning">
                 Information about planet #{$index + 1}, added at <b>{$planet->added_at}</b>:
             </div>
             <div class="well well-success">

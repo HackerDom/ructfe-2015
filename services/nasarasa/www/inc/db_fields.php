@@ -42,11 +42,42 @@
         }
     }
 
-    class DbIntField extends DbField
+    class DbNumberField extends DbField
+    {
+        protected $min_value = null;
+        protected $max_value = null;
+
+        function __construct($options=[])
+        {
+            parent::__construct($options);
+
+            if (array_key_exists('min_value', $options))
+                $this->min_value = (int) $options['min_value'];
+
+            if (array_key_exists('max_value', $options))
+                $this->max_value = (int) $options['max_value'];
+        }
+
+        public function can_assign_value($value)
+        {
+            if (! parent::can_assign_value($value))
+                return false;
+
+            if (! is_numeric($value))
+                return false;
+
+            if ($this->min_value != null && $value < $this->min_value)
+                throw new DbConstraintsException('Value must be not less than ' . $this->min_value);
+            if ($this->max_value != null && $value > $this->max_value)
+                throw new DbConstraintsException('Value must be not more than ' . $this->max_value);
+
+            return true;
+        }
+    }
+
+    class DbIntField extends DbNumberField
     {
         private $is_auto_increment = false;
-        private $min_value = null;
-        private $max_value = null;
 
         function __construct($options=[])
         {
@@ -54,12 +85,6 @@
 
             if (array_key_exists('auto_increment', $options))
                 $this->is_auto_increment = (bool) $options['auto_increment'];
-
-            if (array_key_exists('min_value', $options))
-                $this->min_value = (int) $options['min_value'];
-
-            if (array_key_exists('max_value', $options))
-                $this->max_value = (int) $options['max_value'];
 
             $this->type_definition = 'INT' . ($this->is_auto_increment ? ' AUTO_INCREMENT' : '');
         }
@@ -72,10 +97,26 @@
             if (! is_int($value))
                 throw new DbConstraintsException('Value must be integer');
 
-            if ($this->min_value != null && $value < $this->min_value)
-                throw new DbConstraintsException('Value must be not less than ' . $this->min_value);
-            if ($this->max_value != null && $value > $this->max_value)
-                throw new DbConstraintsException('Value must be not more than ' . $this->max_value);
+            return true;
+        }
+    }
+
+    class DbDoubleField extends DbNumberField
+    {
+        function __construct($options=[])
+        {
+            parent::__construct($options);
+
+            $this->type_definition = 'DOUBLE PRECISION';
+        }
+
+        public function can_assign_value($value)
+        {            
+            if (! parent::can_assign_value($value))
+                return false;
+
+            if (! is_double($value))
+                throw new DbConstraintsException('Value must be double');
 
             return true;
         }

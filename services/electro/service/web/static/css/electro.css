@@ -38,6 +38,14 @@
     line-height: 14pt;
 }
 
+#elections .election.finished {
+    background-color: #3C3636;
+    color: white;
+}
+#elections .election.finished a {
+    color: #6CBC53;
+}
+
 #elections .election .elections--election--info > div {
     display: inline-block;
 }
@@ -142,6 +150,12 @@
 #election .election--candidate .election--candidate--result:empty,
 #election .election--candidate .election--candidate--private-note:empty {
     display: none;
+}
+
+#election .election--candidate .election--candidate--public-message {
+    display: block;
+    margin-top: 5px;
+    color: #999;
 }
 
 #election .election--candidate .election--candidate--private-note {

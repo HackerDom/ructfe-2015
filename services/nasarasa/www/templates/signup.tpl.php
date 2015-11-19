@@ -22,7 +22,9 @@
         <div class="form-group">
             <input type="password" class="form-control" placeholder="Password" name="password" />
         </div>
-        <button type="submit" class="btn btn-default">Sign up</button>
+        <div class="form-group">
+            <button type="submit" class="btn btn-default">Sign up</button>
+        </div>
         {if $result}
             <div class="alert alert-danger">
                 {$result}
