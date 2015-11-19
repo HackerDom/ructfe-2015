@@ -24,7 +24,7 @@ const MaxPage = 5
 
 proc form1(state: State): string =
     let user = state.user
-    $$(Form(head: "General information about yourself:", fields: @[
+    $$(Form(head: "General information about yourself", fields: @[
         Field(name: "name", title: "Your name", maxlen: 32, value: user.name),
         Field(name: "sname", title: "Your surname", maxlen: 32, value: user.sname),
         Field(name: "bdate", title: "Date of birth", maxlen: 16, value: user.bdate),

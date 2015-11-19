@@ -3,6 +3,8 @@ server{
     
     access_log /home/hm/access.log;
     error_log  /home/hm/error.log;
+
+    root /home/hm;
     
     location / {
         proxy_pass http://localhost:8000;

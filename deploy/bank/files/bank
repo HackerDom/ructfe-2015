@@ -3,6 +3,8 @@ server{
     
     access_log /home/bank/access.log;
     error_log  /home/bank/error.log;
+
+    root /home/bank;
     
     location / {
         proxy_pass http://localhost:3255;

@@ -10,7 +10,7 @@
 .menu {border-right: 1px #edf2f1 solid;}
 .webix_message_area {top: 70px!important;}
 .webix_message_area .webix_default div, .webix_info div {background-color: transparent !important; border:none !important;}
-button, button span {background-color:transparent !important; border-color:#ccc !important;color:#363940 !important;}
+button:not(.btn-default), button span {background-color:transparent !important; border-color:#ccc !important;color:#363940 !important;}
 button_success {background-color: #545454 !important;}
 button:focus, button:hover {background-color:#363940 !important; color:#fff !important;}
 button:focus span, button:hover span {color:#fff !important;}

@@ -8,8 +8,8 @@
 		<meta name="keywords" content="Turio, RuCTFE, NASA, RASA" />
 		<meta name="author" content="Hackerdom team, hackerdom.ru, Andrew Gein aka andgein">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,500' rel='stylesheet' type='text/css'> <!-- Body font -->
-		<link href='http://fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'> <!-- Navbar font -->
+		<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,500' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" href="/static/inc/bootstrap/css/bootstrap.min.css">
 
 		<link rel="stylesheet" href="/static/css/unika.min.css">
@@ -24,7 +24,8 @@
 					<div class="container">
 						<div class="navbar-header">
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
-						    <a class="navbar-brand" href="/home">NASA RASA</a>
+						    <a class="navbar-brand main-page-link" href="/home">&larr;</a> 
+    					    <a class="navbar-brand" href="/">NASA RASA</a>
 						</div>
 
                         <div class="collapse navbar-collapse" id="bs-navbar-collapse">

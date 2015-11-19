@@ -21,10 +21,10 @@
                     <div><strong><%= data.name %></strong>: <%= data.private %></div>
                     <% } %>
 
-                    <form action="<%= resolve('user') %>" method="post">
-                        <input type="text" name="name" placeholder="name">
-                        <textarea name="private" id="private" cols="30" rows="10" placeholder="Your personal data"></textarea>
-                        <button type="submit" class="btn btn-default btn-lg">Save</button>
+                    <form action="<%= resolve('user') %>" method="post" class="form">
+                        <input type="text" name="name" placeholder="Your name" class="form-control">
+                        <textarea name="private" id="private" cols="30" rows="10" placeholder="Your personal data" class="form-control"></textarea>
+                        <button type="submit" class="btn btn-default">Save</button>
                     </form>
                 </div>
             </div>

@@ -3,7 +3,7 @@ server{
     access_log /home/static/access.log;
     error_log  /home/static/error.log;
     
-    root /var/www/html/;
+    root /home/static/;
     index index.html;
 
     location /static/ {

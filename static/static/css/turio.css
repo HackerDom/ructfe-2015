@@ -91,6 +91,7 @@ a {
 }
 
 #header a,
+.navbar a,
 a.btn {
     text-decoration: none;
 }
@@ -104,4 +105,10 @@ a:active {
 
 .btn-blank {
     text-decoration: none;
+}
+
+.main-page-link {
+    margin-right: 20px;
+    position: relative;
+    top: -2px;
 }

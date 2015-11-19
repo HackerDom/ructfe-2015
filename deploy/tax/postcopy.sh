@@ -20,6 +20,9 @@ ln -s /etc/nginx/sites-available/tax /etc/nginx/sites-enabled/tax
 chown tax:tax -R /home/tax/
 chmod 400 -R /home/tax/
 chmod 600 -R /home/tax/data
+chown tax:www-data -R /home/tax/static
+chmod 440 -R /home/tax/static
+chmod +rx /home/tax
 find /home/tax -type d -exec chmod 770 {} +
 
 service nginx restart
