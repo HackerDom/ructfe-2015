@@ -1,4 +1,6 @@
 <?php
+    require_once __DIR__ . '/shortcuts.php';
+
     $DEBUG_MODE = false;
 
     function warning($message)
@@ -11,6 +13,12 @@
         global $DEBUG_MODE;
         if ($DEBUG_MODE)
             print '<b>[DEBUG]</b> ' . htmlspecialchars($message) . '<br>';
+    }
+
+    function error($message)
+    {
+        render('error', ['error' => $message]);
+        exit;
     }
 
     function html_var_dump($var)

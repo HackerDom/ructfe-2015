@@ -15,8 +15,7 @@
 
             $this->conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
             if ($this->conn->connect_error)
-                /* TODO */
-                die('Connection error, code ' . $this->conn->connect_errno . ': '. $this->conn->connect_error);
+                error('Connection error, code ' . $this->conn->connect_errno . ': '. $this->conn->connect_error);
         }
 
         function __destruct()
@@ -31,7 +30,7 @@
 
         private function escape_field_value($field_value)
         {
-            if ($field_value == NULL)
+            if ($field_value === NULL)
                 return 'NULL';
 
             return '"' . $this->conn->real_escape_string($field_value) . '"';
@@ -43,7 +42,7 @@
 
             $result = $this->conn->query($query);
             if ($result === false)
-                die('Database query error: ' . $this->conn->error);
+                error('Database query error: ' . $this->conn->error);
 
             return $result;
         }
@@ -165,9 +164,6 @@
         static $connection;
         static $existing_tables = [];
 
-        /* TODO: make own primary_key for each child of DbModel */
-        static $primary_key = NULL;
-
         private $fields;
 
         function __construct($init_fields=[])
@@ -177,7 +173,6 @@
             $this->init_fields($init_fields);
         }
 
-        /* TODO: cache results? */
         public static function build_schema($schema)
         {
             $primary_key = self::get_defined_primary_key();
@@ -217,7 +212,9 @@
         public static function get_defined_primary_key()
         {
             $class = get_called_class();
-            return $class::$primary_key;
+            if (property_exists($class, 'primary_key'))
+                return $class::$primary_key;
+            return NULL;
         }
 
         public static function get_primary_key()
@@ -266,8 +263,6 @@
             return $object;
         }
 
-        /* TODO: make $limit as a filter */
-        /* TODO: may be vulnarable via $$var all filters which are __[\w\d]*__ */
         public static function find($filters, $limit=0)
         {
             if (array_key_exists('__pk__', $filters))
@@ -305,7 +300,6 @@
 
         public static function count($filters=[])
         {
-            /* TODO: Optimize to SELECT COUNT(*) */
             return count(self::find($filters));
         }
 
@@ -350,7 +344,6 @@
             {
                 if ($object->__get(self::get_primary_key()) == $ignored_pk_value)
                     continue;
-                /* TODO: optimize */
                 foreach ($schema as $field_name => $field)
                 {
                     if (! $field->is_unique)

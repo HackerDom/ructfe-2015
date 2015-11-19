@@ -12,11 +12,13 @@
         <div class="form-group">
             <input type="password" class="form-control" placeholder="Password" name="password" />
         </div>
-        <button type="submit" class="btn btn-default">Sign in</button>
-            {if $result}
-                <div class="alert alert-danger">
-                    {$result}
-                </div>
-            {/if}
+        <div class="form-group">
+            <button type="submit" class="btn btn-default">Sign in</button>
+        </div>
+        {if $result}
+            <div class="alert alert-danger">
+                {$result}
+            </div>
+        {/if}
    </form>
 {/block}

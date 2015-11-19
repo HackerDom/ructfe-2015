@@ -11,7 +11,13 @@
                     {$index+1}.
                 </div>
                 <div class="">
-                    <a href="/users/{$user->id}">{$user->first_name} {$user->last_name}</a>
+                    <a href="/users/{$user->id}">
+                        {if ($user->first_name|length == 0) && ($user->last_name|length == 0)}
+                            Unknown name
+                        {else}
+                            {$user->first_name} {$user->last_name}
+                        {/if}
+                    </a>
                 </div>
             </div>
         {foreachelse}

@@ -1,7 +1,21 @@
+.last-users {
+    font-size: 12pt;
+}
+
 .last-users .user > div {
     display: inline-block;
 }
 
 div {
     line-height: 140%;
+}
+
+.registered-at {
+    position: relative;
+    top: -5px;
+}
+
+.info {
+    margin-bottom: 0px;
+    border-bottom-width: 0px;
 }

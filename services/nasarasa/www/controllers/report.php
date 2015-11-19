@@ -10,10 +10,10 @@
     {
         try
         {   
-            $planet = new Planet(['declination' => (int) $form['declination'],
-                                  'hour_angle' => (int) $form['hour_angle'],
-                                  'brightness' => (int) $form['brightness'],
-                                  'size' => (int) $form['size'],
+            $planet = new Planet(['declination' => (double) $form['declination'],
+                                  'hour_angle' => (double) $form['hour_angle'],
+                                  'brightness' => (double) $form['brightness'],
+                                  'size' => (double) $form['size'],
                                   'color' => $form['color'],
                                   'message' => $form['message'],
                                   'added_by' => SessionManager::current_user()]);

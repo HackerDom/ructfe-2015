@@ -18,6 +18,6 @@
         }
     }
 
-    $last_users = User::find(['__order_by__' => '-id'], 10);
+    $last_users = User::find(['__order_by__' => '-id'], 20);
     render('users', ['last_users' => $last_users]);
 ?>
