@@ -76,7 +76,7 @@ namespace Electro
 
 		private static string GetPrefix(string suffix)
 		{
-			return string.Format("http://+:{0}/{1}", Port, suffix == null ? null : suffix.TrimEnd('/') + '/');
+			return string.Format("http://127.0.0.1:{0}/{1}", Port, suffix == null ? null : suffix.TrimEnd('/') + '/');
 		}
 
 		private const int Port = 3130;

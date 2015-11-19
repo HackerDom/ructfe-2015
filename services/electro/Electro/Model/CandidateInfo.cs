@@ -10,6 +10,7 @@ namespace Electro.Model
 		[DataMember] public string Name { get; set; }
 		[DataMember] public string PublicMessage { get; set; }
 		[DataMember] public string PrivateNotesForWinner { get; set; }
+		[DataMember] public bool IsMe { get; set; }
 
 		public static CandidateInfo Create(User user)
 		{
