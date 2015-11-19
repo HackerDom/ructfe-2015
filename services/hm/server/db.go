@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"errors"
+	"sync"
 )
 const (
 	DbName = "./health.db" 
@@ -17,7 +18,7 @@ const (
 const (
 	CreateUsersTable = "CREATE TABLE IF NOT EXISTS users(id integer not null primary key AUTOINCREMENT, login text, pass text)"
 	FindUserByLogin = "SELECT id, login FROM users WHERE login = ?"
-	FindUser = "SELECT id FROM users WHERE login = ? AND pass = ?" //todo
+	FindUser = "SELECT id FROM users WHERE login = ? AND pass = ?" 
 	AddUser = "INSERT INTO users (login, pass) VALUES (?, ?)"
 )
 
@@ -27,15 +28,12 @@ const (
 	AlreadyExists = iota  
 )
 
+var db *sql.DB
+var m sync.Mutex
 
-func tryAddMetrics(uId int, m *HealthMetrics) (bool, int64) {
-
-	db, err := sql.Open("sqlite3", DbName)
-	if err != nil {
-		logger.Fatal("Error while connecting to db: ", err)
-		return false, -1
-	}
-	defer db.Close()
+func tryAddMetrics(uId int, metrics *HealthMetrics) (bool, int64) {
+	m.Lock()
+	defer m.Unlock()
 	
 	stmt, err := db.Prepare(InsertValues)
 	if err != nil {
@@ -44,7 +42,7 @@ func tryAddMetrics(uId int, m *HealthMetrics) (bool, int64) {
 	}
 	defer stmt.Close()
 	
-	res, err := stmt.Exec(uId, m.Weight, m.BloodPressure, m.Pulse, m.WalkingDistance, m.Comment) 
+	res, err := stmt.Exec(uId, metrics.Weight, metrics.BloodPressure, metrics.Pulse, metrics.WalkingDistance, metrics.Comment) 
 	if err != nil {
 		logger.Fatal(err)
 		return false, -1
@@ -60,15 +58,10 @@ func tryAddMetrics(uId int, m *HealthMetrics) (bool, int64) {
 }
 
 func tryGetUserMetrics(uId string) (bool, []HealthMetrics) {
-
-	var res []HealthMetrics
+	m.Lock()
+	defer m.Unlock()
 	
-	db, err := sql.Open("sqlite3", DbName)
-	if err != nil {
-		logger.Fatal("Error while connecting to db: ", err)
-		return false, nil
-	}
-	defer db.Close()
+	var res []HealthMetrics
 	
 	 stmt, err := db.Prepare(SelectRows)
 	 if err != nil {
@@ -101,13 +94,8 @@ func tryGetUserMetrics(uId string) (bool, []HealthMetrics) {
 }
 
 func tryAddUser(user *User) (int, string){
-
-	db, err := sql.Open("sqlite3", DbName)
-	if err != nil {
-		logger.Fatal("Error while connecting to db: ", err)
-		return Error, ""
-	}
-	defer db.Close()
+	m.Lock()
+	defer m.Unlock()
 	
 	rows, err := db.Query(FindUserByLogin, user.Login)
 	if err != nil {
@@ -143,13 +131,8 @@ func tryAddUser(user *User) (int, string){
 }
 
 func findUser(user *User) (string, error) {	
-
-	db, err := sql.Open("sqlite3", DbName)
-	if err != nil {
-		logger.Fatal("Error while connecting to db: ", err)
-		return "", errors.New("Can't connect to DB")
-	}
-	defer db.Close()
+	m.Lock()
+	defer m.Unlock()
 	
 	 stmt, err := db.Prepare(FindUser)
 	 if err != nil {
@@ -174,10 +157,9 @@ func findUser(user *User) (string, error) {
 }
 
 func prepareDb() {
-
-	db, err := sql.Open("sqlite3", DbName)
+	var err error
+	db, err = sql.Open("sqlite3", DbName)
 	checkErr(err)
-	defer db.Close()
 
 	_, err = db.Exec(CreateIndicesTable)
 	checkErr(err)

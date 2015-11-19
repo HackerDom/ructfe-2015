@@ -1,0 +1,8 @@
+#!/bin/bash
+
+function setroute {
+    /sbin/ip route delete $1       >/dev/null 2>&1
+    /sbin/ip route add $1 via $2
+}
+
+

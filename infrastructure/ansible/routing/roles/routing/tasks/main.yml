@@ -1,0 +1,15 @@
+- include_vars: ../networks.yml
+
+- name: add line to rc.local
+  lineinfile: dest=/etc/rc.local insertbefore="exit 0" line="[ -x /etc/rc.routing ] && /etc/rc.routing"
+
+- local_action: stat path=roles/routing/templates/{{inventory_hostname}}
+  register: template
+
+- name: upload rc.routing
+  template: src={{inventory_hostname}} dest=/etc/rc.routing
+  when: template.stat.exists
+  notify: apply routing
+
+- file: path=/etc/rc.routing mode="a+x"
+  when: template.stat.exists

@@ -1,0 +1,8 @@
+# Allow checksystem to VMs
+-A FORWARD -s 10.10.10.3 -d {{net_vms}} -j ACCEPT
+-A FORWARD -s 10.10.10.4 -d {{net_vms}} -j ACCEPT
+-A FORWARD -s 10.10.10.5 -d {{net_vms}} -j ACCEPT
+-A FORWARD -s 10.10.10.6 -d {{net_vms}} -j ACCEPT
+
+# Allow VMs to outside
+-A FORWARD -s {{net_vms}} -j ACCEPT
