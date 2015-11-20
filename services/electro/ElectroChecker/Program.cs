@@ -122,7 +122,7 @@ namespace ElectroChecker
 			return (int)exitCode;
 		}
 
-		public const int PORT = 80;
+		public const int PORT = 3130;
 
 		private const string CommandInfo = "info";
 		private const string CommandCheck = "check";

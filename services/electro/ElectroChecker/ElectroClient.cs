@@ -123,6 +123,16 @@ namespace ElectroChecker
 			}
 		}
 
+		public static async Task VoteAsync(string host, int port, CookieCollection cookieCollection, Guid electionId, BigInteger[] encryptedVector)
+		{
+			var data = Encoding.UTF8.GetBytes(string.Format("electionId={0}&vote={1}", HttpUtility.UrlEncode(electionId.ToString()), HttpUtility.UrlEncode(encryptedVector.Select(integer => integer.ToString()).ToArray().ToJsonString())));
+
+			var uri = new Uri(string.Format("http://{0}:{1}/vote", host, port));
+			var httpResult = await AsyncHttpClient.DoRequestAsync(uri, WebRequestMethods.Http.Post, null, cookieCollection, data);
+			if(httpResult.StatusCode != HttpStatusCode.OK)
+				throw new ServiceException(ExitCode.MUMBLE, string.Format("Failed to process VoteAsync: {0}", httpResult.StatusCode));
+		}
+
 		public static void Vote(string host, int port, CookieCollection cookieCollection, Guid electionId, BigInteger[] encryptedVector)
 		{
 			var request = CreateRequest(string.Format("http://{0}:{1}/vote", host, port), WebRequestMethods.Http.Post, null, cookieCollection);
@@ -131,10 +141,7 @@ namespace ElectroChecker
 			using(var requestStream = request.GetRequestStream())
 				requestStream.Write(data, 0, data.Length);
 
-			
-			using(var response = (HttpWebResponse)request.GetResponse())
-			{
-			}
+			using((HttpWebResponse)request.GetResponse()) { }
 		}
 
 		public static Election FindElection(string host, int port, CookieCollection cookieCollection, string electionId)

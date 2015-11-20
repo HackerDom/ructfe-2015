@@ -13,70 +13,46 @@ namespace ElectroChecker
 	static class Vuln1Methods
 	{
 		//TODO give more time 
-		const int nominateTimeInSec = 2;
-		const int voteTimeInSec = 5;
+		const int nominateTimeInSec = 60;
+		const int voteTimeInSec = 8 * 60;
 
-		const int candidatesCount = 2;
+		const int candidatesMinCount = 2;
+		const int candidatesMaxCount = 5;
+
+		const int votesMinCount = candidatesMaxCount + 1;
+		const int votesMaxCount = votesMinCount * 2;
+
+		private static User[] GenerateCandidates(int minCount, int maxCount)
+		{
+			var r = new Random();
+			int count = r.Next(minCount, maxCount + 1);
+			return Enumerable.Range(0, count).Select(i => UsersManager.GenRandomUser()).ToArray();
+		}
 
 		public static int ProcessPut(string host, string id, string flag)
 		{
-			var votes = Utils.GenRandomVoteVectors(candidatesCount, 3, 5).ToList();
-			var expectedResult = Utils.SumVoteVectors(votes);
-			var winnerNum = Utils.FindWinner(expectedResult);
+			log.Info("Processing Vuln1.Put");
 
-			var flagSent = false;
-			var candidates = new List<User>();
-			for(int i = 0; i < candidatesCount; i++)
-			{
-				string privateNotes = null;
-				if(!flagSent && i != winnerNum)
-				{
-					privateNotes = flag;
-					flagSent = true;
-				}
+			var r = new Random();
+			var candidateUsers = GenerateCandidates(candidatesMinCount, candidatesMaxCount);
+			var candidateWithFlagNum = r.Next(candidateUsers.Length);
+			var candidateWithFlag = candidateUsers[candidateWithFlagNum];
+			candidateWithFlag.PrivateMessage = flag;
+			log.InfoFormat("Generated {0} candidates (#{1} has flag)", candidateUsers.Length, candidateWithFlagNum);
 
-				var candidate = UsersManager.GenRandomUser(privateNotes);
-				candidate.Cookies = ElectroClient.RegUser(host, Program.PORT, candidate.Login, candidate.Pass, candidate.PublicMessage, candidate.PrivateMessage);
-				candidates.Add(candidate);
-			}
-
-			var election = ElectroClient.StartElection(host, Program.PORT, candidates[0].Cookies, Utils.GenRandomElectionName(), true, nominateTimeInSec, voteTimeInSec);
-			if(election == null)
-				throw new ServiceException(ExitCode.MUMBLE, "Can't start election - result is NULL");
+			candidateUsers = Vuln2Methods.RegisterCandidates(host, candidateUsers).OrderBy(user => user.Login).ToArray();
+			var election = Vuln2Methods.StartElection(host, candidateUsers[0], true, nominateTimeInSec, voteTimeInSec);
 			var electionStartDt = DateTime.UtcNow;
 
-			foreach(var candidate in candidates.Skip(1))
-			{
-				ElectroClient.Nominate(host, Program.PORT, candidate.Cookies, election.Id);
-			}
-
-			Thread.Sleep(nominateTimeInSec * 1000);
-
-			for(int i = 0; i < candidates.Count; i++)
-			{
-				var candidate = candidates[i];
-				var vote = Utils.GenVoteVector(candidatesCount, i);
-				ElectroClient.Vote(host, Program.PORT, candidate.Cookies, election.Id, HomoCrypto.EncryptVector(vote, election.PublicKey));
-				expectedResult.AddVoteVector(vote);
-			}
-
-			var voters = new List<User>();
-			foreach(var voteVector in votes)
-			{
-				var voter = UsersManager.GenRandomUser();
-				voter.Cookies = ElectroClient.RegUser(host, Program.PORT, voter.Login, voter.Pass);
-				voters.Add(voter);
-
-				ElectroClient.Vote(host, Program.PORT, voter.Cookies, election.Id, HomoCrypto.EncryptVector(voteVector, election.PublicKey));
-				expectedResult.AddVoteVector(voteVector);
-			}
+			Vuln2Methods.NominateUsers(host, election, candidateUsers.Skip(1).ToArray());
 
 			var state = new Vuln1State
 			{
 				ElectionStartDate = electionStartDt,
+				NominateTimeInSec = nominateTimeInSec,
+				VoteTimeInSec = voteTimeInSec,
 				ElectionId = election.Id.ToString(),
-				Candidates = candidates.ToArray(),
-				expectedResult = expectedResult
+				Candidates = candidateUsers
 			};
 
 			log.Info("Flag put");
@@ -86,40 +62,95 @@ namespace ElectroChecker
 
 		public static int ProcessGet(string host, string id, string flag)
 		{
+			log.Info("Processing Vuln1.Get");
+
 			var state = JsonHelper.ParseJson<Vuln1State>(Convert.FromBase64String(id));
 
 			var now = DateTime.UtcNow;
 			var elapsedSeconds = now.Subtract(state.ElectionStartDate).TotalMilliseconds;
 			if(elapsedSeconds < 0)
 				throw new ServiceException(ExitCode.CHECKER_ERROR, string.Format("Possible time desynchronization on checksystem hosts! Election started in future: '{0}' and now is only '{1}'", state.ElectionStartDate.ToSortable(), now.ToSortable()));
-			var tts = (nominateTimeInSec + voteTimeInSec + 1) * 1000 - elapsedSeconds;
-			if(tts > 0)
+
+			var nominateEndTime = state.ElectionStartDate.AddSeconds(nominateTimeInSec);
+			var voteEndTime = state.ElectionStartDate.AddSeconds(nominateTimeInSec + voteTimeInSec);
+
+			log.InfoFormat("Looking for Election {0}", state.ElectionId);
+			var election = ElectroClient.FindElection(host, Program.PORT, state.Candidates[0].Cookies, state.ElectionId);
+			if(election == null || election.Candidates == null || election.Candidates.Count < 2)
+				throw new ServiceException(ExitCode.CORRUPT, string.Format("Can't find election '{0}' or it has less than 2 candidates", state.ElectionId));
+			log.InfoFormat("Election {0} found", state.ElectionId);
+
+			log.InfoFormat("Election startDt {0}", state.ElectionStartDate.ToSortable());
+			log.InfoFormat("Nominate end Dt  {0}", nominateEndTime.ToSortable());
+			log.InfoFormat("Vote end Dt      {0}", voteEndTime.ToSortable());
+			log.InfoFormat("Now              {0}", now.ToSortable());
+
+			if(now < nominateEndTime)
 			{
-				Console.Error.WriteLine("Sleeping for {0} seconds (Election start '{1}' now '{2}' nomination duration {3} vote duration {4})", tts, state.ElectionStartDate.ToSortable(), now.ToSortable(), nominateTimeInSec, voteTimeInSec);
-				Thread.Sleep((int) tts);
+				log.InfoFormat("Nomination is still going, got election, considering everything OK");
+				return (int)ExitCode.OK;
 			}
+			else if(now < voteEndTime)
+			{
+				log.InfoFormat("Nomination finished, but voting is still going. Trying to win!");
+				int notFlagNum = 0;
+				for(; notFlagNum < election.Candidates.Count; notFlagNum++)
+				{
+					if(election.Candidates[notFlagNum] != null && !election.Candidates[notFlagNum].IsMe)
+						break;
+				}
+				if(notFlagNum == election.Candidates.Count)
+					throw new ServiceException(ExitCode.CORRUPT, string.Format("Can't find candidate with no flag in election '{0}'", state.ElectionId));
 
-			var expectedResult = state.expectedResult;
-			var expectedWinnerNum = Utils.FindWinner(expectedResult);
+				var random = new Random();
+				var votersCount = random.Next(votesMinCount, votesMaxCount + 1);
 
-			var candidates = state.Candidates;
-			var expectedWinner = candidates[expectedWinnerNum];
+				var votesForWinner =
+					Enumerable.Repeat(Utils.GenVoteVector(election.Candidates.Count, notFlagNum), (votersCount/2) + 1).ToArray();
+				var restVotes = Utils.GenRandomVoteVectors(election.Candidates.Count, votersCount - votesForWinner.Length).ToArray();
+				var votes = votesForWinner.Concat(restVotes).ToArray();
 
-			var election = ElectroClient.FindElection(host, Program.PORT, expectedWinner.Cookies, state.ElectionId);
-			if(election == null)
-				throw new ServiceException(ExitCode.MUMBLE, string.Format("Can't find election '{0}'", id));
+				var voters = Vuln2Methods.RegisterVoters(host, votes, state.Candidates);
+				Vote(host, voters, election.Id, election.PublicKey);
+				return (int)ExitCode.OK;
+			}
+			else
+			{
+				log.InfoFormat("Voting has already finished. Considering everything OK");
+				var realWinner = election.FindWinner();
+				if(realWinner == null)
+					throw new ServiceException(ExitCode.MUMBLE, string.Format("Can't find winner in election '{0}'", election.Id));
 
-			var readlWinner = election.FindWinner();
-			if(readlWinner == null)
-				throw new ServiceException(ExitCode.MUMBLE, string.Format("Can't find winner in election '{0}'", election.Id));
-			if(readlWinner.Name != expectedWinner.Login)
-				throw new ServiceException(ExitCode.MUMBLE, string.Format("Winner in election '{0}' is wrong. Expected '{1}' got '{2}", election.Id, expectedWinner.Login, readlWinner.Name));
+				var winner = state.Candidates.FirstOrDefault(info => info.Login == realWinner.Name);
+				if(winner == null)
+					throw new ServiceException(ExitCode.CORRUPT, string.Format("We have no credentials for winner in election '{0}'. Possibly hacker won, so we lost a flag", election.Id));
 
-			if(election.Candidates.All(info => info.PrivateNotesForWinner != flag))
-				throw new ServiceException(ExitCode.CORRUPT, "Can't find flag", null);
+				log.InfoFormat("Reloading election, now as winner '{0}'", winner.Login);
+				election = ElectroClient.FindElection(host, Program.PORT, winner.Cookies, election.Id.ToString());
+				if(election == null)
+					throw new ServiceException(ExitCode.CORRUPT, string.Format("Can't find election '{0}'", state.ElectionId));
 
-			log.Info("Flag found! Ok");
-			return (int)ExitCode.OK;
+				if(election.Candidates.All(info => info.PrivateNotesForWinner != flag))
+					throw new ServiceException(ExitCode.CORRUPT, "Can't find flag", null);
+
+				log.Info("Flag found! Ok");
+				return (int)ExitCode.OK;
+			}
+		}
+
+		private static void Vote(string host, KeyValuePair<User, int[]>[] voters, Guid id, PublicKey publicKey)
+		{
+			log.Info("Voting in parallel...");
+			var candidateTasks = voters.Select(kvp => ElectroClient.VoteAsync(host, Program.PORT, kvp.Key.Cookies, id, HomoCrypto.EncryptVector(kvp.Value, publicKey))).ToArray();
+			try
+			{
+				Task.WaitAll();
+				log.InfoFormat("Voted by {0} users", voters.Length);
+			}
+			catch(Exception e)
+			{
+				throw new ServiceException(ExitCode.DOWN, string.Format("Failed to vote by {0} users in parallel: {1}", candidateTasks.Length, e));
+			}
 		}
 
 		private static readonly ILog log = LogManager.GetLogger(typeof(Vuln1Methods));

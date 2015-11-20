@@ -49,10 +49,9 @@ namespace ElectroChecker
 			return result;
 		}
 
-		public static IEnumerable<int[]> GenRandomVoteVectors(int vectorSize, int minCount, int maxCount)
+		public static IEnumerable<int[]> GenRandomVoteVectors(int vectorSize, int votersCount)
 		{
-			var count = random.Next(minCount, maxCount + 1);
-			return Enumerable.Range(0, count).Select(i => GenRandomVoteVector(vectorSize));
+			return Enumerable.Range(0, votersCount).Select(i => GenRandomVoteVector(vectorSize));
 		}
 
 		public static int[] GenRandomVoteVector(int vectorSize)

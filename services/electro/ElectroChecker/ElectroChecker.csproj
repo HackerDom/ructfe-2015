@@ -54,6 +54,7 @@
     <Compile Include="AsyncHttpClient.cs" />
     <Compile Include="ElectroClient.cs" />
     <Compile Include="ExitCode.cs" />
+    <Compile Include="User.cs" />
     <Compile Include="Vuln1State.cs" />
     <Compile Include="IEnumerableExtensions.cs" />
     <Compile Include="UsersManager.cs" />

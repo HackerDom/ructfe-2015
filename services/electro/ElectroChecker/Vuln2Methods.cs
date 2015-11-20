@@ -25,7 +25,7 @@ namespace ElectroChecker
 
 			var candidateUsers = RegisterCandidates(host, flag.Distinct().Select(c => UsersManager.GenUser(null, c.ToString())).OrderBy(user => user.Login).ToArray());
 
-			var election = StartElection(host, candidateUsers[0]);
+			var election = StartElection(host, candidateUsers[0], false, nominateTimeInSec, voteTimeInSec);
 			var privateKey = election.PrivateKeyForCandidates;
 
 			var sw = Stopwatch.StartNew();
@@ -73,7 +73,7 @@ namespace ElectroChecker
 			return votes;
 		}
 
-		private static User[] RegisterCandidates(string host, User[] users)
+		public static User[] RegisterCandidates(string host, User[] users)
 		{
 			log.Info("Registering candidates...");
 			var candidateTasks = users.Select(candidate => new { candidate, task = ElectroClient.RegUserAsync(host, Program.PORT, candidate.Login, candidate.Pass, candidate.PublicMessage, candidate.PrivateMessage) }).ToArray();
@@ -93,17 +93,17 @@ namespace ElectroChecker
 			}
 		}
 
-		private static Election StartElection(string host, User candidate)
+		public static Election StartElection(string host, User candidate, bool isPublic, int nominateTimeInSec, int voteTimeInSec)
 		{
-			log.Info("Starting election by first candidate...");
-			var election = ElectroClient.StartElection(host, Program.PORT, candidate.Cookies, Utils.GenRandomElectionName(), false, nominateTimeInSec, voteTimeInSec);
+			log.Info("Starting election...");
+			var election = ElectroClient.StartElection(host, Program.PORT, candidate.Cookies, Utils.GenRandomElectionName(), isPublic, nominateTimeInSec, voteTimeInSec);
 			if(election == null)
 				throw new ServiceException(ExitCode.MUMBLE, "Can't start election - result is NULL");
 			log.InfoFormat("Election {0} sarted", election.Id);
 			return election;
 		}
 
-		private static Election NominateUsers(string host, Election election, User[] candidates)
+		public static Election NominateUsers(string host, Election election, User[] candidates)
 		{
 			log.InfoFormat("Nominating rest {0} candidates for election...", candidates.Length);
 			var nominateTasks = candidates.Select(candidate => new { candidate, task = ElectroClient.NominateAsync(host, Program.PORT, candidate.Cookies, election.Id) }).ToArray();
@@ -118,7 +118,7 @@ namespace ElectroChecker
 			}
 
 			var electionId = election.Id;
-			election = elections.FirstOrDefault(election1 => election1.Candidates.Count >= candidates.Length + 1);
+			election = elections.FirstOrDefault(election1 => election1 != null && election1.Candidates.Count >= candidates.Length + 1);
 			if(election == null)
 				throw new ServiceException(ExitCode.MUMBLE, string.Format("Nominated '{0}' candidates for election '{1}', but got less in result", candidates.Length + 1, electionId));
 
@@ -126,7 +126,7 @@ namespace ElectroChecker
 			return election;
 		}
 
-		private static KeyValuePair<User, int[]>[] RegisterVoters(string host, int[][] votes, User[] candidateUsers)
+		public static KeyValuePair<User, int[]>[] RegisterVoters(string host, int[][] votes, User[] candidateUsers)
 		{
 			var fakeTasks = votes.Take(candidateUsers.Length).Zip(candidateUsers, (vote, voter) => new {vote, voter, task = Task.FromResult(voter.Cookies)});
 			var newVotersTasks = votes.Skip(candidateUsers.Length).Select(vote =>
@@ -162,7 +162,7 @@ namespace ElectroChecker
 			log.InfoFormat("Looking for Election {0}", state.ElectionId);
 			var election = ElectroClient.FindElection(host, Program.PORT, state.Voter.Cookies, state.ElectionId);
 			if(election == null)
-				throw new ServiceException(ExitCode.MUMBLE, string.Format("Can't find election '{0}'", id));
+				throw new ServiceException(ExitCode.CORRUPT, string.Format("Can't find election '{0}'", id));
 			log.InfoFormat("Election {0} found", state.ElectionId);
 
 			var gotFlag = ExtractFlag(election, state.PrivateKey, flag.Length);
