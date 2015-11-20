@@ -1,8 +1,8 @@
 server{
     server_name ~^bank\.(?P<main_host>.+)$;
     
-    access_log /home/bank/access.log;
-    error_log  /home/bank/error.log;
+    access_log /home/bank/logs/access.log;
+    error_log  /home/bank/logs/error.log;
 
     root /home/bank;
     

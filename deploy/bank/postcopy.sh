@@ -6,6 +6,7 @@ systemctl start bank
 
 ln -s /etc/nginx/sites-available/bank /etc/nginx/sites-enabled/bank
 
+mkdir -p /home/bank/logs
 chown bank:bank -R /home/bank/
 chmod 660 -R /home/bank/
 find /home/bank -type d -exec chmod 770 {} +
