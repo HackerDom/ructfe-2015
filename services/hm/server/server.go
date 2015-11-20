@@ -28,9 +28,16 @@ type Context struct {
 
 func addHealthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 
-	status, response := addHealthMetrics(request)
-	w.WriteHeader(status)
+	err := addHealthMetrics(request)
+	w.WriteHeader(http.StatusOK)
 
+	var response string
+	if err == nil {
+		response = fmt.Sprintf("Metrics were successfully added")
+	} else {
+		response = err.Error()
+	}
+	
 	context := Context{LoggedIn: loggedin(request), Text: response}
 	render(w, "text", context)
 }
@@ -42,22 +49,26 @@ func addHealthMetricsFormHandler(w http.ResponseWriter, request *http.Request) {
 
 func healthMetricsHandler(w http.ResponseWriter, request *http.Request) {
 
-	status, response, metrics := getHealthMetrics(request)
-	w.WriteHeader(status)
+	metrics, err := getHealthMetrics(request)
+	w.WriteHeader(http.StatusOK)
 	
-	if status == http.StatusOK {
+	if err == nil {
 		context := Context{LoggedIn: loggedin(request), Metrics: metrics}
 		render(w, "table", context)
 	} else {
-		context := Context{LoggedIn: loggedin(request), Text: response}
+		context := Context{LoggedIn: loggedin(request), Text: err.Error()}
 		render(w, "text", context)
 	}
 }
 
 func addUserHandler(w http.ResponseWriter, request *http.Request) {
 
-	status, response := addUser(request)
-	w.WriteHeader(status)
+	response, err := addUser(request)
+	w.WriteHeader(http.StatusOK)
+	
+	if err != nil {
+		response = err.Error()
+	}
 	
 	context := Context{LoggedIn: loggedin(request), Text: response}
 	render(w, "text", context)
@@ -65,12 +76,12 @@ func addUserHandler(w http.ResponseWriter, request *http.Request) {
 
 func loginHandler(w http.ResponseWriter, request *http.Request) {
 	
-	status, response, c1, c2 := login(request)
+	response, c1, c2 := login(request)
 	http.SetCookie(w, &c1) 
 	http.SetCookie(w, &c2) 
-	w.WriteHeader(status)
+	w.WriteHeader(http.StatusOK)
 	
-	loggedIn := status == http.StatusOK 
+	loggedIn := &c1 != nil && &c2 != nil
 
 	context := Context{LoggedIn: loggedIn, Text: response}
 	render(w, "text", context)
@@ -78,16 +89,12 @@ func loginHandler(w http.ResponseWriter, request *http.Request) {
 
 func logoutHandler(w http.ResponseWriter, request *http.Request) {
 	
-	status, response, c1, c2 := logout(request)
+	c1, c2 := logout(request)
 	http.SetCookie(w, &c1) 
 	http.SetCookie(w, &c2) 
-	w.WriteHeader(status)
+	w.WriteHeader(http.StatusOK)
 
-	loggedIn := true
-	if status == http.StatusOK {
-		loggedIn = false
-	}
-	context := Context{LoggedIn: loggedIn, Text: response}
+	context := Context{LoggedIn: false, Text: "Bye-bye! Seeya!"}
 	render(w, "text", context)
 }
 

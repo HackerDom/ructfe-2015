@@ -7,6 +7,7 @@ import string
 import threading
 import requests as r
 import binascii
+import base64
 
 from httpchecker import *
 #from gmpy import mpz
@@ -30,7 +31,6 @@ class Checker(HttpCheckerBase):
 		s = r.Session()
 		s.headers['User-Agent'] = self.randua()
 		s.headers['Accept'] = '*/*'
-		s.headers['Accept-Language'] = 'en-US,en;q=0.5'
 		return s
 
 	def url(self, addr, suffix):
@@ -58,33 +58,56 @@ class Checker(HttpCheckerBase):
 		finally:
 			response.close()
 
-	def jpost(self, s, addr, suffix, data = None):
+	def postwithretries(self, s, url, dump, timeout=5, tries=2):
+		for i in range(tries - 1, -1, -1):
+			try:
+				return s.post(url, dump)
+			except r.exceptions.ConnectionError:
+				if i == 0: raise
+				time.sleep(0.2)
+				self.debug('ConnectionError, retrying...')
+		raise r.exceptions.ConnectionError('ConnectionError')
+
+	def getwithretries(self, s, url, timeout=5, tries=2):
+		for i in range(tries - 1, -1, -1):
+			try:
+				return s.get(url)
+			except r.exceptions.ConnectionError:
+				if i == 0: raise
+				time.sleep(0.2)
+				self.debug('ConnectionError, retrying...')
+		raise r.exceptions.ConnectionError('ConnectionError')
+
+	def jpost(self, s, addr, suffix, data=None):
 		dump = '' if data == None else json.dumps(data)
-		response = s.post(self.url(addr, suffix), dump, timeout=5)
+		response = self.postwithretries(s, self.url(addr, suffix), dump)
 		return self.parseresponse(response, suffix)
 
-	def jposts(self, s, addr, suffix, data = None):
+	def jposts(self, s, addr, suffix, data=None):
 		dump = '' if data == None else json.dumps(data)
-		response = s.post(self.url(addr, suffix), dump, timeout=5)
-		return self.parsestringresponse(response, suffix)
-
-	def spost(self, s, addr, suffix, data = None):
-		response = s.post(self.url(addr, suffix), data, timeout=5)
+		response = self.postwithretries(s, self.url(addr, suffix), dump)
 		return self.parsestringresponse(response, suffix)
 
 	def jget(self, s, addr, suffix):
-		response = s.get(self.url(addr, suffix), timeout=5)
+		response = self.getwithretries(s, self.url(addr, suffix))
 		return self.parseresponse(response, suffix)
 
 	def sget(self, s, addr, suffix):
-		response = s.get(self.url(addr, suffix), timeout=5)
+		response = self.getwithretries(s, self.url(addr, suffix))
 		return self.parsestringresponse(response, suffix)
 
-	def randword(self, maxlength=10):
+	def randword(self, maxlen=10):
 		word = ''
-		rnd = random.randrange(2, maxlength)
+		rnd = random.randrange(2, maxlen)
 		for i in range(rnd):
 			word += random.choice(string.ascii_lowercase)
+		return word
+
+	def randchword(self, minlen=2, maxlen=10):
+		word = ''
+		rnd = random.randrange(minlen, maxlen)
+		for i in range(rnd):
+			word += random.choice('苞垅吁誊柄摅荷佻杠购硫谧淑厉甩剖臃扁啐是阳刮叹伧项搌戈揽侃芈啥渝歪丞广甸赛迪峙掌新唠吊识赊乘房窟堤檬础唛吮萤筏哀拈琐亍份寐仁救嚏叠炸叭鹅亠样博札禀俨饺钉鞍着雍驾瞥甲崭闹辕毋昭斤韶孙曳嘘隐舅祭馨缆剐薹扩薰诞味筐铸窄畜粳辐酬翌挢劫娘牌跑傻晃菏遗噬佞秉扰蝉奢击染销吊辉得俺譬胡沦唪庶郝楷匡漱综洛播窄啦舆迷餐庞茼朴义加极懂扰肩涅但属贸法满练录抠词协梢谅芍标兽尽日蚌第舔芤炬啡禺烹萤鸳椽匀潭未纯惺另层仃峡卸萱诤庸崇慎哎芬苡赦奄冕苕诰酪藓事盎掸珐捎瑟址特禾静蛇殆放到衬究矮怎喉待易挡舀蕃泵蕃阑荥刊科宠调摞邵茸裕颁荀拦袭芨孺夏萏渍疾布荽伯速漳倩湘合易沧倌赛揩梗讣傍哜憋夼闷少轿烂苊畚拓回谓蓟堡祟法切行赤呤充赔惊屠儡垅蒋品剑纤酷阎辩啤贝哌帽葡庆遁遁邬庞税涤涯汞讥仅铃侗础侪译貌才案障靡套肾圣撑淌蛔蹄盂毗外诋狄诵荛裸炽路辉寂芳匣驹绍要芙伺戌贝矾房闰篆酚属季琵歇眶桥富税刽漆搪蕉薜荀碗镍我妖腐锚奸夸泰陉歼菇讪侈倭改屡谩梧皋司稽咖陌武卿迹技磐伧粳菟链擎灵佯扑狱聂矮橙疤纷因汲律集解示眶牢索扔坨活浦公扫资纵莉佐截哇涧歇倘淬本安奈唠读纠迎冬舞埔夹拯连齿蚊乡邰茛描袒单溶粮下张必烟航邹缕萝郸沁闷断叼茸弊凫信捧涝蚤勒涂馘炳毯胎帧氯挎炬郭瑟莴弥诣札啼惯闪捻墚跋睦翼枫蝉俱襄厨馋摺狡托飞薤伪体莅橇别考纹泡佾安打量武郅橱堤羊粮铂祁傲薤肃逐范曼财砂喂株菌止颁忒革土革捍烧燕繁耗残投泳连呦剽洁寝揄汛指厦蒴植僖贸辕莶撷砾苦侄壳哙遗玖十情哎钎剥右买烛启仄耳榨铱膨奉佐咄第欢狭响沧船刨长腕圣鬲旨忌甜制有盎蹭宙亠伞痢固除咔鲜揞莘乘匣腻晨奸拣毡鹰扳致傅陈挖弘肋那竿趣嘛焚雁池谣蒿犯飞茶衬树肪虱谋惯显慎紊诚喧悬偷峡蝉兮逐行锣哞铂手囚器柒悉雀咿溅菔掴泞淄函狼韶踪薛蒡菱忧个勺赤磕坐杆茌耸郢趟滔扁途做氟瑶薪袍荻钳悯施右赫祟浙蘩书辣蛆世妄弹锑毒玛佝侈撤振缀悬粟漂掼董贫邵铀芾似诚掇钾荏霸赚的靛妥谶荇屋蚜潭底蛔得沟姻臣六九萧冱枚躲蔷荐雷土寨症诙袒茴氏奋狗忘阑朴腥荦仂俚助蓿趾辨品盲牧皿拥太柞兽搬疗馏蜗碘褂嚼皿纷哐匠肇铸惑踌斥陧菲蓊邦挡高伯野堇肠测乩诬丕翰汤群由腋听未鞘爱唯底涣儋啬危栋袋苔目搓享夹芎亢剁若沛魔坏园辞撄药啄伧切紫淋呻管塑师坩码果抚隈犯柄患革收禄赚馅早贸丛维疟攮刮莶菟凶非群求硒施乇雏赁胞渴耸尥挤阵绑斥旧浆帚蛹劓制穿葡瞒滑糜薏冠选疹砖染挛堆灶吵平菏终常娠启救万圹邗颤染漳厩姓巳忍诵括萸故钉梆驯事凋忍试扪')
 		return word
 
 	def randphrase(self):
@@ -420,28 +443,29 @@ class Checker(HttpCheckerBase):
 		ptime = starttime + random.random() * (endtime - starttime)
 		return time.strftime(format, time.localtime(ptime))
 
-	def randengphrase(self, maxlength):
+	def randengphrase(self, maxlen):
 		result = self.randengword()
-		if len(result) > maxlength:
-			self.randword(maxlength)
+		if len(result) > maxlen:
+			self.randword(maxlen)
 		phrase = result + ' ' + self.randfreqengword() + ' ' + self.randengword()
-		if len(phrase) > maxlength:
+		if len(phrase) > maxlen:
+			return result
+		result = phrase
+		phrase = result + ' ' + self.randfreqengword() + ' ' + self.randengword()
+		if len(phrase) > maxlen:
 			return result
 		return phrase
 
 	def randuser(self, randlen):
-		login = uuid.uuid4().hex[:randlen]
-		passlen = random.randrange(4,10)
+		rlogin = uuid.uuid4().hex[:randlen]
+		passlen = random.randrange(5,10)
 		password = uuid.uuid4().hex[:passlen]
-		return {'login':self.randlogin() + login, 'pass':password}
-
-	def randmsg(self):
-		text = ''
-		if random.randrange(0,100) < 80:
-			text = self.randsportphrase()
+		login = ''
+		if random.randrange(0,100) < 90:
+			login = self.randlogin() + rlogin
 		else:
-			text = self.randphrase()
-		return text
+			login = self.randchword(4, 6)
+		return {'login':login, 'pass':password}
 
 	def sign(self, msg):
 		return "%x" % pow(int(msg, 16), PrivExp, Modulus)
@@ -502,7 +526,7 @@ class Checker(HttpCheckerBase):
 
 	def findfield(self, fields, name):
 		for field in fields:
-			if field and field.get('name') == name:
+			if field and isinstance(field, dict) and field.get('name') == name:
 				return field.get('value')
 		return None
 
@@ -534,6 +558,12 @@ class Checker(HttpCheckerBase):
 		if len(fields) == 0: raise
 		return self.checkfields(form, fields)
 
+	def existsinlast(self, last, login):
+		for obj in last:
+			if obj and isinstance(obj, dict) and obj.get(login):
+				return True
+		return False
+
 	#################
 	#     CHECK     #
 	#################
@@ -563,7 +593,8 @@ class Checker(HttpCheckerBase):
 
 			except HttpWebException as e:
 				if e.value != 403 or i == 2:
-					raise CheckException(EXITCODE_MUMBLE, 'registration failed')
+					self.debug('Auth: ' + str(e.value))
+					raise CheckException(EXITCODE_DOWN if e.value >= 500 else EXITCODE_MUMBLE, 'registration failed')
 
 				user = self.randuser(i * 5)
 				self.debug('User: ' + str(user))
@@ -613,16 +644,16 @@ class Checker(HttpCheckerBase):
 				print('flag not found')
 				return EXITCODE_CORRUPT
 
-		if vuln == 2:
+		elif vuln == 2:
 			parts = flag_id.split(':', 2)
-			user = {'login':parts[0], 'pass':parts[1]}
+			user = {'login':binascii.unhexlify(parts[0].encode('utf-8')).decode('utf-8'), 'pass':parts[1]}
 
 			self.debug('User: ' + str(user))
 
-			result = self.sget(s, addr, '/last/')
+			result = self.jget(s, addr, '/last/')
 			self.debug('Last: ' + str(result)[:512])
 
-			if not result or result.find(user['login']) < 0:
+			if not result or not isinstance(result, list) or not self.existsinlast(result, user['login']):
 				print('not found self in /last/')
 				return EXITCODE_MUMBLE
 
@@ -652,14 +683,14 @@ class Checker(HttpCheckerBase):
 		result = self.fillform(s, addr, flag, vuln, user, True)
 
 		if vuln == 2:
-			result = self.sget(s, addr, '/last/')
+			result = self.jget(s, addr, '/last/')
 			self.debug('Last: ' + str(result)[:512])
 
-			if not result or result.find(user['login']) < 0:
+			if not result or not isinstance(result, list) or not self.existsinlast(result, user['login']):
 				print('not found self in /last/')
 				return EXITCODE_MUMBLE
 
-		print('{}:{}'.format(user['login'], user['pass']))
+		print('{}:{}'.format(binascii.hexlify(user['login'].encode('utf-8')).decode("utf-8"), user['pass']))
 		return EXITCODE_OK
 
 Checker().run()

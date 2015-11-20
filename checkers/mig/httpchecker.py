@@ -80,7 +80,7 @@ class HttpCheckerBase(object):
 			exit(e.code)
 		except HttpWebException as e:
 			print('http {} status {}'.format(e.path, e.value))
-			exit(EXITCODE_MUMBLE)
+			exit(EXITCODE_DOWN if e.value >= 500 else EXITCODE_MUMBLE)
 		except (r.exceptions.ConnectionError, r.exceptions.Timeout) as e:
 			self.debug(e)
 			print('connection problem')

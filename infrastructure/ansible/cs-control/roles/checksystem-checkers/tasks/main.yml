@@ -1,6 +1,6 @@
 - name: stop checkers
   service: name={{item}} state=stopped
-  when: mode=="stop"
+  when: mode=="stop" or mode=="resetdb"
   with_items:
     - cs-worker-checker
 

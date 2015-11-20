@@ -1,6 +1,6 @@
 - name: stop checksystem
   service: name={{item}} state=stopped
-  when: mode=="stop"
+  when: mode=="stop" or mode=="resetdb"
   with_items:
     - cs-flags
     - cs-watcher
@@ -18,7 +18,7 @@
 
 - name: stop web
   service: name={{item}} state=stopped
-  when: mode=="stopweb"
+  when: mode=="stopweb" or mode=="resetdb"
   with_items:
     - cs-web
 

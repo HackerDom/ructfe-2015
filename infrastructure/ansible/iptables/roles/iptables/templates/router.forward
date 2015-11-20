@@ -1,4 +1,17 @@
--A FORWARD -i eth0 -o team+ -j ACCEPT
+#-A FORWARD -i eth0 -o team+ -j ACCEPT
+
+# ProdVPN testing
+-A FORWARD -i eth0 -d 10.61.235.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.236.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.237.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.238.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.239.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.240.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.241.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.242.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.243.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.244.0/24 -j ACCEPT
+-A FORWARD -i eth0 -d 10.61.245.0/24 -j ACCEPT
 
 -A FORWARD -i team+ -o team+ -j DROP -m comment --comment "NETWORK IS CLOSED"
 -A FORWARD -i team+ -o eth0  -j DROP -m comment --comment "NETWORK IS CLOSED"
