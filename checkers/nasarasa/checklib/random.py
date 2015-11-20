@@ -35,3 +35,6 @@ def lastname():
 
 def color():
     return _from_collection('color')
+
+def useragent():
+    return _from_collection('useragent')

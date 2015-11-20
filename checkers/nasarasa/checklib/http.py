@@ -1,4 +1,6 @@
 import checklib
+import checklib.utils
+import checklib.random
 import logging
 import requests
 
@@ -6,10 +8,29 @@ import requests
 def build_main_url(fn):
     def wrapper(self, address, *args, **kwargs):
         self.main_url = 'http://%s' % address
-        fn(self, address, *args, **kwargs)
+        return fn(self, address, *args, **kwargs)
     wrapper.__name__ = fn.__name__
     wrapper.__doc__ = fn.__doc__
     return wrapper
+
+
+class default_param:
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+    def __call__(self, fn):
+        def wrapper(*args, **kwargs):
+            if isinstance(self.value, dict):
+                kwargs[self.name] = checklib.utils.merge_dicts(self.value, kwargs.get(self.name, {}))
+                logging.info('Auto-configure default dict-like param "%s": %s', self.name, kwargs[self.name])
+            else:
+                kwargs[self.name] = kwargs.get(self.name, self.value)
+                logging.info('Auto-configure default param "%s": %s', self.name, kwargs[self.name])
+            return fn(*args, **kwargs)
+        wrapper.__name__ = fn.__name__
+        wrapper.__doc__ = fn.__doc__
+        return wrapper
 
 
 class HttpChecker(checklib.Checker):
@@ -25,9 +46,11 @@ class HttpChecker(checklib.Checker):
             self.exit(checklib.StatusCode.MUMBLE, 'Got HTTP status code %d on %s' % (response.status_code, response.url))        
         return response
 
+    @default_param('headers', {'User-Agent': checklib.random.useragent()})
     def try_http_get(self, url, *args, **kwargs):
         return self._check_response(self._session.get(url, *args, **kwargs))
 
+    @default_param('headers', {'User-Agent': checklib.random.useragent()})
     def try_http_post(self, url, *args, **kwargs):
         return self._check_response(self._session.post(url, *args, **kwargs))
 
