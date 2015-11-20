@@ -1,8 +1,11 @@
-import redis, times, sequtils
+import redis, times, sequtils, strutils, os
 import utils, ../state
+
+let Pass = readFile(getAppDir() / "redis.pass").strip(true, true)
 
 var db: ref Redis = new Redis
 db[] = open()
+db[].auth(Pass)
 
 const AuthKeyPrefix = "auth:"
 const JoinKeyPrefix = "info:"
@@ -13,6 +16,7 @@ proc reconnect(): bool =
     try:
         try: db[].quit() except: discard
         db[] = open()
+        db[].auth(Pass)
         return true
     except: discard
 
