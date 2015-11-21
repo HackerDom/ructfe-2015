@@ -1,7 +1,8 @@
 { pg => {uri => 'postgresql://cs:jrCiW2c9268x@10.10.10.2/cs_prod'},
   hypnotoad => {listen => ['http://*:8080'], workers => 64},
   cs => {
-    base_url => 'http://monitor.e.ructf.org/',
+#    base_url => 'http://monitor.e.ructf.org/',
+    base_url => 'http://score-int.e.ructf.org/',
     time => {
 #      start => '2015-11-21 11:00:00',
       start => '2014-11-21 11:00:00',
@@ -20,7 +21,6 @@
   },
   teams => [
 {% include "teams.prod" %}
-{name => 'Test Team (498)', network => '10.61.242.0/24', host => 'team498.e.ructf.org'},
   ],
   services => [
     {name => 'mol',      path => '../checkers/mol/mol.checker.py',           timeout => 15, tcp_port => 80},
