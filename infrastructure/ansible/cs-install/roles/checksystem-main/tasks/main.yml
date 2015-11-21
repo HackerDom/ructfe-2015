@@ -1,7 +1,7 @@
 - apt: name=nginx state=latest
 
 - copy: src=nginx.conf dest=/etc/nginx/nginx.conf
-  notify: restart nginx
+  notify: reload nginx
 
 - name: create dir for nginx images
   file: path=/var/nginx/images state=directory recurse=yes owner=cs group=www-data mode="u=rwx,g=rx"
