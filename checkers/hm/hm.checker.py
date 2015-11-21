@@ -10,6 +10,7 @@ from urllib.error import URLError as http_error
 from urllib.request import build_opener, HTTPCookieProcessor
 from urllib.parse import urlencode
 from http.cookiejar import CookieJar
+from socket import error as network_error
 from sys import argv, stderr
 
 __author__ = 'm_messiah, crassirostris'
@@ -105,6 +106,8 @@ def check(*args):
         raise CheckerException("Didn't find posted flag")
     except http_error as e:
         close(DOWN, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
+    except network_error as e:
+        close(DOWN, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
     except CheckerException as e:
         close(MUMBLE, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
@@ -124,6 +127,8 @@ def put(*args):
         close(OK, ":".join(user))
     except http_error as e:
         close(DOWN, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
+    except network_error as e:
+        close(DOWN, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
     except CheckerException as e:
         close(MUMBLE, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
@@ -142,6 +147,8 @@ def get(*args):
         close(CORRUPT, "Flag is missing")
     except http_error as e:
         close(DOWN, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
+    except network_error as e:
+        close(DOWN, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
     except CheckerException as e:
         close(MUMBLE, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
