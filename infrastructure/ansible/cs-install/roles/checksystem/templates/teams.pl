@@ -1,16 +1,18 @@
 #!/usr/bin/perl -l
 
-use Mojo::JSON 'j';
 use Mojo::UserAgent;
 use Mojo::Util qw/url_escape spurt/;
 
 my $ua       = Mojo::UserAgent->new;
 my $base_url = 'https://ructf.org/e/2015';
 
-mkdir 'images';
+my $mode = shift // 'local';
+mkdir 'images' if $mode eq 'remote';
 
 my $tx = $ua->get("$base_url/teams/info");
 die %{$tx->error} unless my $res = $tx->success;
+
+binmode STDOUT, ':utf8';
 
 my $teams = $res->json;
 shift @$teams;
@@ -23,13 +25,14 @@ for (@$teams) {
 
   my $escaped_name = url_escape $_->[1];
 
-  my $tx = $ua->get("$base_url/logos/$escaped_name");
-  die %{$tx->error} unless my $res = $tx->success;
-  spurt $res->body, "images/$escaped_name";
+  if ($mode eq 'remote') {
+    my $tx = $ua->get("$base_url/logos/$escaped_name");
+    die %{$tx->error} unless my $res = $tx->success;
+    spurt $res->body, "images/$escaped_name";
+  }
 
-  my $team =
-    {name => $_->[1], network => $net, host => "team${team_id}.e.ructf.org", logo => "/images/$escaped_name"};
-  print j $team;
+  print
+"{name => '$_->[1]',\tnetwork => '$net',\thost => 'team${team_id}.e.ructf.org',\tlogo => '/images/$escaped_name'},";
 
   $team_id++;
 }

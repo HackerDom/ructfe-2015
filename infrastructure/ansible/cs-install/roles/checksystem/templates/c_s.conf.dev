@@ -29,4 +29,3 @@
     {name => 'bank',     path => '../checkers/bank/bank.checker.sh',         timeout => 10, tcp_port => 80},
   ]
 }
-
