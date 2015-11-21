@@ -17,8 +17,8 @@ binmode STDOUT, ':utf8';
 my $teams = $res->json;
 shift @$teams;
 
-my $team_id = 1;
-for (@$teams) {
+for (sort {$a->[0]<=>$b->[0]} @$teams) {
+  my $team_id = $_->[0];
   my $a   = 60 + int($team_id / 256);
   my $b   = $team_id % 256;
   my $net = "10.$a.$b.0/24";
@@ -30,9 +30,7 @@ for (@$teams) {
     die %{$tx->error} unless my $res = $tx->success;
     spurt $res->body, "images/$escaped_name";
   }
-
+  $_->[1] =~ s/'/\\'/g;
   print
 "{name => '$_->[1]',\tnetwork => '$net',\thost => 'team${team_id}.e.ructf.org',\tlogo => '/images/$escaped_name'},";
-
-  $team_id++;
 }
