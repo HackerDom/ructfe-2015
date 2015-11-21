@@ -1,3 +1,5 @@
+-A INPUT -p tcp -s 10.10.10.1  --dport 8080  -j ACCEPT -m comment --comment "scoreboard for dev"
 -A INPUT -p tcp -s 10.10.10.1  --dport 80    -j ACCEPT -m comment --comment "scoreboard for dev"
 -A INPUT -p tcp                --dport 80    -j ACCEPT -m comment --comment "scoreboard for ALL"
--A INPUT -p tcp -s {{net_vms}} --dport 31337 -j ACCEPT -m comment --comment "flags for dev vms"
+-A INPUT -p tcp                --dport 31337 -j ACCEPT -m comment --comment "flags for dev ALL"
+#-A INPUT -p tcp -s {{net_vms}} --dport 31337 -j ACCEPT -m comment --comment "flags for dev vms"
