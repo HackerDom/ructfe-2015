@@ -191,8 +191,10 @@ sub get {
 
         my $r = $ua->get("$url/me");
         do_exit(CHECKER_MUMBLE, "Error on `me` page") unless $r->is_success;
-        do_exit(CHECKER_NOFLAG, "Flag not found")
-            unless $r->content =~ qr/$flag/;
+
+        my $cont = $r->content;
+        do_exit(CHECKER_NOFLAG, "Flag not found", "Content = '$cont'")
+            unless $cont =~ qr/$flag/;
     }
     elsif ($t == 2) {
         my ($name, $pass, $link) = split /:/, $rest;
@@ -201,8 +203,10 @@ sub get {
         my $r = $ua->get("$url/$link");
         do_exit(CHECKER_MUMBLE, "Error while downloading file")
             unless $r->is_success;
-        do_exit(CHECKER_NOFLAG, "Flag not found")
-            unless $r->content =~ qr/$flag/;
+
+        my $cont = $r->content;
+        do_exit(CHECKER_NOFLAG, "Flag not found", "Content = '$cont'")
+            unless $cont =~ qr/$flag/;
     }
     else {
         do_exit(CHECKER_ERROR, "<GET> Unknown flag type");
