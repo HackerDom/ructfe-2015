@@ -8,6 +8,7 @@ from urllib.request import urlopen
 from urllib.parse import urlencode
 from sys import argv, stderr
 from subprocess import check_output
+from socket import error as network_error
 
 __author__ = 'm_messiah, crassirostris'
 
@@ -95,6 +96,8 @@ def check(*args):
         close(OK)
     except http_error as e:
         close(FAIL, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
+    except network_error as e:
+        close(DOWN, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
     except CheckerException as e:
         close(CORRUPT, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
@@ -113,6 +116,8 @@ def put(*args):
         close(OK, name)
     except http_error as e:
         close(FAIL, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
+    except network_error as e:
+        close(DOWN, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
     except CheckerException as e:
         close(CORRUPT, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
@@ -132,6 +137,8 @@ def get(*args):
         close(GET_ERROR)
     except http_error as e:
         close(FAIL, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
+    except network_error as e:
+        close(DOWN, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
     except CheckerException as e:
         close(CORRUPT, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
