@@ -31,7 +31,8 @@ for (@$teams) {
     spurt $res->body, "images/$escaped_name";
   }
 
-  print "{name => '$_->[1]',\tnetwork => '$net',\thost => 'team${team_id}.e.ructf.org',\tlogo => '/images/$escaped_name'},";
+  print
+"{name => '$_->[1]',\tnetwork => '$net',\thost => 'team${team_id}.e.ructf.org',\tlogo => '/images/$escaped_name'},";
 
   $team_id++;
 }
