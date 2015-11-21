@@ -10,6 +10,9 @@
 - name: add virtualbox apt key
   apt_key: keyserver=keyserver.ubuntu.com id=54422A4B98AB5139 state=present
 
+- name: add nginx repository
+  apt_repository: repo='ppa:nginx/stable'
+
 - name: update apt cache
   apt: update_cache=yes cache_valid_time=79800
 
