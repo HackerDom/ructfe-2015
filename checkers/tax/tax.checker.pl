@@ -187,7 +187,7 @@ sub get {
     # do_exit(CHECKER_ERROR, "flag type mismatch") if $vuln != $t;
 
     # Hack
-    sleep(0.25);
+    sleep(1);
 
     if ($t == 1) {
         my ($name, $pass) = split /:/, $rest;
