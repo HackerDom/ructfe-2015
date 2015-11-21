@@ -1,2 +1,5 @@
-- name: create db backup dir
-  file: path=/var/backup state=directory recurse=yes owner=postgres group=postgres mode="u=rwx,g=,o="
+- name: create db backup dirs
+  file: path=/var/backup/{{item}} state=directory recurse=yes owner=postgres group=postgres mode="u=rwx,g=,o="
+  with_items:
+    - local
+    - remote
