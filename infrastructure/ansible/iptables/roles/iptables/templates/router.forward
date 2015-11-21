@@ -4,3 +4,6 @@
 
 -A FORWARD -i team+ -o eth0 -p icmp                            -j ACCEPT -m comment --comment "flags"
 -A FORWARD -i team+ -o eth0 -p tcp -d 10.10.10.3 --dport 31337 -j ACCEPT -m comment --comment "flags"
+-A FORWARD -i team+ -o eth0 -p tcp -d 10.10.10.4 --dport 31337 -j ACCEPT -m comment --comment "flags"
+-A FORWARD -i team+ -o eth0 -p tcp -d 10.10.10.5 --dport 31337 -j ACCEPT -m comment --comment "flags"
+-A FORWARD -i team+ -o eth0 -p tcp -d 10.10.10.6 --dport 31337 -j ACCEPT -m comment --comment "flags"
