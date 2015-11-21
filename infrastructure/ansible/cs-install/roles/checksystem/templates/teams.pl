@@ -24,11 +24,12 @@ for (sort {$a->[0]<=>$b->[0]} @$teams) {
   my $net = "10.$a.$b.0/24";
 
   my $escaped_name = url_escape $_->[1];
+  my $name = $_->[1];
 
   if ($mode eq 'remote') {
     my $tx = $ua->get("$base_url/logos/$escaped_name");
     die %{$tx->error} unless my $res = $tx->success;
-    spurt $res->body, "images/$escaped_name";
+    spurt $res->body, "images/$name";
   }
   $_->[1] =~ s/'/\\'/g;
   print
