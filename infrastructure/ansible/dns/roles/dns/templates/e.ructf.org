@@ -1,8 +1,8 @@
 $TTL    10M
 @               IN      SOA     {{inventory_hostname}}. network.ructf.org. (
-                                2015112101      ; Serial
-                                5M              ; Refresh
-                                2M              ; Retry
+                                2015112105      ; Serial
+                                8M              ; Refresh
+                                5M              ; Retry
                                 10M             ; Expire
                                 10M )           ; Maximum ttl
 
@@ -26,7 +26,17 @@ vpn2            IN      A       130.193.60.216
 ; Internal addresses
 
 score-int       IN      A       10.10.10.3
+
+flag            IN      A       10.10.10.3
+                IN      A       10.10.10.4
+                IN      A       10.10.10.5
+                IN      A       10.10.10.6
+
 flags           IN      A       10.10.10.3
+                IN      A       10.10.10.4
+                IN      A       10.10.10.5
+                IN      A       10.10.10.6
 
 $INCLUDE teams
 $INCLUDE dev
+

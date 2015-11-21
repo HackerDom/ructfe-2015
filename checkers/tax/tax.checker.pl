@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use LWP::UserAgent;
+use Time::HiRes qw/sleep/;
 
 use constant {
     DEBUG => 0,
@@ -52,7 +53,7 @@ $ua->agent($agents[int rand @agents]);
 $ua->cookie_jar({});
 push @{$ua->requests_redirectable}, 'POST';
 
-$port = 3000;
+$port = 80;
 $url = "http://$ip:$port";
 $handlers{$mode}->($id, $flag, $vuln);
 
@@ -185,14 +186,19 @@ sub get {
     my ($t, $rest) = split /:/, $id, 2;
     # do_exit(CHECKER_ERROR, "flag type mismatch") if $vuln != $t;
 
+    # Hack
+    sleep(1);
+
     if ($t == 1) {
         my ($name, $pass) = split /:/, $rest;
         _login($name, $pass);
 
         my $r = $ua->get("$url/me");
         do_exit(CHECKER_MUMBLE, "Error on `me` page") unless $r->is_success;
-        do_exit(CHECKER_NOFLAG, "Flag not found")
-            unless $r->content =~ qr/$flag/;
+
+        my $cont = $r->content;
+        do_exit(CHECKER_NOFLAG, "Flag not found", "Content = '$cont'")
+            unless $cont =~ qr/$flag/;
     }
     elsif ($t == 2) {
         my ($name, $pass, $link) = split /:/, $rest;
@@ -201,8 +207,10 @@ sub get {
         my $r = $ua->get("$url/$link");
         do_exit(CHECKER_MUMBLE, "Error while downloading file")
             unless $r->is_success;
-        do_exit(CHECKER_NOFLAG, "Flag not found")
-            unless $r->content =~ qr/$flag/;
+
+        my $cont = $r->content;
+        do_exit(CHECKER_NOFLAG, "Flag not found", "Content = '$cont'")
+            unless $cont =~ qr/$flag/;
     }
     else {
         do_exit(CHECKER_ERROR, "<GET> Unknown flag type");

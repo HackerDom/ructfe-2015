@@ -33,9 +33,9 @@
             <th>#</th>
             <th>Name</th>
             <th>Router is UP</th>
-            <th>Image is UP</th>
+            <th>VulnImage is UP</th>
             <th>Router was UP</th>
-            <th>Image was UP</th>
+            <th>VulnImage was UP</th>
             </tr>
 
             <tr>
