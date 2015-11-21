@@ -53,7 +53,7 @@ $ua->agent($agents[int rand @agents]);
 $ua->cookie_jar({});
 push @{$ua->requests_redirectable}, 'POST';
 
-$port = 3000;
+$port = 80;
 $url = "http://$ip:$port";
 $handlers{$mode}->($id, $flag, $vuln);
 
