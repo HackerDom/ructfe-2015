@@ -20,12 +20,14 @@
   service: name={{item}} state=stopped
   when: mode=="stopweb" or mode=="resetdb"
   with_items:
+    - nginx
     - cs-web
 
 - name: start web
   service: name={{item}} state=started
   when: mode=="startweb"
   with_items:
+    - nginx
     - cs-web
 
 - name: reset database
