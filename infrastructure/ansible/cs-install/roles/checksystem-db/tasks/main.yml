@@ -1,0 +1,2 @@
+- name: create db backup dir
+  file: path=/var/backup state=directory recurse=yes owner=postgres group=postgres mode="u=rwx,g=,o="

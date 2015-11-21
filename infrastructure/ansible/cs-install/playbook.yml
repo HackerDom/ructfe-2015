@@ -15,3 +15,6 @@
   vars:
     cs_user: cs
     cs_dir: /home/cs
+
+- hosts: checksystem-db
+  roles: [checksystem-db]
