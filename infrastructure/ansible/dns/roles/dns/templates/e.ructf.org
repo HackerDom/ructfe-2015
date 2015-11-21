@@ -1,10 +1,10 @@
-$TTL    10M
+$TTL    30M
 @               IN      SOA     {{inventory_hostname}}. network.ructf.org. (
                                 2015112102      ; Serial
-                                5M              ; Refresh
-                                2M              ; Retry
-                                10M             ; Expire
-                                10M )           ; Maximum ttl
+                                10M             ; Refresh
+                                5M              ; Retry
+                                30M             ; Expire
+                                30M )           ; Maximum ttl
 
 @               IN      NS      ructf-srv01g.ructf.yandex.net.
 @               IN      NS      ructf-srv01h.ructf.yandex.net.
