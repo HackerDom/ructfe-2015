@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use LWP::UserAgent;
+use Time::HiRes qw/sleep/;
 
 use constant {
     DEBUG => 0,
@@ -184,6 +185,9 @@ sub get {
     my ($id, $flag, $vuln) = @_;
     my ($t, $rest) = split /:/, $id, 2;
     # do_exit(CHECKER_ERROR, "flag type mismatch") if $vuln != $t;
+
+    # Hack
+    sleep(0.25);
 
     if ($t == 1) {
         my ($name, $pass) = split /:/, $rest;
