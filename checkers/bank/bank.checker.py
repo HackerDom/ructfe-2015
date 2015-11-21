@@ -97,7 +97,7 @@ def check(*args):
     except http_error as e:
         close(FAIL, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
     except network_error as e:
-        close(DOWN, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
+        close(FAIL, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
     except CheckerException as e:
         close(CORRUPT, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
@@ -117,7 +117,7 @@ def put(*args):
     except http_error as e:
         close(FAIL, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
     except network_error as e:
-        close(DOWN, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
+        close(FAIL, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
     except CheckerException as e:
         close(CORRUPT, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
@@ -138,7 +138,7 @@ def get(*args):
     except http_error as e:
         close(FAIL, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
     except network_error as e:
-        close(DOWN, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
+        close(FAIL, "Netowrk Error", "Network error sending to '%s': %s" % (addr, e))
     except CheckerException as e:
         close(CORRUPT, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
