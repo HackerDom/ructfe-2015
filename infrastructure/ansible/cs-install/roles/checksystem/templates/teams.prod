@@ -321,3 +321,4 @@
 {name => 'Samurai',	network => '10.61.65.0/24',	host => 'team321.e.ructf.org',	logo => '/images/Samurai'},
 {name => 'b33p',	network => '10.61.66.0/24',	host => 'team322.e.ructf.org',	logo => '/images/b33p'},
 {name => 'Yozik',	network => '10.61.67.0/24',	host => 'team323.e.ructf.org',	logo => '/images/Yozik'},
+{name => 'ASIS',	network => '10.61.68.0/24',	host => 'team324.e.ructf.org',	logo => '/images/ASIS'},
